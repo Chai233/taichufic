@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE generatorConfiguration
+        PUBLIC "-//mybatis.org//DTD MyBatis Generator Configuration 1.0//EN"
+        "http://mybatis.org/dtd/mybatis-generator-config_1_0.dtd">
+<generatorConfiguration>
+
+    <!-- context 是逆向工程的主要配置信息 -->
+    <!-- id： 名字而已  作为唯一标识 -->
+    <!-- targetRuntime： 设置生成的文件使用于哪个 MyBatis 版本  -->
+    <context id="default" targetRuntime="MyBatis3" defaultModelType="flat">
+        <!--数据库链接地址账号密码-->
+        <jdbcConnection driverClass="com.mysql.cj.jdbc.Driver"
+                        connectionURL="jdbc:mysql://localhost:3306/demo_db_taichu?useUnicode=true"
+                        userId="demo"
+                        password="demo123">
+        </jdbcConnection>
+
+        <!--生成pojo存放位置-->
+        <!-- targetPackage： 生成实体类所在的包 -->
+        <!-- targetProject： 生成实体类所在的硬盘位置 -->
+        <javaModelGenerator targetPackage="com.taichu.infra.persistance.model" targetProject="src/main/java">
+
+            <!-- 是否允许子包 -->
+            <property name="enableSubPackages" value="true" />
+            <!-- 是否对model添加构造函数 -->
+            <property name="constructorBased" value="true" />
+            <!-- 是否清理从数据库中查询出的字符串左右两边的空白字符 -->
+            <property name="trimStrings" value="true" />
+            <!-- 建立model对象是否不可改变 即生成的model对象不会有setter方法，只有构造方法 -->
+            <property name="immutable" value="false" />
+
+        </javaModelGenerator>
+
+        <!--生成映射文件存放位置-->
+        <sqlMapGenerator targetPackage="mapping.mybatis" targetProject="src/main/resources">
+            <!-- 针对数据库的一个配置，是否把 schema 作为包名 -->
+            <property name="enableSubPackages" value="true"/>
+        </sqlMapGenerator>
+
+        <!--生成Dao类存放位置  也就是生成接口所在的位置 -->
+        <!-- 客户端代码，生成易于使用的针对Model对象和XML配置文件 的代码
+                type="ANNOTATEDMAPPER",生成Java Model 和基于注解的Mapper对象
+                type="MIXEDMAPPER",生成基于注解的Java Model 和相应的Mapper对象
+                type="XMLMAPPER",生成SQLMap XML文件和独立的Mapper接口
+        -->
+        <javaClientGenerator type="XMLMAPPER" targetPackage="com.taichu.infra.persistance.mapper" targetProject="src/main/java">
+            <!-- 针对 Oracle 数据库的一个配置，是否把 schema 作为包名 -->
+            <property name="enableSubPackages" value="true"/>
+        </javaClientGenerator>
+
+        <!--生成对应表及类名，这里每一个表的五项属性是为了删除自动编写的复杂查询-->
+        <!-- tableName: 对应的是数据库表名，domainObjectName： 是实体类的名字，可以自定义-->
+        <table tableName="fic_resource" domainObjectName="FicResource" enableCountByExample="true"
+               enableUpdateByExample="false" enableDeleteByExample="true"
+               enableSelectByExample="true" selectByExampleQueryId="true"></table>
+
+        <table tableName="fic_role" domainObjectName="FicRole" enableCountByExample="true"
+               enableUpdateByExample="false" enableDeleteByExample="true"
+               enableSelectByExample="true" selectByExampleQueryId="true"></table>
+
+        <table tableName="fic_script" domainObjectName="FicScript" enableCountByExample="true"
+               enableUpdateByExample="false" enableDeleteByExample="true"
+               enableSelectByExample="true" selectByExampleQueryId="true"></table>
+
+        <table tableName="fic_storyboard" domainObjectName="FicStoryboard" enableCountByExample="true"
+               enableUpdateByExample="false" enableDeleteByExample="true"
+               enableSelectByExample="true" selectByExampleQueryId="true"></table>
+
+        <table tableName="fic_task" domainObjectName="FicTask" enableCountByExample="true"
+               enableUpdateByExample="false" enableDeleteByExample="true"
+               enableSelectByExample="true" selectByExampleQueryId="true"></table>
+
+        <table tableName="fic_user" domainObjectName="FicUser" enableCountByExample="true"
+               enableUpdateByExample="false" enableDeleteByExample="true"
+               enableSelectByExample="true" selectByExampleQueryId="true"></table>
+
+        <table tableName="fic_workflow" domainObjectName="FicWorkflow" enableCountByExample="true"
+               enableUpdateByExample="false" enableDeleteByExample="true"
+               enableSelectByExample="true" selectByExampleQueryId="true"></table>
+    </context>
+</generatorConfiguration>

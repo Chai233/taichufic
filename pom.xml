@@ -80,32 +80,6 @@
                     <target>11</target>
                 </configuration>
             </plugin>
-
-            <!--引入generator.插件-->
-            <plugin>
-                <groupId>org.mybatis.generator</groupId>
-                <artifactId>mybatis-generator-maven-plugin</artifactId>
-                <version>1.3.7</version>
-                <dependencies>
-                    <dependency>
-                        <groupId>mysql</groupId>
-                        <artifactId>mysql-connector-java</artifactId>
-                        <version>8.0.25</version>
-                    </dependency>
-                </dependencies>
-                <configuration>
-                    <!-- 允许移动生成的文件-->
-                    <verbose>true</verbose>
-                    <!--允许自动覆盖文件，第一次可覆盖，以后都不可覆盖-->
-                    <overwrite>true</overwrite>
-                    <!--自定义配置文件的名称默认是generatorConfig.xml-->
-                    <configurationFile>
-                        src/main/resources/mybatis-generator.xml
-                    </configurationFile>
-                </configuration>
-            </plugin>
-
-
         </plugins>
     </build>
 </project>

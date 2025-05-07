@@ -1,0 +1,12 @@
+file:
+  storage:
+    # 文件存储基础路径
+    base-path: /data/files
+    # 单个文件大小限制
+    max-size: 20MB
+    # 允许的文件类型
+    allowed-types: text/plain,application/pdf
+    # 是否允许覆盖已存在的文件
+    allow-overwrite: false
+    # 文件命名策略：original-保持原文件名，uuid-使用UUID命名
+    naming-strategy: original 
