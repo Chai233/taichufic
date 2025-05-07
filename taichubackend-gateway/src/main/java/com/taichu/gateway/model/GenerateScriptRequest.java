@@ -10,6 +10,8 @@ public class GenerateScriptRequest {
 
     @ApiModelProperty(value = "流程id", required = true)
     private Long workflowId;
-    @ApiModelProperty(value = "用户自定义prompt", required = false)
+    @ApiModelProperty(value = "用户自定义prompt")
     private String userPrompt;
+    @ApiModelProperty(value = "标签：赛博朋克/外星文明")
+    private String tag;
 }
