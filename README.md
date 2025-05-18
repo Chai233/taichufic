@@ -7,6 +7,49 @@
 
 
 # 开发记录
+## 创建docker中的数据库
+step1: 创建 docker-compose.yml 文件，内容如下
+```yaml
+version: '3.8'
+services:
+  mysql:
+    image: mysql:8
+    container_name: mysql_demo
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: root123
+      MYSQL_DATABASE: demo_db_taichu
+      MYSQL_USER: demo
+      MYSQL_PASSWORD: demo123
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+
+volumes:
+  mysql_data:
+
+```
+
+step2: 启动 MySQL 容器
+```bash
+docker-compose up -d
+```
+
+step3: 测试数据库连接..."
+``` bash
+docker exec -it mysql_demo mysql -udemo -pdemo123 -e "SHOW DATABASES;" 2>/dev/null
+```
+
+step4: 调整 application.yml 数据源
+```properties
+# database
+spring.datasource.url=jdbc:mysql://localhost:3306/demo_db_taichu?useSSL=false&serverTimezone=UTC
+spring.datasource.username=demo
+spring.datasource.password=demo123
+spring.datasource.driver-class-name=com.mysql.cj.jdbc.Driver
+```
+
 ## 清空数据库
 
 ### 1. **删除 MySQL 容器和卷**

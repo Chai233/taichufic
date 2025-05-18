@@ -54,6 +54,7 @@ CREATE TABLE fic_storyboard (
 CREATE TABLE fic_resource (
                               id bigint PRIMARY KEY AUTO_INCREMENT COMMENT '分镜图id',
                               gmt_create bigint NOT NULL COMMENT '创建时间（毫秒时间戳）',
+                              workflow_id bigint NOT NULL COMMENT '工作流id',
                               status tinyint NOT NULL COMMENT '1-有效 0-无效',
                               relevance_id bigint NOT NULL COMMENT '关联键',
                               relevance_type varchar(32) NOT NULL COMMENT '关联键类型',
