@@ -15,6 +15,7 @@
         <module>taichubackend-infra</module>
         <module>taichubackend-common</module>
         <module>taichubackend-domain</module>
+        <module>taichubackend-sdk</module>
     </modules>
 
     <properties>

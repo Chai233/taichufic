@@ -9,7 +9,7 @@
         <version>1.0-SNAPSHOT</version>
     </parent>
 
-    <artifactId>taichubackend-gateway</artifactId>
+    <artifactId>taichubackend-sdk</artifactId>
 
     <properties>
         <maven.compiler.source>11</maven.compiler.source>
@@ -19,22 +19,9 @@
 
     <dependencies>
         <dependency>
-            <groupId>com.taichu</groupId>
-            <artifactId>taichubackend-application</artifactId>
-            <version>1.0-SNAPSHOT</version>
-        </dependency>
-
-        <dependency>
-            <groupId>com.taichu</groupId>
-            <artifactId>taichubackend-sdk</artifactId>
-            <version>1.0-SNAPSHOT</version>
-        </dependency>
-
-        <dependency>
-            <groupId>com.taichu</groupId>
-            <artifactId>taichubackend-common</artifactId>
-            <version>1.0-SNAPSHOT</version>
+            <groupId>org.projectlombok</groupId>
+            <artifactId>lombok</artifactId>
+            <version>1.18.6</version>
         </dependency>
     </dependencies>
-
 </project>

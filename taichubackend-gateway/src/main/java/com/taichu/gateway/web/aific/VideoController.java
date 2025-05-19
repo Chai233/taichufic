@@ -2,10 +2,10 @@ package com.taichu.gateway.web.aific;
 
 import com.alibaba.cola.dto.MultiResponse;
 import com.alibaba.cola.dto.SingleResponse;
-import com.taichu.gateway.model.GenerateVideoRequest;
-import com.taichu.gateway.model.SingleStoryboardVideoRegenRequest;
-import com.taichu.gateway.model.StoryboardTaskStatusDTO;
-import com.taichu.gateway.model.VideoListItemDTO;
+import com.taichu.sdk.model.GenerateVideoRequest;
+import com.taichu.sdk.model.SingleStoryboardVideoRegenRequest;
+import com.taichu.sdk.model.StoryboardTaskStatusDTO;
+import com.taichu.sdk.model.VideoListItemDTO;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.core.io.Resource;

@@ -2,12 +2,13 @@ package com.taichu.gateway.web.aific;
 
 import com.alibaba.cola.dto.MultiResponse;
 import com.alibaba.cola.dto.SingleResponse;
-import com.taichu.gateway.model.GenerateScriptRequest;
-import com.taichu.gateway.model.ScriptDTO;
-import com.taichu.gateway.model.StoryboardTaskStatusDTO;
-import com.taichu.gateway.model.TaskStatusDTO;
+import com.taichu.application.service.ScriptAppService;
+import com.taichu.sdk.model.GenerateScriptRequest;
+import com.taichu.sdk.model.ScriptDTO;
+import com.taichu.sdk.model.TaskStatusDTO;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.Resource;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -17,11 +18,14 @@ import org.springframework.web.bind.annotation.*;
 @Api(tags = "Page 2 - 剧本接口")
 public class ScriptController {
 
+    @Autowired
+    private ScriptAppService scriptAppService;
+
     @PostMapping("/generate")
     @ApiOperation(value = "提交剧本生成任务", notes = "")
     public SingleResponse<Long> generateScript(@RequestBody GenerateScriptRequest request) {
         // 提交剧本生成任务
-        return SingleResponse.buildSuccess();
+        return scriptAppService.submitGenScriptTask(request);
     }
 
     @GetMapping("/task/status")
