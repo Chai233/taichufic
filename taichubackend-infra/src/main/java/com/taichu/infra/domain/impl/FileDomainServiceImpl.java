@@ -1,5 +1,9 @@
 package com.taichu.infra.domain.impl;
 
+import com.taichu.domain.enums.CommonStatusEnum;
+import com.taichu.domain.enums.FicResourceTypeEnum;
+import com.taichu.domain.enums.RelevanceIDType;
+import com.taichu.domain.enums.WorkflowStatusEnum;
 import com.taichu.domain.service.FileDomainService;
 import com.taichu.infra.file.LocalFileStorageService;
 import com.taichu.infra.persistance.mapper.FicResourceMapper;
@@ -37,7 +41,7 @@ public class FileDomainServiceImpl implements FileDomainService {
             // 1. 更新workflow状态
             FicWorkflow workflow = new FicWorkflow();
             workflow.setId(workflowId);
-            workflow.setStatus((byte)2);
+            workflow.setStatus(WorkflowStatusEnum.UPLOAD_FILE_DONE.getCode());
             workflow.setGmtCreate(System.currentTimeMillis());
             ficWorkflowMapper.updateByPrimaryKeySelective(workflow);
 
@@ -58,11 +62,14 @@ public class FileDomainServiceImpl implements FileDomainService {
 
                 // 保存到数据库
                 FicResource resource = new FicResource();
-                resource.setRelevanceId(workflowId);
-                resource.setResourceType("workflowId");
-                resource.setResourceUrl(savedPath);
                 resource.setGmtCreate(System.currentTimeMillis());
-//                resource.setFileOrder(i + 1);
+                resource.setWorkflowId(workflowId);
+                resource.setStatus(CommonStatusEnum.VALID.getValue());
+                resource.setRelevanceId(workflowId);
+                resource.setRelevanceType(RelevanceIDType.WORKFLOW_ID.getValue());
+                resource.setResourceType(FicResourceTypeEnum.NOVEL.getValue());
+                resource.setResourceStorageType(FicResourceStorageTypeEnum.LOCAL_FILE_SYS.getValue());
+                
                 ficResourceMapper.insert(resource);
                 savedResourceIds.add(resource.getId());
             }

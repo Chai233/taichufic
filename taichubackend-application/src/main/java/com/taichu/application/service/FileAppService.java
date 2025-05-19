@@ -1,6 +1,8 @@
 package com.taichu.application.service;
 
 import com.alibaba.cola.dto.SingleResponse;
+import com.taichu.application.helper.WorkflowValidationHelper;
+import com.taichu.domain.enums.WorkflowStatusEnum;
 import com.taichu.domain.service.FileDomainService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -14,11 +16,23 @@ public class FileAppService {
     @Autowired
     private FileDomainService fileDomainService;
 
-    public SingleResponse<?> uploadFiles(List<MultipartFile> files, Long workflowId, Long userId) {
-        // 校验当前用户是否为workflow的owner
+    @Autowired
+    private WorkflowValidationHelper workflowValidationHelper;
 
-        // 存储file
-        fileDomainService.saveFile(workflowId, files);
-        return SingleResponse.buildSuccess();
+    public SingleResponse<?> uploadFiles(List<MultipartFile> files, Long workflowId, Long userId) {
+        try {
+            // 校验工作流
+            SingleResponse<?> validateResponse = workflowValidationHelper.validateWorkflow(workflowId, userId, WorkflowStatusEnum.INIT);
+            if (!validateResponse.isSuccess()) {
+                return validateResponse;
+            }
+
+            // 存储file
+            fileDomainService.saveFile(workflowId, files);
+            return SingleResponse.buildSuccess();
+        } catch (Exception e) {
+            // TODO@chai 增加日志
+            return SingleResponse.buildFailure("", "");
+        }
     }
 }
