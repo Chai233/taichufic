@@ -1,4 +1,4 @@
-package com.taichu.infra.domain.impl;
+package com.taichu.infra.domain.gateway;
 
 import com.taichu.domain.enums.CommonStatusEnum;
 import com.taichu.domain.enums.FicResourceTypeEnum;

@@ -1,0 +1,29 @@
+package com.taichu.domain.model;
+
+import com.taichu.domain.enums.TaskStatusEnum;
+import lombok.Data;
+
+/**
+ * 任务状态
+ */
+@Data
+public class TaskStatus {
+    /**
+     * 状态码
+     */
+    private Byte code;
+
+    /**
+     * 是否完成
+     */
+    public boolean isCompleted() {
+        return TaskStatusEnum.COMPLETED.getCode().equals(code);
+    }
+
+    /**
+     * 是否失败
+     */
+    public boolean isFailed() {
+        return TaskStatusEnum.FAILED.getCode().equals(code);
+    }
+} 

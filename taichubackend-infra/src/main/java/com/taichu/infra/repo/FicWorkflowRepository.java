@@ -43,4 +43,9 @@ public class FicWorkflowRepository {
         List<FicWorkflow> workflows = workflowMapper.selectByExample(example);
         return workflows.isEmpty() ? Optional.empty() : Optional.of(workflows.get(0));
     }
+
+    public void updateStatus(Long workflowId, Byte code) {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'updateStatus'");
+    }
 } 

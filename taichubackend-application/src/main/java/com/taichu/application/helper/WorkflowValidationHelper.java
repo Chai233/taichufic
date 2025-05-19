@@ -2,6 +2,7 @@ package com.taichu.application.helper;
 
 import com.alibaba.cola.dto.SingleResponse;
 import com.taichu.domain.enums.WorkflowStatusEnum;
+import com.taichu.domain.model.FicTaskBO;
 import com.taichu.infra.persistance.model.FicTask;
 import com.taichu.infra.persistance.model.FicWorkflow;
 import com.taichu.infra.repo.FicTaskRepository;
@@ -59,7 +60,7 @@ public class WorkflowValidationHelper {
         }
         
         // 5. 校验是否有任务正在执行中
-        List<FicTask> tasks = taskRepository.findByWorkflowIdAndStatus(workflowId, (byte) 1); // 假设1表示执行中状态
+        List<FicTaskBO> tasks = taskRepository.findByWorkflowIdAndStatus(workflowId, (byte) 1); // 假设1表示执行中状态
         if (!tasks.isEmpty()) {
             return SingleResponse.buildFailure("WORKFLOW_003", "有任务正在执行中");
         }

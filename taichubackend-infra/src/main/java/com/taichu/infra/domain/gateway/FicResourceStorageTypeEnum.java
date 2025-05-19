@@ -1,4 +1,4 @@
-package com.taichu.infra.domain.impl;
+package com.taichu.infra.domain.gateway;
 
 public enum FicResourceStorageTypeEnum {
     LOCAL_FILE_SYS("local_file_system"),

@@ -25,14 +25,15 @@ public class ScriptController {
     @ApiOperation(value = "提交剧本生成任务", notes = "")
     public SingleResponse<Long> generateScript(@RequestBody GenerateScriptRequest request) {
         // 提交剧本生成任务
-        return scriptAppService.submitGenScriptTask(request);
+        // TODO@chai 获取当前登录用户
+        return scriptAppService.submitGenScriptTask(request, null);
     }
 
     @GetMapping("/task/status")
     @ApiOperation(value = "查询任务状态", notes = "")
-    public SingleResponse<TaskStatusDTO> getScriptTaskStatus(@RequestParam("taskId") Long taskId) {
+    public SingleResponse<TaskStatusDTO> getScriptTaskStatus(@RequestParam("workflow_id") Long workflowId) {
         // 轮询任务结果
-        return SingleResponse.buildSuccess();
+        return scriptAppService.getScriptTaskStatus(workflowId);
     }
 
     @GetMapping("/getScript")

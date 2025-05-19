@@ -1,15 +1,20 @@
 package com.taichu.sdk.model;
 
+import lombok.Data;
+
 /**
- * 任务状态
+ * 任务状态数据传输对象
  */
+@Data
 public class TaskStatusDTO {
+    
     /**
-     * 进度百分比 示例: 60
+     * 任务ID
      */
-    private Integer percent;
+    private Long taskId;
+
     /**
-     * 剩余等待时间
+     * 任务状态：0-失败，1-执行中，2-成功
      */
-    private Integer minutesLeft;
+    private Byte status;
 }
