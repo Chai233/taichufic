@@ -30,7 +30,7 @@ public class StoryboardController {
     }
 
     @GetMapping("/task/status")
-    @ApiOperation(value = "提交分镜生成任务（产品未确定）", notes = "")
+    @ApiOperation(value = "获取任务进度", notes = "")
     public SingleResponse<StoryboardTaskStatusDTO> getStoryboardTaskStatus(@RequestParam("taskId") Long taskId) {
         // 轮询任务结果
         return SingleResponse.buildSuccess();
