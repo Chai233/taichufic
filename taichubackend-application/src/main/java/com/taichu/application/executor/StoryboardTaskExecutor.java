@@ -1,10 +1,11 @@
 package com.taichu.application.executor;
 
 import com.alibaba.cola.dto.SingleResponse;
+import com.taichu.domain.algo.gateway.AlgoGateway;
+import com.taichu.domain.algo.model.AlgoResponse;
+import com.taichu.domain.algo.model.request.StoryboardTextRequest;
 import com.taichu.domain.enums.TaskTypeEnum;
 import com.taichu.domain.enums.WorkflowStatusEnum;
-import com.taichu.domain.gateway.AlgoGateway;
-import com.taichu.domain.model.AlgoResponse;
 import com.taichu.domain.model.FicTaskBO;
 import com.taichu.infra.repo.FicTaskRepository;
 import com.taichu.infra.repo.FicWorkflowRepository;
@@ -35,8 +36,10 @@ public class StoryboardTaskExecutor {
             taskRepository.save(task);
 
             // 3. 调用算法服务
-            AlgoResponse response = algoGateway.submitStoryboardTask(workflowId);
-            task.setAlgoTaskId(response.getTaskId());
+            StoryboardTextRequest request = new StoryboardTextRequest();
+            request.setWorkflowId(String.valueOf(workflowId));
+            AlgoResponse response = algoGateway.createStoryboardTextTask(request);
+            task.setAlgoTaskId(Long.parseLong(response.getTaskId()));
             taskRepository.update(task);
 
             return SingleResponse.of(task.getId());

@@ -1,12 +1,13 @@
 package com.taichu.application.executor;
 
 import com.alibaba.cola.dto.SingleResponse;
+import com.taichu.domain.algo.gateway.AlgoGateway;
+import com.taichu.domain.algo.model.AlgoResponse;
+import com.taichu.domain.algo.model.request.ScriptTaskRequest;
+import com.taichu.domain.algo.model.response.ScriptResult;
 import com.taichu.domain.enums.TaskStatusEnum;
 import com.taichu.domain.enums.TaskTypeEnum;
 import com.taichu.domain.enums.WorkflowStatusEnum;
-import com.taichu.domain.gateway.AlgoGateway;
-import com.taichu.domain.model.AlgoResponse;
-import com.taichu.domain.model.AlgoResult;
 import com.taichu.domain.model.FicTaskBO;
 import com.taichu.domain.model.TaskStatus;
 import com.taichu.infra.repo.FicTaskRepository;
@@ -53,26 +54,32 @@ public class ScriptTaskExecutor {
     );
 
     public SingleResponse<Long> submitTask(Long workflowId) {
-        // 1. 更新工作流状态
-        workflowRepository.updateStatus(workflowId, WorkflowStatusEnum.SCRIPT_GEN.getCode());
+        try {
+            // 1. 更新工作流状态
+            workflowRepository.updateStatus(workflowId, WorkflowStatusEnum.SCRIPT_GEN.getCode());
 
-        // 2. 创建任务记录
-        FicTaskBO task = new FicTaskBO();
-        task.setWorkflowId(workflowId);
-        task.setTaskType(TaskTypeEnum.SCRIPT_GENERATION.name());
-        task.setStatus((byte) 1); // 执行中
-        taskRepository.save(task);
+            // 2. 创建任务记录
+            FicTaskBO task = new FicTaskBO();
+            task.setWorkflowId(workflowId);
+            task.setTaskType(TaskTypeEnum.SCRIPT_GENERATION.name());
+            task.setStatus((byte) 1); // 执行中
+            taskRepository.save(task);
 
-        // 3. 调用算法服务
-        AlgoResponse response = algoGateway.submitScriptTask(workflowId);
-        task.setAlgoTaskId(response.getTaskId());
-        taskRepository.update(task);
+            // 3. 调用算法服务
+            ScriptTaskRequest request = new ScriptTaskRequest();
+            request.setWorkflowId(String.valueOf(workflowId));
+            AlgoResponse response = algoGateway.createScriptTask(request);
+            task.setAlgoTaskId(Long.parseLong(response.getTaskId()));
+            taskRepository.update(task);
 
-        // 4. 提交后台任务到线程池
-        executorService.submit(() -> startBackgroundProcessing(task));
+            // 4. 提交后台任务到线程池
+            executorService.submit(() -> startBackgroundProcessing(task));
 
-        // 5. 立即返回任务ID
-        return SingleResponse.of(task.getId());
+            return SingleResponse.of(task.getId());
+        } catch (Exception e) {
+            log.error("Failed to submit script task for workflow: " + workflowId, e);
+            return SingleResponse.buildFailure("SCRIPT_001", "提交剧本生成任务失败");
+        }
     }
 
     protected void startBackgroundProcessing(FicTaskBO task) {
@@ -97,7 +104,7 @@ public class ScriptTaskExecutor {
                 // 2.3 处理第二阶段任务结果
                 if (storyboardTask.getStatus() == TaskStatusEnum.COMPLETED.getCode()) {
                     // 两个阶段都成功，调用算法结果查询接口
-                    AlgoResult result = algoGateway.getTaskResult(task.getWorkflowId());
+                    ScriptResult result = algoGateway.getScriptResult(task.getAlgoTaskId().toString());
                     // 更新工作流状态为完成
                     // TODO@chai 更新工作流任务为完成，要建表！
 
@@ -113,7 +120,6 @@ public class ScriptTaskExecutor {
             }
         } catch (Exception e) {
             // 发生异常，回滚所有状态
-            rollbackAllStages(task, null);
             log.error("Background processing failed for workflow: " + task.getWorkflowId(), e);
         }
     }
@@ -149,7 +155,7 @@ public class ScriptTaskExecutor {
         while (true) {
             try {
                 // 1. 检查算法任务状态
-                TaskStatus status = algoGateway.checkTaskStatus(task.getAlgoTaskId());
+                TaskStatus status = algoGateway.checkTaskStatus(task.getAlgoTaskId().toString());
                 
                 // 2. 更新任务状态
                 task.setStatus(status.getCode());
@@ -172,7 +178,7 @@ public class ScriptTaskExecutor {
         while (true) {
             try {
                 // 1. 检查算法任务状态
-                TaskStatus status = algoGateway.checkTaskStatus(task.getAlgoTaskId());
+                TaskStatus status = algoGateway.checkTaskStatus(task.getAlgoTaskId().toString());
                 
                 // 2. 更新任务状态
                 task.setStatus(status.getCode());
