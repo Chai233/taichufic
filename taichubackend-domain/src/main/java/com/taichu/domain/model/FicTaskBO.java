@@ -42,4 +42,14 @@ public class FicTaskBO {
      * 更新时间
      */
     private Long updateTime;
+
+    /**
+     * 错误码
+     */
+    private String errorCode;
+
+    /**
+     * 错误信息
+     */
+    private String errorMsg;
 } 

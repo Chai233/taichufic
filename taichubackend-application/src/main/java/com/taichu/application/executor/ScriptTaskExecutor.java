@@ -32,7 +32,7 @@ public class ScriptTaskExecutor {
     @Autowired
     private AlgoGateway algoGateway;
     @Autowired
-    private StoryboardTaskExecutor storyboardExecutor;
+    private StoryboardTextTaskExecutor storyboardExecutor;
 
     // 创建线程池
     private final ExecutorService executorService = new ThreadPoolExecutor(
@@ -59,7 +59,7 @@ public class ScriptTaskExecutor {
             workflowRepository.updateStatus(workflowId, WorkflowStatusEnum.SCRIPT_GEN.getCode());
 
             // 2. 创建任务记录
-            FicTaskBO task = new FicTaskBO();
+            final FicTaskBO task = new FicTaskBO();
             task.setWorkflowId(workflowId);
             task.setTaskType(TaskTypeEnum.SCRIPT_GENERATION.name());
             task.setStatus((byte) 1); // 执行中
@@ -69,16 +69,64 @@ public class ScriptTaskExecutor {
             ScriptTaskRequest request = new ScriptTaskRequest();
             request.setWorkflowId(String.valueOf(workflowId));
             AlgoResponse response = algoGateway.createScriptTask(request);
-            task.setAlgoTaskId(Long.parseLong(response.getTaskId()));
-            taskRepository.update(task);
+            
+            // 3.1 检查算法服务响应
+            if (!response.isSuccess()) {
+                log.error("Algorithm service failed to create script task for workflow: {}, error: {}", 
+                    workflowId, response.getErrorMsg());
+                rollbackTask(task, "ALGO_SERVICE_ERROR", response.getErrorMsg());
+                return SingleResponse.buildFailure("SCRIPT_002", "算法服务创建任务失败: " + response.getErrorMsg());
+            }
+            
+            // 3.2 检查任务ID
+            if (response.getTaskId() == null || response.getTaskId().trim().isEmpty()) {
+                log.error("Algorithm service returned empty task ID for workflow: {}", workflowId);
+                rollbackTask(task, "ALGO_TASK_ID_ERROR", "算法服务返回的任务ID为空");
+                return SingleResponse.buildFailure("SCRIPT_003", "算法服务返回的任务ID为空");
+            }
 
-            // 4. 提交后台任务到线程池
+            // 4. 更新任务记录
+            try {
+                task.setAlgoTaskId(Long.parseLong(response.getTaskId()));
+                taskRepository.update(task);
+            } catch (NumberFormatException e) {
+                log.error("Invalid task ID format from algorithm service: {}", response.getTaskId());
+                rollbackTask(task, "ALGO_TASK_ID_FORMAT_ERROR", "算法服务返回的任务ID格式无效");
+                return SingleResponse.buildFailure("SCRIPT_004", "算法服务返回的任务ID格式无效");
+            }
+
+            // 5. 提交后台任务到线程池
             executorService.submit(() -> startBackgroundProcessing(task));
 
             return SingleResponse.of(task.getId());
         } catch (Exception e) {
             log.error("Failed to submit script task for workflow: " + workflowId, e);
-            return SingleResponse.buildFailure("SCRIPT_001", "提交剧本生成任务失败");
+            // 如果任务记录都还没创建就失败了，只需要回滚工作流状态
+            workflowRepository.updateStatus(workflowId, WorkflowStatusEnum.CLOSE.getCode());
+            return SingleResponse.buildFailure("SCRIPT_001", "提交剧本生成任务失败: " + e.getMessage());
+        }
+    }
+
+    /**
+     * 回滚任务状态
+     * @param task 任务对象
+     * @param errorCode 错误码
+     * @param errorMsg 错误信息
+     */
+    private void rollbackTask(FicTaskBO task, String errorCode, String errorMsg) {
+        try {
+            // 1. 更新工作流状态为失败
+            workflowRepository.updateStatus(task.getWorkflowId(), WorkflowStatusEnum.CLOSE.getCode());
+            
+            // 2. 更新任务状态为失败
+            task.setStatus(TaskStatusEnum.FAILED.getCode());
+            taskRepository.update(task);
+            
+            // 3. 记录错误日志
+            log.error("Task rollback - workflowId: {}, taskId: {}, errorCode: {}, errorMsg: {}", 
+                task.getWorkflowId(), task.getId(), errorCode, errorMsg);
+        } catch (Exception e) {
+            log.error("Failed to rollback task: " + task.getId(), e);
         }
     }
 
