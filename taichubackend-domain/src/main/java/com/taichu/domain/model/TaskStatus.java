@@ -26,4 +26,14 @@ public class TaskStatus {
     public boolean isFailed() {
         return TaskStatusEnum.FAILED.getCode().equals(code);
     }
+
+    /**
+     * 是否在运行中
+     * @return
+     */
+    public boolean isRunning() {
+        return TaskStatusEnum.RUNNING.getCode().equals(code);
+    }
+
+
 } 

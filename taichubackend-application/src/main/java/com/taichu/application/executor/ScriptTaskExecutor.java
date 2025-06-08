@@ -4,25 +4,22 @@ import com.alibaba.cola.dto.SingleResponse;
 import com.taichu.domain.algo.gateway.AlgoGateway;
 import com.taichu.domain.algo.model.AlgoResponse;
 import com.taichu.domain.algo.model.request.ScriptTaskRequest;
-import com.taichu.domain.algo.model.response.ScriptResult;
 import com.taichu.domain.enums.TaskStatusEnum;
 import com.taichu.domain.enums.TaskTypeEnum;
 import com.taichu.domain.enums.WorkflowStatusEnum;
-import com.taichu.domain.model.FicTaskBO;
+import com.taichu.domain.model.FicAlgoTaskBO;
 import com.taichu.domain.model.FicWorkflowTaskBO;
-import com.taichu.domain.model.TaskStatus;
-import com.taichu.infra.convertor.FicWorkflowTaskConvertor;
-import com.taichu.infra.persistance.model.FicWorkflow;
-import com.taichu.infra.repo.FicTaskRepository;
+import com.taichu.infra.repo.FicAlgoTaskRepository;
 import com.taichu.infra.repo.FicWorkflowRepository;
 import com.taichu.infra.repo.FicWorkflowTaskRepository;
 
-import com.taichu.sdk.model.TaskStatusDTO;
 import lombok.extern.slf4j.Slf4j;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.PreDestroy;
+
 import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -37,7 +34,7 @@ public class ScriptTaskExecutor {
     private FicWorkflowTaskRepository ficWorkflowTaskRepository;
 
     @Autowired
-    private FicTaskRepository taskRepository;
+    private FicAlgoTaskRepository ficAlgoTaskRepository;
     @Autowired
     private AlgoGateway algoGateway;
     @Autowired
@@ -75,48 +72,13 @@ public class ScriptTaskExecutor {
             ficWorkflowTaskBO.setGmtCreate(System.currentTimeMillis());
             ficWorkflowTaskBO.setTaskType(TaskTypeEnum.SCRIPT_GENERATION.name());
             ficWorkflowTaskBO.setStatus(TaskStatusEnum.RUNNING.getCode());
-            int workflowTaskId = ficWorkflowTaskRepository.createFicWorkflowTask(ficWorkflowTaskBO);
-
-            final FicTaskBO task = new FicTaskBO();
-            task.setWorkflowId(workflowId);
-            task.setTaskType(TaskTypeEnum.SCRIPT_GENERATION.name());
-            task.setStatus((byte) 1); // 执行中
-            taskRepository.save(task);
-
-            // 3. 调用算法服务
-            ScriptTaskRequest request = new ScriptTaskRequest();
-            request.setWorkflowId(String.valueOf(workflowId));
-            AlgoResponse response = algoGateway.createScriptTask(request);
-            
-            // 3.1 检查算法服务响应
-            if (!response.isSuccess()) {
-                log.error("Algorithm service failed to create script task for workflow: {}, error: {}", 
-                    workflowId, response.getErrorMsg());
-                rollbackTask(task, "ALGO_SERVICE_ERROR", response.getErrorMsg());
-                return SingleResponse.buildFailure("SCRIPT_002", "算法服务创建任务失败: " + response.getErrorMsg());
-            }
-            
-            // 3.2 检查任务ID
-            if (response.getTaskId() == null || response.getTaskId().trim().isEmpty()) {
-                log.error("Algorithm service returned empty task ID for workflow: {}", workflowId);
-                rollbackTask(task, "ALGO_TASK_ID_ERROR", "算法服务返回的任务ID为空");
-                return SingleResponse.buildFailure("SCRIPT_003", "算法服务返回的任务ID为空");
-            }
-
-            // 4. 更新任务记录
-            try {
-                task.setAlgoTaskId(Long.parseLong(response.getTaskId()));
-                taskRepository.update(task);
-            } catch (NumberFormatException e) {
-                log.error("Invalid task ID format from algorithm service: {}", response.getTaskId());
-                rollbackTask(task, "ALGO_TASK_ID_FORMAT_ERROR", "算法服务返回的任务ID格式无效");
-                return SingleResponse.buildFailure("SCRIPT_004", "算法服务返回的任务ID格式无效");
-            }
+            long workflowTaskId = (long)ficWorkflowTaskRepository.createFicWorkflowTask(ficWorkflowTaskBO);
+            ficWorkflowTaskBO.setId(workflowTaskId);
 
             // 5. 提交后台任务到线程池
-            executorService.submit(() -> startBackgroundProcessing(task));
+            executorService.submit(() -> startBackgroundProcessing(ficWorkflowTaskBO));
 
-            return SingleResponse.of(task.getId());
+            return SingleResponse.of(workflowTaskId);
         } catch (Exception e) {
             log.error("Failed to submit script task for workflow: " + workflowId, e);
             // 如果任务记录都还没创建就失败了，只需要回滚工作流状态
@@ -128,140 +90,74 @@ public class ScriptTaskExecutor {
     /**
      * 回滚任务状态
      * @param task 任务对象
-     * @param errorCode 错误码
-     * @param errorMsg 错误信息
      */
-    private void rollbackTask(FicTaskBO task, String errorCode, String errorMsg) {
+    private void rollbackTask(FicWorkflowTaskBO task) {
         try {
-            // 1. 更新工作流状态为失败
-            workflowRepository.updateStatus(task.getWorkflowId(), WorkflowStatusEnum.CLOSE.getCode());
-            
-            // 2. 更新任务状态为失败
-            task.setStatus(TaskStatusEnum.FAILED.getCode());
-            taskRepository.update(task);
-            
-            // 3. 记录错误日志
-            log.error("Task rollback - workflowId: {}, taskId: {}, errorCode: {}, errorMsg: {}", 
-                task.getWorkflowId(), task.getId(), errorCode, errorMsg);
+            // 1. 更新任务状态为失败
+            ficWorkflowTaskRepository.updateTaskStatus(task.getId(), TaskStatusEnum.FAILED);
         } catch (Exception e) {
             log.error("Failed to rollback task: " + task.getId(), e);
         }
     }
 
-    protected void startBackgroundProcessing(FicTaskBO task) {
+    protected void startBackgroundProcessing(FicWorkflowTaskBO task) {
+        Long workflowId = task.getWorkflowId();
+        Long workflowTaskId = task.getId();
         try {
-            // 1. 同步轮询第一阶段任务状态
-            pollScriptTaskStatus(task);
+
+            // 调用算法服务
+            ScriptTaskRequest request = new ScriptTaskRequest();
+            request.setWorkflowId(String.valueOf(workflowId));
+            AlgoResponse response = algoGateway.createScriptTask(request);
             
-            // 2. 处理第一阶段任务结果
-            if (task.getStatus() == TaskStatusEnum.COMPLETED.getCode()) {
-                // 2.1 第一阶段成功，提交第二阶段任务
-                SingleResponse<Long> storyboardResponse = storyboardExecutor.submitTask(task.getWorkflowId());
-                if (!storyboardResponse.isSuccess()) {
-                    // 第二阶段任务提交失败，回滚第一阶段的状态
-                    rollbackFirstStage(task);
-                    return;
-                }
-
-                // 2.2 轮询第二阶段任务状态
-                FicTaskBO storyboardTask = taskRepository.findById(storyboardResponse.getData());
-                pollStoryboardTaskStatus(storyboardTask);
-
-                // 2.3 处理第二阶段任务结果
-                if (storyboardTask.getStatus() == TaskStatusEnum.COMPLETED.getCode()) {
-                    // 两个阶段都成功，调用算法结果查询接口
-                    ScriptResult result = algoGateway.getScriptResult(task.getAlgoTaskId().toString());
-                    // 更新工作流状态为完成
-                    // TODO@chai 更新工作流任务为完成，要建表！
-
-                    // 更新工作流结果
-                    // TODO@chai 更新工作流结果
-                } else {
-                    // 第二阶段失败，回滚所有状态
-                    rollbackAllStages(task, storyboardTask);
-                }
-            } else {
-                // 第一阶段失败，回滚状态
-                rollbackFirstStage(task);
+            // 3.1 检查算法服务响应
+            if (!response.isSuccess()) {
+                log.error("Algorithm service failed to create script task for workflow: {}, error: {}", 
+                    workflowId, response.getErrorMsg());
+                rollbackTask(task);
+                return;
             }
+            
+            // 3.2 检查任务ID
+            if (response.getTaskId() == null || response.getTaskId().trim().isEmpty()) {
+                log.error("Algorithm service returned empty task ID for workflow: {}", workflowId);
+                rollbackTask(task);
+                return ;
+            }            
+
+            // 4. 更新任务记录
+            long algoTaskId = Long.parseLong(response.getTaskId());
+            try {
+                final FicAlgoTaskBO algoTask = new FicAlgoTaskBO();
+                algoTask.setWorkflowTaskId(workflowTaskId);
+                algoTask.setTaskType(TaskTypeEnum.SCRIPT_GENERATION.name());
+                algoTask.setStatus(TaskStatusEnum.RUNNING.getCode());
+                algoTask.setGmtCreate(System.currentTimeMillis());
+                algoTask.setAlgoTaskId(algoTaskId);
+                ficAlgoTaskRepository.save(algoTask);
+            } catch (NumberFormatException e) {
+                log.error("Invalid task ID format from algorithm service: {}", response.getTaskId());
+                rollbackTask(task);
+                return;
+            }
+
+ 
+            // 2.1 第一阶段成功，提交第二阶段任务
+            SingleResponse<Long> storyboardResponse = storyboardExecutor.submitTask(task.getWorkflowId());
+            if (!storyboardResponse.isSuccess()) {
+                // 第二阶段任务提交失败，回滚第一阶段的状态
+                rollbackTask(task);
+                return;
+            }
+
         } catch (Exception e) {
             // 发生异常，回滚所有状态
             log.error("Background processing failed for workflow: " + task.getWorkflowId(), e);
         }
     }
 
-    private void rollbackFirstStage(FicTaskBO task) {
-        // 1. 更新工作流状态为失败
-        workflowRepository.updateStatus(
-            task.getWorkflowId(), 
-            WorkflowStatusEnum.CLOSE.getCode()
-        );
-        // 2. 更新任务状态为失败
-        task.setStatus(TaskStatusEnum.FAILED.getCode());
-        taskRepository.update(task);
-    }
 
-    private void rollbackAllStages(FicTaskBO scriptTask, FicTaskBO storyboardTask) {
-        // 1. 更新工作流状态为失败
-        workflowRepository.updateStatus(
-            scriptTask.getWorkflowId(), 
-            WorkflowStatusEnum.CLOSE.getCode()
-        );
-        // 2. 更新第一阶段任务状态为失败
-        scriptTask.setStatus(TaskStatusEnum.FAILED.getCode());
-        taskRepository.update(scriptTask);
-        // 3. 如果存在第二阶段任务，也更新为失败
-        if (storyboardTask != null) {
-            storyboardTask.setStatus(TaskStatusEnum.FAILED.getCode());
-            taskRepository.update(storyboardTask);
-        }
-    }
 
-    protected void pollScriptTaskStatus(FicTaskBO task) {
-        while (true) {
-            try {
-                // 1. 检查算法任务状态
-                TaskStatus status = algoGateway.checkTaskStatus(task.getAlgoTaskId().toString());
-                
-                // 2. 更新任务状态
-                task.setStatus(status.getCode());
-                taskRepository.update(task);
-                
-                // 3. 如果任务完成或失败，退出轮询
-                if (status.isCompleted() || status.isFailed()) {
-                    break;
-                }
-                
-                Thread.sleep(POLLING_INTERVAL);
-            } catch (Exception e) {
-                log.error("Error polling script task status: " + task.getId(), e);
-                break;
-            }
-        }
-    }
-
-    protected void pollStoryboardTaskStatus(FicTaskBO task) {
-        while (true) {
-            try {
-                // 1. 检查算法任务状态
-                TaskStatus status = algoGateway.checkTaskStatus(task.getAlgoTaskId().toString());
-                
-                // 2. 更新任务状态
-                task.setStatus(status.getCode());
-                taskRepository.update(task);
-                
-                // 3. 如果任务完成或失败，退出轮询
-                if (status.isCompleted() || status.isFailed()) {
-                    break;
-                }
-                
-                Thread.sleep(POLLING_INTERVAL);
-            } catch (Exception e) {
-                log.error("Error polling storyboard task status: " + task.getId(), e);
-                break;
-            }
-        }
-    }
 
     // 在应用关闭时关闭线程池
     @PreDestroy

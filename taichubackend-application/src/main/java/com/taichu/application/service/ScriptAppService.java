@@ -5,10 +5,10 @@ import com.taichu.application.executor.ScriptTaskExecutor;
 import com.taichu.application.helper.WorkflowValidationHelper;
 import com.taichu.domain.enums.TaskTypeEnum;
 import com.taichu.domain.enums.WorkflowStatusEnum;
-import com.taichu.domain.model.FicTaskBO;
-import com.taichu.infra.persistance.model.FicTask;
-import com.taichu.infra.repo.FicTaskRepository;
+import com.taichu.domain.model.FicWorkflowTaskBO;
+import com.taichu.infra.repo.FicAlgoTaskRepository;
 import com.taichu.infra.repo.FicWorkflowRepository;
+import com.taichu.infra.repo.FicWorkflowTaskRepository;
 import com.taichu.sdk.model.GenerateScriptRequest;
 import com.taichu.sdk.model.TaskStatusDTO;
 import lombok.extern.slf4j.Slf4j;
@@ -26,10 +26,12 @@ public class ScriptAppService {
     private ScriptTaskExecutor scriptTaskExecutor;
 
     @Autowired
-    private FicTaskRepository ficTaskRepository;
+    private FicAlgoTaskRepository ficAlgoTaskRepository;
 
     @Autowired
     private FicWorkflowRepository ficWorkflowRepository;
+    @Autowired
+    private FicWorkflowTaskRepository ficWorkflowTaskRepository;
 
     public SingleResponse<Long> submitGenScriptTask(GenerateScriptRequest request, Long userId) {
         // 1. 校验工作流状态
@@ -48,9 +50,7 @@ public class ScriptAppService {
 
     public SingleResponse<TaskStatusDTO> getScriptTaskStatus(Long workflowId) {
         // 1. 查询任务
-        ficWorkflowRepository
-
-        FicTaskBO task = ficTaskRepository.findByWorkflowIdAndTaskType(workflowId, TaskTypeEnum.SCRIPT_GENERATION.name());
+        FicWorkflowTaskBO task = ficWorkflowTaskRepository.findByWorkflowIdAndTaskType(workflowId, TaskTypeEnum.SCRIPT_GENERATION.name());
         if (task == null) {
             return SingleResponse.buildFailure("TASK_NOT_FOUND", "任务不存在");
         }

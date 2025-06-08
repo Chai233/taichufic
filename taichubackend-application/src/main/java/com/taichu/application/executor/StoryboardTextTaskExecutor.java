@@ -7,8 +7,8 @@ import com.taichu.domain.algo.model.request.StoryboardTextRequest;
 import com.taichu.domain.enums.TaskStatusEnum;
 import com.taichu.domain.enums.TaskTypeEnum;
 import com.taichu.domain.enums.WorkflowStatusEnum;
-import com.taichu.domain.model.FicTaskBO;
-import com.taichu.infra.repo.FicTaskRepository;
+import com.taichu.domain.model.FicAlgoTaskBO;
+import com.taichu.infra.repo.FicAlgoTaskRepository;
 import com.taichu.infra.repo.FicWorkflowRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -20,7 +20,7 @@ public class StoryboardTextTaskExecutor {
     @Autowired
     private FicWorkflowRepository workflowRepository;
     @Autowired
-    private FicTaskRepository taskRepository;
+    private FicAlgoTaskRepository taskRepository;
     @Autowired
     private AlgoGateway algoGateway;
 
@@ -30,7 +30,7 @@ public class StoryboardTextTaskExecutor {
             workflowRepository.updateStatus(workflowId, WorkflowStatusEnum.SCRIPT_GEN.getCode());
 
             // 2. 创建任务记录
-            final FicTaskBO task = new FicTaskBO();
+            final FicAlgoTaskBO task = new FicAlgoTaskBO();
             task.setWorkflowId(workflowId);
             task.setTaskType(TaskTypeEnum.STORYBOARD_GENERATION.name());
             task.setStatus((byte) 1); // 执行中
@@ -79,7 +79,7 @@ public class StoryboardTextTaskExecutor {
      * @param errorCode 错误码
      * @param errorMsg 错误信息
      */
-    private void rollbackTask(FicTaskBO task, String errorCode, String errorMsg) {
+    private void rollbackTask(FicAlgoTaskBO task, String errorCode, String errorMsg) {
         try {
             // 1. 更新工作流状态为失败
             workflowRepository.updateStatus(task.getWorkflowId(), WorkflowStatusEnum.CLOSE.getCode());
