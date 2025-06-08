@@ -8,6 +8,7 @@ import com.taichu.domain.enums.WorkflowStatusEnum;
 import com.taichu.domain.model.FicTaskBO;
 import com.taichu.infra.persistance.model.FicTask;
 import com.taichu.infra.repo.FicTaskRepository;
+import com.taichu.infra.repo.FicWorkflowRepository;
 import com.taichu.sdk.model.GenerateScriptRequest;
 import com.taichu.sdk.model.TaskStatusDTO;
 import lombok.extern.slf4j.Slf4j;
@@ -27,6 +28,9 @@ public class ScriptAppService {
     @Autowired
     private FicTaskRepository ficTaskRepository;
 
+    @Autowired
+    private FicWorkflowRepository ficWorkflowRepository;
+
     public SingleResponse<Long> submitGenScriptTask(GenerateScriptRequest request, Long userId) {
         // 1. 校验工作流状态
         SingleResponse<?> validateResponse = workflowValidationHelper.validateWorkflow(
@@ -44,6 +48,8 @@ public class ScriptAppService {
 
     public SingleResponse<TaskStatusDTO> getScriptTaskStatus(Long workflowId) {
         // 1. 查询任务
+        ficWorkflowRepository
+
         FicTaskBO task = ficTaskRepository.findByWorkflowIdAndTaskType(workflowId, TaskTypeEnum.SCRIPT_GENERATION.name());
         if (task == null) {
             return SingleResponse.buildFailure("TASK_NOT_FOUND", "任务不存在");

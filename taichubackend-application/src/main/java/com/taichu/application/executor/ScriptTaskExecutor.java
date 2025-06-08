@@ -9,9 +9,15 @@ import com.taichu.domain.enums.TaskStatusEnum;
 import com.taichu.domain.enums.TaskTypeEnum;
 import com.taichu.domain.enums.WorkflowStatusEnum;
 import com.taichu.domain.model.FicTaskBO;
+import com.taichu.domain.model.FicWorkflowTaskBO;
 import com.taichu.domain.model.TaskStatus;
+import com.taichu.infra.convertor.FicWorkflowTaskConvertor;
+import com.taichu.infra.persistance.model.FicWorkflow;
 import com.taichu.infra.repo.FicTaskRepository;
 import com.taichu.infra.repo.FicWorkflowRepository;
+import com.taichu.infra.repo.FicWorkflowTaskRepository;
+
+import com.taichu.sdk.model.TaskStatusDTO;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -27,6 +33,9 @@ public class ScriptTaskExecutor {
 
     @Autowired
     private FicWorkflowRepository workflowRepository;
+    @Autowired
+    private FicWorkflowTaskRepository ficWorkflowTaskRepository;
+
     @Autowired
     private FicTaskRepository taskRepository;
     @Autowired
@@ -52,6 +61,8 @@ public class ScriptTaskExecutor {
         },
         new ThreadPoolExecutor.CallerRunsPolicy()  // 拒绝策略
     );
+    @Autowired
+    private FicWorkflowRepository ficWorkflowRepository;
 
     public SingleResponse<Long> submitTask(Long workflowId) {
         try {
@@ -59,6 +70,13 @@ public class ScriptTaskExecutor {
             workflowRepository.updateStatus(workflowId, WorkflowStatusEnum.SCRIPT_GEN.getCode());
 
             // 2. 创建任务记录
+            FicWorkflowTaskBO ficWorkflowTaskBO = new FicWorkflowTaskBO();
+            ficWorkflowTaskBO.setWorkflowId(workflowId);
+            ficWorkflowTaskBO.setGmtCreate(System.currentTimeMillis());
+            ficWorkflowTaskBO.setTaskType(TaskTypeEnum.SCRIPT_GENERATION.name());
+            ficWorkflowTaskBO.setStatus(TaskStatusEnum.RUNNING.getCode());
+            int workflowTaskId = ficWorkflowTaskRepository.createFicWorkflowTask(ficWorkflowTaskBO);
+
             final FicTaskBO task = new FicTaskBO();
             task.setWorkflowId(workflowId);
             task.setTaskType(TaskTypeEnum.SCRIPT_GENERATION.name());
