@@ -3,7 +3,7 @@ package com.taichu.sdk.model;
 import lombok.Data;
 
 /**
- * 分镜图对象
+ * 分镜图列表项数据传输对象
  */
 @Data
 public class StoryboardImgListItemDTO {

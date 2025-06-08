@@ -1,4 +1,4 @@
-package com.taichu.sdk.model;
+package com.taichu.sdk.model.request;
 
 import lombok.Data;
 

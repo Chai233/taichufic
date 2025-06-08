@@ -8,7 +8,7 @@ import com.taichu.domain.enums.TaskTypeEnum;
 import com.taichu.domain.enums.WorkflowStatusEnum;
 import com.taichu.domain.model.FicWorkflowTaskBO;
 import com.taichu.infra.repo.FicWorkflowTaskRepository;
-import com.taichu.sdk.model.GenerateScriptRequest;
+import com.taichu.sdk.model.request.GenerateScriptRequest;
 import com.taichu.sdk.model.ScriptDTO;
 import com.taichu.sdk.model.TaskStatusDTO;
 import lombok.extern.slf4j.Slf4j;

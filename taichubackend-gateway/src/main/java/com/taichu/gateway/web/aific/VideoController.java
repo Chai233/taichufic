@@ -2,8 +2,8 @@ package com.taichu.gateway.web.aific;
 
 import com.alibaba.cola.dto.MultiResponse;
 import com.alibaba.cola.dto.SingleResponse;
-import com.taichu.sdk.model.GenerateVideoRequest;
-import com.taichu.sdk.model.SingleStoryboardVideoRegenRequest;
+import com.taichu.sdk.model.request.GenerateVideoRequest;
+import com.taichu.sdk.model.request.SingleStoryboardVideoRegenRequest;
 import com.taichu.sdk.model.StoryboardTaskStatusDTO;
 import com.taichu.sdk.model.VideoListItemDTO;
 import io.swagger.annotations.Api;

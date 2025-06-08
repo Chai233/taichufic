@@ -3,7 +3,7 @@ package com.taichu.sdk.model;
 import lombok.Data;
 
 /**
- * 视频对象
+ * 视频列表项数据传输对象
  */
 @Data
 public class VideoListItemDTO {

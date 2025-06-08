@@ -3,7 +3,7 @@ package com.taichu.gateway.web.aific;
 import com.alibaba.cola.dto.MultiResponse;
 import com.alibaba.cola.dto.SingleResponse;
 import com.taichu.application.service.ScriptAppService;
-import com.taichu.sdk.model.GenerateScriptRequest;
+import com.taichu.sdk.model.request.GenerateScriptRequest;
 import com.taichu.sdk.model.ScriptDTO;
 import com.taichu.sdk.model.TaskStatusDTO;
 import io.swagger.annotations.Api;

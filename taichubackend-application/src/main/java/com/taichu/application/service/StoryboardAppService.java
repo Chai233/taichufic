@@ -1,20 +1,10 @@
 package com.taichu.application.service;
 
-import com.alibaba.cola.dto.MultiResponse;
 import com.alibaba.cola.dto.SingleResponse;
-import com.taichu.application.executor.ScriptTaskExecutor;
 import com.taichu.application.executor.StoryboardTaskExecutor;
 import com.taichu.application.helper.WorkflowValidationHelper;
-import com.taichu.domain.enums.TaskTypeEnum;
 import com.taichu.domain.enums.WorkflowStatusEnum;
-import com.taichu.domain.model.FicWorkflowTaskBO;
-import com.taichu.infra.repo.FicAlgoTaskRepository;
-import com.taichu.infra.repo.FicWorkflowRepository;
-import com.taichu.infra.repo.FicWorkflowTaskRepository;
-import com.taichu.sdk.model.GenerateScriptRequest;
-import com.taichu.sdk.model.GenerateStoryboardRequest;
-import com.taichu.sdk.model.ScriptDTO;
-import com.taichu.sdk.model.TaskStatusDTO;
+import com.taichu.sdk.model.request.GenerateStoryboardRequest;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;

@@ -4,7 +4,7 @@ import com.alibaba.cola.dto.MultiResponse;
 import com.alibaba.cola.dto.SingleResponse;
 import com.taichu.sdk.model.FullVideoListItemDTO;
 import com.taichu.sdk.model.TaskStatusDTO;
-import com.taichu.sdk.model.ComposeVideoRequest;
+import com.taichu.sdk.model.request.ComposeVideoRequest;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.core.io.Resource;
