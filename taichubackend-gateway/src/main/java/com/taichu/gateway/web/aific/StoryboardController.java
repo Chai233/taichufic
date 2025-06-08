@@ -2,6 +2,7 @@ package com.taichu.gateway.web.aific;
 
 import com.alibaba.cola.dto.MultiResponse;
 import com.alibaba.cola.dto.SingleResponse;
+import com.taichu.application.service.StoryboardAppService;
 import com.taichu.sdk.model.GenerateStoryboardRequest;
 import com.taichu.sdk.model.SingleStoryboardRegenRequest;
 import com.taichu.sdk.model.StoryboardImgListItemDTO;
@@ -17,6 +18,12 @@ import org.springframework.web.bind.annotation.*;
 @Api(tags = "Page 3 - 分镜图接口")
 public class StoryboardController {
 
+    private final StoryboardAppService storyboardAppService;
+
+    public StoryboardController(StoryboardAppService storyboardAppService) {
+        this.storyboardAppService = storyboardAppService;
+    }
+
     /**
      *
      * @param request 请求参数
@@ -26,7 +33,8 @@ public class StoryboardController {
     @ApiOperation(value = "提交分镜图生成任务。返回taskId", notes = "")
     public SingleResponse<Long> generateStoryboard(@RequestBody GenerateStoryboardRequest request) {
         // 提交分镜生成任务
-        return SingleResponse.buildSuccess();
+        // TODO@chai 获取userId
+        return storyboardAppService.generateStoryboard(request, null);
     }
 
     @GetMapping("/task/status")

@@ -39,8 +39,7 @@ public class ScriptController {
     @GetMapping("/getScript")
     @ApiOperation(value = "获取剧本", notes = "")
     public MultiResponse<ScriptDTO> getScript(@RequestParam Long workflowId) {
-        // 获取剧本
-        return MultiResponse.buildSuccess();
+        return scriptAppService.getScript(workflowId);
     }
 
     @GetMapping("/downloadScript")

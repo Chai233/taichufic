@@ -1,15 +1,15 @@
 package com.taichu.application.service;
 
+import com.alibaba.cola.dto.MultiResponse;
 import com.alibaba.cola.dto.SingleResponse;
 import com.taichu.application.executor.ScriptTaskExecutor;
 import com.taichu.application.helper.WorkflowValidationHelper;
 import com.taichu.domain.enums.TaskTypeEnum;
 import com.taichu.domain.enums.WorkflowStatusEnum;
 import com.taichu.domain.model.FicWorkflowTaskBO;
-import com.taichu.infra.repo.FicAlgoTaskRepository;
-import com.taichu.infra.repo.FicWorkflowRepository;
 import com.taichu.infra.repo.FicWorkflowTaskRepository;
 import com.taichu.sdk.model.GenerateScriptRequest;
+import com.taichu.sdk.model.ScriptDTO;
 import com.taichu.sdk.model.TaskStatusDTO;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -25,11 +25,7 @@ public class ScriptAppService {
     @Autowired
     private ScriptTaskExecutor scriptTaskExecutor;
 
-    @Autowired
-    private FicAlgoTaskRepository ficAlgoTaskRepository;
 
-    @Autowired
-    private FicWorkflowRepository ficWorkflowRepository;
     @Autowired
     private FicWorkflowTaskRepository ficWorkflowTaskRepository;
 
@@ -61,5 +57,15 @@ public class ScriptAppService {
         statusDTO.setStatus(task.getStatus());
 
         return SingleResponse.of(statusDTO);
+    }
+
+    /**
+     * 获取剧本
+     * @param workflowId
+     * @return
+     */
+    public MultiResponse<ScriptDTO> getScript(Long workflowId) {
+        // TODO@chai 获取剧本
+        return MultiResponse.buildSuccess();
     }
 }

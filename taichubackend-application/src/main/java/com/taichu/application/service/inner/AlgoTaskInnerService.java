@@ -7,10 +7,8 @@ import com.taichu.domain.enums.AlgoTaskTypeEnum;
 import com.taichu.domain.enums.TaskStatusEnum;
 import com.taichu.domain.model.FicAlgoTaskBO;
 import com.taichu.domain.model.FicWorkflowTaskBO;
-import com.taichu.domain.model.TaskStatus;
 import com.taichu.infra.repo.FicAlgoTaskRepository;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.List;

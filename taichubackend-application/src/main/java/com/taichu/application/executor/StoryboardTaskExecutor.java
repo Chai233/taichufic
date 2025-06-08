@@ -3,31 +3,25 @@ package com.taichu.application.executor;
 import com.alibaba.cola.dto.SingleResponse;
 import com.taichu.application.service.inner.AlgoTaskInnerService;
 import com.taichu.domain.algo.gateway.AlgoGateway;
-import com.taichu.domain.algo.model.AlgoResponse;
-import com.taichu.domain.algo.model.request.ScriptTaskRequest;
 import com.taichu.domain.enums.AlgoTaskTypeEnum;
 import com.taichu.domain.enums.TaskStatusEnum;
 import com.taichu.domain.enums.TaskTypeEnum;
 import com.taichu.domain.enums.WorkflowStatusEnum;
-import com.taichu.domain.model.FicAlgoTaskBO;
 import com.taichu.domain.model.FicWorkflowTaskBO;
 import com.taichu.infra.repo.FicAlgoTaskRepository;
 import com.taichu.infra.repo.FicWorkflowRepository;
 import com.taichu.infra.repo.FicWorkflowTaskRepository;
-
 import lombok.extern.slf4j.Slf4j;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.PreDestroy;
-
 import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicInteger;
 
 @Slf4j
 @Component
-public class ScriptTaskExecutor {
+public class StoryboardTaskExecutor {
     private static final long POLLING_INTERVAL = 5000 * 2; // 10秒轮询间隔
     public static final int MAXIMUM_POOL_SIZE = 16;
     public static final int CORE_POOL_SIZE = 2;
@@ -68,7 +62,7 @@ public class ScriptTaskExecutor {
     public SingleResponse<Long> submitTask(Long workflowId) {
         try {
             // 1. 更新工作流状态
-            workflowRepository.updateStatus(workflowId, WorkflowStatusEnum.SCRIPT_GEN.getCode());
+            workflowRepository.updateStatus(workflowId, WorkflowStatusEnum.STORYBOARD_IMG_GEN.getCode());
 
             // 2. 创建任务记录
             FicWorkflowTaskBO ficWorkflowTaskBO = new FicWorkflowTaskBO();
@@ -95,29 +89,14 @@ public class ScriptTaskExecutor {
 
     protected void startBackgroundProcessing(FicWorkflowTaskBO task) {
         try {
-            algoTaskInnerService.runAlgoTask(task, AlgoTaskTypeEnum.SCRIPT_GENERATION);
+            algoTaskInnerService.runAlgoTask(task, AlgoTaskTypeEnum.STORYBOARD_IMG_GENERATION);
             // TODO@chai检查 SCRIPT_GENERATION 任务状态
-            algoTaskInnerService.runAlgoTask(task, AlgoTaskTypeEnum.STORYBOARD_TEXT_GENERATION);
-            // TODO@chai检查 STORYBOARD_TEXT_GENERATION 任务状态
         } catch (Exception e) {
             // 发生异常，
             log.error("Background processing failed for workflow: " + task.getWorkflowId(), e);
         }
     }
 
-    /**
-     * 回滚任务状态
-     * @param task 任务对象
-     */
-    private void rollbackTask(FicWorkflowTaskBO task) {
-        try {
-            // 更新任务状态为失败
-            ficWorkflowTaskRepository.updateTaskStatus(task.getId(), TaskStatusEnum.FAILED);
-            // TODO@chai 将所有关联资源都置为invalid
-        } catch (Exception e) {
-            log.error("Failed to rollback task: " + task.getId(), e);
-        }
-    }
 
     // 在应用关闭时关闭线程池
     @PreDestroy

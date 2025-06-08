@@ -12,7 +12,7 @@ public enum AlgoTaskTypeEnum {
     /**
      * 分镜生成
      */
-    STORYBOARD_GENERATION,
+    STORYBOARD_TEXT_GENERATION,
 
     /**
      * 分镜图片生成
