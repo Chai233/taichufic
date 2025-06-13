@@ -4,17 +4,26 @@ import com.alibaba.cola.dto.MultiResponse;
 import com.alibaba.cola.dto.SingleResponse;
 import com.taichu.application.executor.ScriptTaskExecutor;
 import com.taichu.application.helper.WorkflowValidationHelper;
+import com.taichu.domain.algo.gateway.FileGateway;
 import com.taichu.domain.enums.TaskStatusEnum;
 import com.taichu.domain.enums.TaskTypeEnum;
 import com.taichu.domain.enums.WorkflowStatusEnum;
+import com.taichu.domain.model.FicScriptBO;
 import com.taichu.domain.model.FicWorkflowTaskBO;
+import com.taichu.infra.repo.FicScriptRepository;
 import com.taichu.infra.repo.FicWorkflowTaskRepository;
 import com.taichu.sdk.model.request.GenerateScriptRequest;
 import com.taichu.sdk.model.ScriptDTO;
 import com.taichu.sdk.model.WorkflowTaskStatusDTO;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.io.InputStreamResource;
+import org.springframework.core.io.Resource;
 import org.springframework.stereotype.Component;
+
+import java.io.InputStream;
+import java.util.List;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Component
@@ -26,9 +35,35 @@ public class ScriptAndStoryboardTextAppService {
     @Autowired
     private ScriptTaskExecutor scriptTaskExecutor;
 
-
     @Autowired
     private FicWorkflowTaskRepository ficWorkflowTaskRepository;
+
+    @Autowired
+    private FicScriptRepository ficScriptRepository;
+
+    @Autowired
+    private FileGateway fileGateway;
+
+    /**
+     * 获取剧本资源
+     * @param scriptId 剧本ID
+     * @return 剧本资源
+     */
+    public Resource getScriptResource(Long scriptId) {
+        FicScriptBO ficScriptBO = ficScriptRepository.findById(scriptId);
+        if (ficScriptBO == null) {
+            log.error("Script not found, scriptId: {}", scriptId);
+            return null;
+        }
+
+        try {
+            InputStream inputStream = fileGateway.getFileStream(ficScriptBO.getContent());
+            return new InputStreamResource(inputStream);
+        } catch (Exception e) {
+            log.error("Failed to get script resource: {}", ficScriptBO.getContent(), e);
+            return null;
+        }
+    }
 
     /**
      * 提交剧本生成任务

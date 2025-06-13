@@ -20,6 +20,27 @@ public class FicWorkflowRepository {
     private FicWorkflowMapper workflowMapper;
 
     /**
+     * 创建工作流
+     *
+     * @param workflow 工作流对象
+     * @return 创建的工作流ID
+     */
+    public long insert(FicWorkflow workflow) {
+        int res = workflowMapper.insert(workflow);
+        return workflow.getId();
+    }
+
+    /**
+     * 根据条件查询工作流列表
+     *
+     * @param example 查询条件
+     * @return 工作流列表
+     */
+    public List<FicWorkflow> findByExample(FicWorkflowExample example) {
+        return workflowMapper.selectByExample(example);
+    }
+
+    /**
      * 查询单个工作流
      *
      * @param query 查询参数
@@ -44,8 +65,16 @@ public class FicWorkflowRepository {
         return workflows.isEmpty() ? Optional.empty() : Optional.of(workflows.get(0));
     }
 
+    /**
+     * 更新工作流状态
+     *
+     * @param workflowId 工作流ID
+     * @param code 状态码
+     */
     public void updateStatus(Long workflowId, Byte code) {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'updateStatus'");
+        FicWorkflow workflow = new FicWorkflow();
+        workflow.setId(workflowId);
+        workflow.setStatus(code);
+        workflowMapper.updateByPrimaryKeySelective(workflow);
     }
 } 

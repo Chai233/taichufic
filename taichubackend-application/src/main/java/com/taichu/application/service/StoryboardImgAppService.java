@@ -3,8 +3,10 @@ package com.taichu.application.service;
 import com.alibaba.cola.dto.MultiResponse;
 import com.alibaba.cola.dto.SingleResponse;
 import com.taichu.application.executor.StoryboardImgTaskExecutor;
+import com.taichu.application.executor.SingleStoryboardImgTaskExecutor;
 import com.taichu.application.helper.WorkflowValidationHelper;
 import com.taichu.common.common.util.StreamUtil;
+import com.taichu.domain.algo.gateway.FileGateway;
 import com.taichu.domain.enums.*;
 import com.taichu.domain.model.FicAlgoTaskBO;
 import com.taichu.domain.model.FicResourceBO;
@@ -17,10 +19,14 @@ import com.taichu.infra.repo.FicWorkflowTaskRepository;
 import com.taichu.sdk.model.StoryboardImgListItemDTO;
 import com.taichu.sdk.model.StoryboardWorkflowTaskStatusDTO;
 import com.taichu.sdk.model.request.GenerateStoryboardRequest;
+import com.taichu.sdk.model.request.SingleStoryboardRegenRequest;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.io.InputStreamResource;
+import org.springframework.core.io.Resource;
 import org.springframework.stereotype.Component;
 
+import java.io.InputStream;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -33,6 +39,10 @@ public class StoryboardImgAppService {
 
     @Autowired
     private StoryboardImgTaskExecutor storyboardTaskExecutor;
+
+    @Autowired
+    private SingleStoryboardImgTaskExecutor singleStoryboardImgTaskExecutor;
+
     @Autowired
     private FicWorkflowTaskRepository ficWorkflowTaskRepository;
     @Autowired
@@ -41,6 +51,30 @@ public class StoryboardImgAppService {
     private FicStoryboardRepository ficStoryboardRepository;
     @Autowired
     private FicResourceRepository ficResourceRepository;
+
+    @Autowired
+    private FileGateway fileGateway;
+
+    /**
+     * 获取分镜图片资源
+     * @param resourceId 资源ID
+     * @return 图片资源
+     */
+    public Resource getStoryboardResource(Long resourceId) {
+        FicResourceBO ficResourceBO = ficResourceRepository.findById(resourceId);
+        if (ficResourceBO == null) {
+            log.error("Resource not found, resourceId: {}", resourceId);
+            return null;
+        }
+
+        try {
+            InputStream inputStream = fileGateway.getFileStream(ficResourceBO.getResourceUrl());
+            return new InputStreamResource(inputStream);
+        } catch (Exception e) {
+            log.error("Failed to get storyboard resource: {}", ficResourceBO.getResourceUrl(), e);
+            return null;
+        }
+    }
 
     /**
      * 提交分镜图生成任务
@@ -176,5 +210,29 @@ public class StoryboardImgAppService {
                 .collect(Collectors.toList());
 
         return MultiResponse.of(storyboardImgList);
+    }
+
+    public SingleResponse<Long> regenerateSingleStoryboard(Long userId, SingleStoryboardRegenRequest request) {
+        // 1. 根据 storyboardId 查询分镜信息
+        FicStoryboardBO ficStoryboardBO = ficStoryboardRepository.findById(request.getStoryboardId());
+        if (ficStoryboardBO == null) {
+            return SingleResponse.buildFailure("", "分镜不存在");
+        }
+
+        // 2. 校验工作流状态
+        SingleResponse<?> validateResponse = workflowValidationHelper.validateWorkflow(
+                ficStoryboardBO.getWorkflowId(), userId, WorkflowStatusEnum.STORYBOARD_IMG_GEN_DONE);
+        if (!validateResponse.isSuccess()) {
+            return SingleResponse.buildFailure(validateResponse.getErrCode(), validateResponse.getErrMessage());
+        }
+
+        // 3. 创建任务
+        FicWorkflowTaskBO ficWorkflowTaskBO = new FicWorkflowTaskBO();
+        ficWorkflowTaskBO.setWorkflowId(ficStoryboardBO.getWorkflowId());
+        ficWorkflowTaskBO.setTaskType(TaskTypeEnum.USER_RETRY_SINGLE_STORYBOARD_IMG_GENERATION.name());
+        ficWorkflowTaskBO.setStatus(TaskStatusEnum.RUNNING.getCode());
+        ficWorkflowTaskRepository.createFicWorkflowTask(ficWorkflowTaskBO);
+
+        return singleStoryboardImgTaskExecutor.submitTask(ficStoryboardBO.getWorkflowId(), request);
     }
 }

@@ -17,4 +17,14 @@ algo:
 
 spring:
   application:
-    name: taichu-backend 
+    name: taichu-backend
+  flyway:
+    enabled: false  # 禁用 Flyway
+
+# 阿里云 OSS 配置
+aliyun:
+  oss:
+    endpoint: oss-cn-hangzhou.aliyuncs.com  # OSS 访问域名
+    accessKeyId: your-access-key-id         # 访问密钥 ID
+    accessKeySecret: your-access-key-secret # 访问密钥密码
+    bucketName: your-bucket-name            # OSS 存储空间名称 
