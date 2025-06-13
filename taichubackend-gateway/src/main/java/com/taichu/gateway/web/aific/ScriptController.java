@@ -5,7 +5,7 @@ import com.alibaba.cola.dto.SingleResponse;
 import com.taichu.application.service.ScriptAppService;
 import com.taichu.sdk.model.request.GenerateScriptRequest;
 import com.taichu.sdk.model.ScriptDTO;
-import com.taichu.sdk.model.TaskStatusDTO;
+import com.taichu.sdk.model.WorkflowTaskStatusDTO;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -31,7 +31,7 @@ public class ScriptController {
 
     @GetMapping("/task/status")
     @ApiOperation(value = "查询任务状态", notes = "")
-    public SingleResponse<TaskStatusDTO> getScriptTaskStatus(@RequestParam("workflow_id") Long workflowId) {
+    public SingleResponse<WorkflowTaskStatusDTO> getScriptTaskStatus(@RequestParam("workflow_id") Long workflowId) {
         // 轮询任务结果
         return scriptAppService.getScriptTaskStatus(workflowId);
     }

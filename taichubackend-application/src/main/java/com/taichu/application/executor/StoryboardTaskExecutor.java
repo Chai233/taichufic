@@ -1,7 +1,7 @@
 package com.taichu.application.executor;
 
 import com.alibaba.cola.dto.SingleResponse;
-import com.taichu.application.service.inner.AlgoTaskInnerService;
+import com.taichu.application.service.inner.algo.AlgoTaskInnerService;
 import com.taichu.domain.algo.gateway.AlgoGateway;
 import com.taichu.domain.enums.AlgoTaskTypeEnum;
 import com.taichu.domain.enums.TaskStatusEnum;
@@ -81,7 +81,8 @@ public class StoryboardTaskExecutor {
         } catch (Exception e) {
             log.error("Failed to submit script task for workflow: " + workflowId, e);
             // 如果任务记录都还没创建就失败了，只需要回滚工作流状态
-            workflowRepository.updateStatus(workflowId, WorkflowStatusEnum.CLOSE.getCode());
+            workflowRepository.updateStatus(workflowId, WorkflowStatusEnum.SCRIPT_GEN.getCode());
+            // TODO@chai 所有进行中的任务置为失败
             return SingleResponse.buildFailure("SCRIPT_001", "提交剧本生成任务失败: " + e.getMessage());
         }
     }

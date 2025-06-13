@@ -7,7 +7,7 @@ import lombok.Data;
  * 任务状态
  */
 @Data
-public class TaskStatus {
+public class AlgoTaskStatus {
     /**
      * 状态码
      */

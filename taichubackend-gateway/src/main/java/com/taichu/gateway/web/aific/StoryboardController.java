@@ -6,7 +6,7 @@ import com.taichu.application.service.StoryboardAppService;
 import com.taichu.sdk.model.request.GenerateStoryboardRequest;
 import com.taichu.sdk.model.request.SingleStoryboardRegenRequest;
 import com.taichu.sdk.model.StoryboardImgListItemDTO;
-import com.taichu.sdk.model.StoryboardTaskStatusDTO;
+import com.taichu.sdk.model.StoryboardWorkflowTaskStatusDTO;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.core.io.Resource;
@@ -34,28 +34,28 @@ public class StoryboardController {
     public SingleResponse<Long> generateStoryboard(@RequestBody GenerateStoryboardRequest request) {
         // 提交分镜生成任务
         // TODO@chai 获取userId
-        return storyboardAppService.generateStoryboard(request, null);
+        return storyboardAppService.submitGenStoryboardTask(request, null);
     }
 
     @GetMapping("/task/status")
     @ApiOperation(value = "获取任务进度", notes = "")
-    public SingleResponse<StoryboardTaskStatusDTO> getStoryboardTaskStatus(@RequestParam("taskId") Long taskId) {
+    public SingleResponse<StoryboardWorkflowTaskStatusDTO> getStoryboardTaskStatus(@RequestParam("taskId") Long taskId) {
         // 轮询任务结果
-        return SingleResponse.buildSuccess();
+        return storyboardAppService.getStoryboardTaskStatus(taskId);
     }
 
     @GetMapping("/getAll")
     @ApiOperation(value = "获取全部分镜信息", notes = "")
-    public MultiResponse<StoryboardImgListItemDTO> getAllStoryboard(@RequestParam Long workflowId) {
+    public MultiResponse<StoryboardImgListItemDTO> getAllStoryboardImg(@RequestParam Long workflowId) {
         // 获取分镜列表
         return MultiResponse.buildSuccess();
     }
 
     @GetMapping("/getSingle")
     @ApiOperation(value = "获取单个分镜信息", notes = "")
-    public SingleResponse<StoryboardImgListItemDTO> getSingleStoryboard(@RequestParam Long workflowId, @RequestParam Long storyboardId) {
+    public SingleResponse<StoryboardImgListItemDTO> getSingleStoryboardImg(@RequestParam Long workflowId, @RequestParam Long storyboardId) {
         // 获取分镜列表
-        return SingleResponse.buildSuccess();
+        return storyboardAppService.getSingleStoryboardImg(workflowId, storyboardId);
     }
 
     @PostMapping("/regenerate")

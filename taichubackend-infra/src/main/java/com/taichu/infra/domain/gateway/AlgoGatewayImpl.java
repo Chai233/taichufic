@@ -4,12 +4,15 @@ import com.taichu.domain.algo.gateway.AlgoGateway;
 import com.taichu.domain.algo.model.*;
 import com.taichu.domain.algo.model.request.*;
 import com.taichu.domain.algo.model.response.*;
-import com.taichu.domain.model.TaskStatus;
+import com.taichu.domain.model.AlgoTaskStatus;
 import com.taichu.infra.http.AlgoHttpClient;
 import com.taichu.infra.http.AlgoHttpException;
+import com.taichu.infra.http.FileResponse;
+import com.taichu.common.common.model.ByteArrayMultipartFile;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
+import org.springframework.web.multipart.MultipartFile;
 
 /**
  * 算法服务网关实现类
@@ -130,22 +133,24 @@ public class AlgoGatewayImpl implements AlgoGateway {
      * @return 包含任务ID和图片数据的响应对象
      */
     @Override
-    public StoryboardImageResult getStoryboardImageResult(String taskId) {
+    public MultipartFile getStoryboardImageResult(String taskId) {
         try {
-            byte[] imageData = algoHttpClient.get("/api/v1/storyboard/image/result/" + taskId, byte[].class);
+            FileResponse imageData = algoHttpClient.downloadFile("/get_storyboard_image/" + taskId);
             
-            StoryboardImageResult result = new StoryboardImageResult();
-            result.setTaskId(taskId);
-            result.setImageData(imageData);
-            result.setImageFormat("jpg");  // 假设默认是jpg格式，实际应该从响应头或配置中获取
-            result.setImageName("storyboard_" + taskId + ".jpg");
-            return result;
+            if (!imageData.isSuccess()) {
+                log.error("获取分镜图片失败, taskId: {}, 服务器返回失败", taskId);
+                return null;
+            }
+            
+            // 使用 FileResponse 中的实际文件名和内容类型
+            return new ByteArrayMultipartFile(
+                imageData.getData(),
+                imageData.getFileName(),
+                imageData.getContentType()
+            );
         } catch (AlgoHttpException e) {
-            StoryboardImageResult result = new StoryboardImageResult();
-            result.setTaskId(taskId);
-            result.setErrorCode("ALGO_STORYBOARD_IMAGE_GET_ERROR_" + e.getStatusCode());
-            result.setErrorMsg(e.getMessage());
-            return result;
+            log.error("获取分镜图片失败, taskId: {}, error: {}", taskId, e.getMessage());
+            return null;
         }
     }
     
@@ -177,22 +182,24 @@ public class AlgoGatewayImpl implements AlgoGateway {
      * @return 包含任务ID和视频数据的响应对象
      */
     @Override
-    public StoryboardVideoResult getStoryboardVideoResult(String taskId) {
+    public MultipartFile getStoryboardVideoResult(String taskId) {
         try {
-            byte[] videoData = algoHttpClient.get("/api/v1/storyboard/video/result/" + taskId, byte[].class);
+            FileResponse videoData = algoHttpClient.downloadFile("/get_storyboard_video/" + taskId);
             
-            StoryboardVideoResult result = new StoryboardVideoResult();
-            result.setTaskId(taskId);
-            result.setVideoData(videoData);
-            result.setVideoFormat("mp4");  // 假设默认是mp4格式，实际应该从响应头或配置中获取
-            result.setVideoName("storyboard_video_" + taskId + ".mp4");
-            return result;
+            if (!videoData.isSuccess()) {
+                log.error("获取分镜视频失败, taskId: {}, 服务器返回失败", taskId);
+                return null;
+            }
+            
+            // 使用 FileResponse 中的实际文件名和内容类型
+            return new ByteArrayMultipartFile(
+                videoData.getData(),
+                videoData.getFileName(),
+                videoData.getContentType()
+            );
         } catch (AlgoHttpException e) {
-            StoryboardVideoResult result = new StoryboardVideoResult();
-            result.setTaskId(taskId);
-            result.setErrorCode("ALGO_STORYBOARD_VIDEO_GET_ERROR_" + e.getStatusCode());
-            result.setErrorMsg(e.getMessage());
-            return result;
+            log.error("获取分镜视频失败, taskId: {}, error: {}", taskId, e.getMessage());
+            return null;
         }
     }
     
@@ -224,22 +231,24 @@ public class AlgoGatewayImpl implements AlgoGateway {
      * @return 包含任务ID和视频数据的响应对象
      */
     @Override
-    public VideoMergeResult getVideoMergeResult(String taskId) {
+    public MultipartFile getVideoMergeResult(String taskId) {
         try {
-            byte[] videoData = algoHttpClient.get("/api/v1/video/merge/result/" + taskId, byte[].class);
+            FileResponse videoData = algoHttpClient.downloadFile("/get_video_merge/" + taskId);
             
-            VideoMergeResult result = new VideoMergeResult();
-            result.setTaskId(taskId);
-            result.setVideoData(videoData);
-            result.setVideoFormat("mp4");  // 假设默认是mp4格式，实际应该从响应头或配置中获取
-            result.setVideoName("merged_video_" + taskId + ".mp4");
-            return result;
+            if (!videoData.isSuccess()) {
+                log.error("获取合成视频失败, taskId: {}, 服务器返回失败", taskId);
+                return null;
+            }
+            
+            // 使用 FileResponse 中的实际文件名和内容类型
+            return new ByteArrayMultipartFile(
+                videoData.getData(),
+                videoData.getFileName(),
+                videoData.getContentType()
+            );
         } catch (AlgoHttpException e) {
-            VideoMergeResult result = new VideoMergeResult();
-            result.setTaskId(taskId);
-            result.setErrorCode("ALGO_VIDEO_MERGE_GET_ERROR_" + e.getStatusCode());
-            result.setErrorMsg(e.getMessage());
-            return result;
+            log.error("获取合成视频失败, taskId: {}, error: {}", taskId, e.getMessage());
+            return null;
         }
     }
     
@@ -251,11 +260,11 @@ public class AlgoGatewayImpl implements AlgoGateway {
      * @return 任务状态对象
      */
     @Override
-    public TaskStatus checkTaskStatus(String taskId) {
+    public AlgoTaskStatus checkTaskStatus(String taskId) {
         try {
-            return algoHttpClient.get("/api/v1/task/status/" + taskId, TaskStatus.class);
+            return algoHttpClient.get("/api/v1/task/status/" + taskId, AlgoTaskStatus.class);
         } catch (AlgoHttpException e) {
-            TaskStatus status = new TaskStatus();
+            AlgoTaskStatus status = new AlgoTaskStatus();
             status.setCode((byte) -1);  // 使用-1表示查询失败
             return status;
         }

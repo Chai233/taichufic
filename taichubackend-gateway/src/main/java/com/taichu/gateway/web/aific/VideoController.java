@@ -4,7 +4,7 @@ import com.alibaba.cola.dto.MultiResponse;
 import com.alibaba.cola.dto.SingleResponse;
 import com.taichu.sdk.model.request.GenerateVideoRequest;
 import com.taichu.sdk.model.request.SingleStoryboardVideoRegenRequest;
-import com.taichu.sdk.model.StoryboardTaskStatusDTO;
+import com.taichu.sdk.model.StoryboardWorkflowTaskStatusDTO;
 import com.taichu.sdk.model.VideoListItemDTO;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -25,7 +25,7 @@ public class VideoController {
     }
 
     @GetMapping("/task/status")
-    public SingleResponse<StoryboardTaskStatusDTO> getVideoTaskStatus(@RequestParam("taskId") Long taskId) {
+    public SingleResponse<StoryboardWorkflowTaskStatusDTO> getVideoTaskStatus(@RequestParam("taskId") Long taskId) {
         // 轮询任务结果
         return SingleResponse.buildSuccess();
     }

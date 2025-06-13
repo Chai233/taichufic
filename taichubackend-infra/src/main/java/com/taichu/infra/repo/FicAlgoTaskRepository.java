@@ -1,6 +1,7 @@
 package com.taichu.infra.repo;
 
 import com.taichu.domain.enums.AlgoTaskTypeEnum;
+import com.taichu.domain.enums.TaskStatusEnum;
 import com.taichu.domain.model.FicAlgoTaskBO;
 import com.taichu.infra.convertor.FicAlgoTaskConvertor;
 import com.taichu.infra.persistance.mapper.FicAlgoTaskMapper;
@@ -36,11 +37,18 @@ public class FicAlgoTaskRepository {
 
     /**
      * 更新任务
-     * @param task 任务
+     *
+     * @param taskId
+     * @param taskStatus
+     * @return
      */
-    public void update(FicAlgoTaskBO task) {
-        FicAlgoTask taskDO = FicAlgoTaskConvertor.INSTANCE.toDataObject(task);
-        taskMapper.updateByPrimaryKey(taskDO);
+    public boolean updateStatus(Long taskId, TaskStatusEnum taskStatus) {
+        FicAlgoTask taskDO = new FicAlgoTask();
+        taskDO.setId(taskId);
+        taskDO.setStatus(taskStatus.getCode());
+        int cnt = taskMapper.updateByPrimaryKeySelective(taskDO);
+
+        return cnt == 1;
     }
 
     /**
@@ -71,7 +79,10 @@ public class FicAlgoTaskRepository {
 
     public List<FicAlgoTaskBO> findByWorkflowTaskIdAndTaskType(Long workflowTaskId, AlgoTaskTypeEnum taskType) {
         FicAlgoTaskExample example = new FicAlgoTaskExample();
-        example.createCriteria().andWorkflowTaskIdEqualTo(workflowTaskId).andTaskTypeEqualTo(taskType.name());
+        example.createCriteria()
+                .andWorkflowTaskIdEqualTo(workflowTaskId)
+                .andTaskTypeEqualTo(taskType.name())
+        ;
         List<FicAlgoTask> taskDOs = taskMapper.selectByExample(example);
         if (CollectionUtils.isEmpty(taskDOs)) {
             // TODO@chai log

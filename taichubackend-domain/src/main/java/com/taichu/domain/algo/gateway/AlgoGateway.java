@@ -3,7 +3,8 @@ package com.taichu.domain.algo.gateway;
 import com.taichu.domain.algo.model.*;
 import com.taichu.domain.algo.model.request.*;
 import com.taichu.domain.algo.model.response.*;
-import com.taichu.domain.model.TaskStatus;
+import com.taichu.domain.model.AlgoTaskStatus;
+import org.springframework.web.multipart.MultipartFile;
 
 /**
  * 算法服务网关接口
@@ -19,16 +20,16 @@ public interface AlgoGateway {
     
     // 分镜图相关
     AlgoResponse createStoryboardImageTask(StoryboardImageRequest request);
-    StoryboardImageResult getStoryboardImageResult(String taskId);
+    MultipartFile getStoryboardImageResult(String taskId);
     
     // 分镜视频相关
     AlgoResponse createStoryboardVideoTask(StoryboardVideoRequest request);
-    StoryboardVideoResult getStoryboardVideoResult(String taskId);
+    MultipartFile getStoryboardVideoResult(String taskId);
     
     // 视频合成相关
     AlgoResponse createVideoMergeTask(VideoMergeRequest request);
-    VideoMergeResult getVideoMergeResult(String taskId);
+    MultipartFile getVideoMergeResult(String taskId);
     
     // 任务状态查询
-    TaskStatus checkTaskStatus(String taskId);
+    AlgoTaskStatus checkTaskStatus(String taskId);
 } 

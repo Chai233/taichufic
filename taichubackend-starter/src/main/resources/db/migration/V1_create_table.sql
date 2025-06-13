@@ -50,6 +50,42 @@ CREATE TABLE fic_storyboard (
                                 extend_info text COMMENT '扩展字段，jsonObject格式'
 );
 
+# -- 创建分镜图片表
+# CREATE TABLE fic_resource (
+#                               id bigint PRIMARY KEY AUTO_INCREMENT COMMENT '分镜图id',
+#                               gmt_create bigint NOT NULL COMMENT '创建时间（毫秒时间戳）',
+#                               workflow_id bigint NOT NULL COMMENT '工作流id',
+#                               storyboard_id bigint NOT NULL COMMENT '分镜id',
+#                               status tinyint NOT NULL COMMENT '1-有效 0-无效',
+#                               resource_storage_type varchar(32) NOT NULL COMMENT '存储方式: FILE_SYS / ALICLOUD_OSS / AMAZON_S3 等等，可扩展',
+#                               resource_url varchar(256) NOT NULL COMMENT '存储路径',
+#                               extend_info text COMMENT '扩展字段，jsonObject格式'
+# );
+#
+# -- 创建分镜视频表
+# CREATE TABLE fic_resource (
+#                               id bigint PRIMARY KEY AUTO_INCREMENT COMMENT '分镜视频id',
+#                               gmt_create bigint NOT NULL COMMENT '创建时间（毫秒时间戳）',
+#                               workflow_id bigint NOT NULL COMMENT '工作流id',
+#                               storyboard_id bigint NOT NULL COMMENT '分镜id',
+#                               status tinyint NOT NULL COMMENT '1-有效 0-无效',
+#                               resource_storage_type varchar(32) NOT NULL COMMENT '存储方式: FILE_SYS / ALICLOUD_OSS / AMAZON_S3 等等，可扩展',
+#                               resource_url varchar(256) NOT NULL COMMENT '存储路径',
+#                               extend_info text COMMENT '扩展字段，jsonObject格式'
+# );
+#
+# -- 创建workflow合并视频表
+# CREATE TABLE fic_resource (
+#                               id bigint PRIMARY KEY AUTO_INCREMENT COMMENT '合并视频id',
+#                               gmt_create bigint NOT NULL COMMENT '创建时间（毫秒时间戳）',
+#                               workflow_id bigint NOT NULL COMMENT '工作流id',
+#                               status tinyint NOT NULL COMMENT '1-有效 0-无效',
+#                               resource_storage_type varchar(32) NOT NULL COMMENT '存储方式: FILE_SYS / ALICLOUD_OSS / AMAZON_S3 等等，可扩展',
+#                               resource_url varchar(256) NOT NULL COMMENT '存储路径',
+#                               extend_info text COMMENT '扩展字段，jsonObject格式'
+# );
+
+
 -- 创建资源表（fic_resource）
 CREATE TABLE fic_resource (
                               id bigint PRIMARY KEY AUTO_INCREMENT COMMENT '分镜图id',

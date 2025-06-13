@@ -50,47 +50,47 @@
 
         <!--生成对应表及类名，这里每一个表的五项属性是为了删除自动编写的复杂查询-->
         <!-- tableName: 对应的是数据库表名，domainObjectName： 是实体类的名字，可以自定义-->
-        <table tableName="fic_resource" domainObjectName="FicResource" enableCountByExample="true"
-               enableUpdateByExample="false" enableDeleteByExample="true"
-               enableSelectByExample="true" selectByExampleQueryId="true">
-            <generatedKey column="id" sqlStatement="MySql" identity="true"/>
-        </table>
+<!--        <table tableName="fic_resource" domainObjectName="FicResource" enableCountByExample="true"-->
+<!--               enableUpdateByExample="false" enableDeleteByExample="true"-->
+<!--               enableSelectByExample="true" selectByExampleQueryId="true">-->
+<!--            <generatedKey column="id" sqlStatement="MySql" identity="true"/>-->
+<!--        </table>-->
 
-        <table tableName="fic_role" domainObjectName="FicRole" enableCountByExample="true"
-               enableUpdateByExample="false" enableDeleteByExample="true"
-               enableSelectByExample="true" selectByExampleQueryId="true">
-            <generatedKey column="id" sqlStatement="MySql" identity="true"/>
-        </table>
+<!--        <table tableName="fic_role" domainObjectName="FicRole" enableCountByExample="true"-->
+<!--               enableUpdateByExample="false" enableDeleteByExample="true"-->
+<!--               enableSelectByExample="true" selectByExampleQueryId="true">-->
+<!--            <generatedKey column="id" sqlStatement="MySql" identity="true"/>-->
+<!--        </table>-->
 
-        <table tableName="fic_script" domainObjectName="FicScript" enableCountByExample="true"
-               enableUpdateByExample="false" enableDeleteByExample="true"
-               enableSelectByExample="true" selectByExampleQueryId="true">
-            <generatedKey column="id" sqlStatement="MySql" identity="true"/>
-        </table>
+<!--        <table tableName="fic_script" domainObjectName="FicScript" enableCountByExample="true"-->
+<!--               enableUpdateByExample="false" enableDeleteByExample="true"-->
+<!--               enableSelectByExample="true" selectByExampleQueryId="true">-->
+<!--            <generatedKey column="id" sqlStatement="MySql" identity="true"/>-->
+<!--        </table>-->
 
-        <table tableName="fic_storyboard" domainObjectName="FicStoryboard" enableCountByExample="true"
-               enableUpdateByExample="false" enableDeleteByExample="true"
-               enableSelectByExample="true" selectByExampleQueryId="true">
-            <generatedKey column="id" sqlStatement="MySql" identity="true"/>
-        </table>
+<!--        <table tableName="fic_storyboard" domainObjectName="FicStoryboard" enableCountByExample="true"-->
+<!--               enableUpdateByExample="false" enableDeleteByExample="true"-->
+<!--               enableSelectByExample="true" selectByExampleQueryId="true">-->
+<!--            <generatedKey column="id" sqlStatement="MySql" identity="true"/>-->
+<!--        </table>-->
 
-        <table tableName="fic_algo_task" domainObjectName="FicAlgoTask" enableCountByExample="true"
-               enableUpdateByExample="false" enableDeleteByExample="true"
-               enableSelectByExample="true" selectByExampleQueryId="true">
-            <generatedKey column="id" sqlStatement="MySql" identity="true"/>
-        </table>
+<!--        <table tableName="fic_algo_task" domainObjectName="FicAlgoTask" enableCountByExample="true"-->
+<!--               enableUpdateByExample="false" enableDeleteByExample="true"-->
+<!--               enableSelectByExample="true" selectByExampleQueryId="true">-->
+<!--            <generatedKey column="id" sqlStatement="MySql" identity="true"/>-->
+<!--        </table>-->
 
-        <table tableName="fic_user" domainObjectName="FicUser" enableCountByExample="true"
-               enableUpdateByExample="false" enableDeleteByExample="true"
-               enableSelectByExample="true" selectByExampleQueryId="true">
-            <generatedKey column="id" sqlStatement="MySql" identity="true"/>
-        </table>
+<!--        <table tableName="fic_user" domainObjectName="FicUser" enableCountByExample="true"-->
+<!--               enableUpdateByExample="false" enableDeleteByExample="true"-->
+<!--               enableSelectByExample="true" selectByExampleQueryId="true">-->
+<!--            <generatedKey column="id" sqlStatement="MySql" identity="true"/>-->
+<!--        </table>-->
 
-        <table tableName="fic_workflow" domainObjectName="FicWorkflow" enableCountByExample="true"
-               enableUpdateByExample="false" enableDeleteByExample="true"
-               enableSelectByExample="true" selectByExampleQueryId="true">
-            <generatedKey column="id" sqlStatement="MySql" identity="true"/>
-        </table>
+<!--        <table tableName="fic_workflow" domainObjectName="FicWorkflow" enableCountByExample="true"-->
+<!--               enableUpdateByExample="false" enableDeleteByExample="true"-->
+<!--               enableSelectByExample="true" selectByExampleQueryId="true">-->
+<!--            <generatedKey column="id" sqlStatement="MySql" identity="true"/>-->
+<!--        </table>-->
 
         <table tableName="fic_workflow_task" domainObjectName="FicWorkflowTask" enableCountByExample="true"
                enableUpdateByExample="false" enableDeleteByExample="true"

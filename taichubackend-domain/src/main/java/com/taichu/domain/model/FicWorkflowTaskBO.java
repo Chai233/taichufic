@@ -2,6 +2,8 @@ package com.taichu.domain.model;
 
 import lombok.Data;
 
+import java.util.Map;
+
 /**
  * 任务业务对象
  */
@@ -34,4 +36,9 @@ public class FicWorkflowTaskBO {
      * @see com.taichu.domain.enums.TaskTypeEnum
      */
     private String taskType;
+
+    /**
+     * 任务参数
+     */
+    private Map<String, String> params;
 } 

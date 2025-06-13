@@ -3,7 +3,7 @@ package com.taichu.gateway.web.aific;
 import com.alibaba.cola.dto.MultiResponse;
 import com.alibaba.cola.dto.SingleResponse;
 import com.taichu.sdk.model.FullVideoListItemDTO;
-import com.taichu.sdk.model.TaskStatusDTO;
+import com.taichu.sdk.model.WorkflowTaskStatusDTO;
 import com.taichu.sdk.model.request.ComposeVideoRequest;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -23,7 +23,7 @@ public class ComposeController {
     }
 
     @GetMapping("/task/status")
-    public SingleResponse<TaskStatusDTO> getComposeTaskStatus(@RequestParam("taskId") Long taskId) {
+    public SingleResponse<WorkflowTaskStatusDTO> getComposeTaskStatus(@RequestParam("taskId") Long taskId) {
         // 轮询任务结果
         return SingleResponse.buildSuccess();
     }

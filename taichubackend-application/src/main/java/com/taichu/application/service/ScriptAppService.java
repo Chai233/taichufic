@@ -4,13 +4,14 @@ import com.alibaba.cola.dto.MultiResponse;
 import com.alibaba.cola.dto.SingleResponse;
 import com.taichu.application.executor.ScriptTaskExecutor;
 import com.taichu.application.helper.WorkflowValidationHelper;
+import com.taichu.domain.enums.TaskStatusEnum;
 import com.taichu.domain.enums.TaskTypeEnum;
 import com.taichu.domain.enums.WorkflowStatusEnum;
 import com.taichu.domain.model.FicWorkflowTaskBO;
 import com.taichu.infra.repo.FicWorkflowTaskRepository;
 import com.taichu.sdk.model.request.GenerateScriptRequest;
 import com.taichu.sdk.model.ScriptDTO;
-import com.taichu.sdk.model.TaskStatusDTO;
+import com.taichu.sdk.model.WorkflowTaskStatusDTO;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -29,6 +30,12 @@ public class ScriptAppService {
     @Autowired
     private FicWorkflowTaskRepository ficWorkflowTaskRepository;
 
+    /**
+     * 提交剧本生成任务
+     * @param request
+     * @param userId
+     * @return
+     */
     public SingleResponse<Long> submitGenScriptTask(GenerateScriptRequest request, Long userId) {
         // 1. 校验工作流状态
         SingleResponse<?> validateResponse = workflowValidationHelper.validateWorkflow(
@@ -44,7 +51,12 @@ public class ScriptAppService {
         return scriptTaskExecutor.submitTask(request.getWorkflowId());
     }
 
-    public SingleResponse<TaskStatusDTO> getScriptTaskStatus(Long workflowId) {
+    /**
+     * 查询剧本生成任务状态
+     * @param workflowId
+     * @return
+     */
+    public SingleResponse<WorkflowTaskStatusDTO> getScriptTaskStatus(Long workflowId) {
         // 1. 查询任务
         FicWorkflowTaskBO task = ficWorkflowTaskRepository.findByWorkflowIdAndTaskType(workflowId, TaskTypeEnum.SCRIPT_GENERATION.name());
         if (task == null) {
@@ -52,9 +64,9 @@ public class ScriptAppService {
         }
 
         // 2. 构建返回结果
-        TaskStatusDTO statusDTO = new TaskStatusDTO();
+        WorkflowTaskStatusDTO statusDTO = new WorkflowTaskStatusDTO();
         statusDTO.setTaskId(task.getId());
-        statusDTO.setStatus(task.getStatus());
+        statusDTO.setStatus(TaskStatusEnum.fromCode(task.getStatus()).getDescription());
 
         return SingleResponse.of(statusDTO);
     }

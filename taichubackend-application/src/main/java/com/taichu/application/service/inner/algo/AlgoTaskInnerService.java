@@ -1,4 +1,4 @@
-package com.taichu.application.service.inner;
+package com.taichu.application.service.inner.algo;
 
 import com.google.common.primitives.Longs;
 import com.taichu.domain.algo.gateway.AlgoGateway;
@@ -9,8 +9,10 @@ import com.taichu.domain.model.FicAlgoTaskBO;
 import com.taichu.domain.model.FicWorkflowTaskBO;
 import com.taichu.infra.repo.FicAlgoTaskRepository;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.InitializingBean;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -18,43 +20,18 @@ import java.util.stream.Collectors;
 
 @Slf4j
 @Service
-public class AlgoTaskInnerService {
+public class AlgoTaskInnerService implements InitializingBean {
 
     public static final int WAIT_INTERVAL_MILLIS = 5000;
     private final AlgoGateway algoGateway;
     private final FicAlgoTaskRepository ficAlgoTaskRepository;
-    private final Map<AlgoTaskTypeEnum, AlgoTaskProcessor> taskProcessors = new ConcurrentHashMap<>();
+    private final List<AlgoTaskProcessor> taskProcessors = new ArrayList<>();
+    private final Map<AlgoTaskTypeEnum, AlgoTaskProcessor> taskProcessorMap = new ConcurrentHashMap<>();
 
-    public AlgoTaskInnerService(AlgoGateway algoGateway, FicAlgoTaskRepository ficAlgoTaskRepository) {
+    public AlgoTaskInnerService(AlgoGateway algoGateway, FicAlgoTaskRepository ficAlgoTaskRepository, List<AlgoTaskProcessor> algoTaskProcessors) {
         this.algoGateway = algoGateway;
         this.ficAlgoTaskRepository = ficAlgoTaskRepository;
-    }
-
-    /**
-     * 算法任务处理器接口
-     */
-    public interface AlgoTaskProcessor {
-        /**
-         * 生成阶段：创建算法任务
-         */
-        List<AlgoResponse> generateTasks(FicWorkflowTaskBO workflowTask);
-
-        /**
-         * 状态检查阶段：检查任务状态
-         */
-        boolean checkTaskStatus(FicAlgoTaskBO algoTask);
-
-        /**
-         * 后置处理阶段：处理任务完成后的业务逻辑
-         */
-        void postProcess(FicWorkflowTaskBO workflowTask, List<FicAlgoTaskBO> algoTasks);
-    }
-
-    /**
-     * 注册任务处理器
-     */
-    public void registerTaskProcessor(AlgoTaskTypeEnum taskType, AlgoTaskProcessor processor) {
-        taskProcessors.put(taskType, processor);
+        this.taskProcessors.addAll(algoTaskProcessors);
     }
 
     /**
@@ -62,8 +39,10 @@ public class AlgoTaskInnerService {
      */
     public void runAlgoTask(FicWorkflowTaskBO ficWorkflowTaskBO, AlgoTaskTypeEnum algoTaskTypeEnum) {
         try {
+            Long workflowTaskId = ficWorkflowTaskBO.getId();
+
             // 1. 获取任务处理器
-            AlgoTaskProcessor processor = taskProcessors.get(algoTaskTypeEnum);
+            AlgoTaskProcessor processor = taskProcessorMap.get(algoTaskTypeEnum);
             if (processor == null) {
                 log.error("未找到任务类型[{}]的处理器", algoTaskTypeEnum);
                 return;
@@ -78,37 +57,39 @@ public class AlgoTaskInnerService {
 
             // 3. 保存算法任务记录
             List<FicAlgoTaskBO> algoTasks = responses.stream()
-                .map(response -> {
-                    FicAlgoTaskBO algoTask = new FicAlgoTaskBO();
-                    algoTask.setWorkflowTaskId(ficWorkflowTaskBO.getId());
-                    algoTask.setStatus(TaskStatusEnum.RUNNING.getCode());
-                    algoTask.setTaskType(algoTaskTypeEnum.name());
-                    algoTask.setAlgoTaskId(Longs.tryParse(response.getTaskId()));
-                    return algoTask;
-                })
-                        .collect(Collectors.toList());
-
+                    .map(algoResponse -> {
+                        FicAlgoTaskBO algoTask = new FicAlgoTaskBO();
+                        algoTask.setWorkflowTaskId(workflowTaskId);
+                        algoTask.setStatus(TaskStatusEnum.RUNNING.getCode());
+                        algoTask.setTaskType(algoTaskTypeEnum.name());
+                        algoTask.setAlgoTaskId(Longs.tryParse(algoResponse.getTaskId()));
+                        return algoTask;
+                    })
+                    .collect(Collectors.toList());
             ficAlgoTaskRepository.saveAll(algoTasks);
 
+
             // 4. 状态检查阶段：检查所有任务状态
+            List<FicAlgoTaskBO> ficAlgoTaskBOList = ficAlgoTaskRepository.findByWorkflowTaskIdAndTaskType(workflowTaskId, algoTaskTypeEnum);
             boolean allCompleted = false;
             boolean anyFailed = false;
-
             while (!allCompleted && !anyFailed) {
                 allCompleted = true;
                 anyFailed = false;
 
-                for (FicAlgoTaskBO algoTask : algoTasks) {
-                    if (!processor.checkTaskStatus(algoTask)) {
-                        anyFailed = true;
-                        break;
+                for (FicAlgoTaskBO algoTask : ficAlgoTaskBOList) {
+                    if (algoTask.getStatus() == TaskStatusEnum.COMPLETED.getCode()) {
+                        continue;
                     }
 
-                    if (algoTask.getStatus().equals(TaskStatusEnum.COMPLETED.getCode())) {
-                        ficAlgoTaskRepository.save(algoTask);
-                    } else if (algoTask.getStatus().equals(TaskStatusEnum.FAILED.getCode())) {
+                    TaskStatusEnum taskStatusEnum = processor.checkSingleTaskStatus(algoTask);
+                    if (TaskStatusEnum.FAILED.equals(taskStatusEnum)) {
                         anyFailed = true;
                         break;
+                    } else if (TaskStatusEnum.COMPLETED.equals(taskStatusEnum)) {
+                        processor.singleTaskSuccessPostProcess(algoTask);
+                        algoTask.setStatus(TaskStatusEnum.COMPLETED.getCode());
+                        ficAlgoTaskRepository.updateStatus(algoTask.getId(), TaskStatusEnum.COMPLETED);
                     } else {
                         allCompleted = false;
                     }
@@ -116,7 +97,7 @@ public class AlgoTaskInnerService {
 
                 if (!allCompleted && !anyFailed) {
                     try {
-                        Thread.sleep(WAIT_INTERVAL_MILLIS); // 等待1秒后再次检查
+                        Thread.sleep(WAIT_INTERVAL_MILLIS);
                     } catch (InterruptedException e) {
                         Thread.currentThread().interrupt();
                         break;
@@ -132,6 +113,20 @@ public class AlgoTaskInnerService {
         } catch (Exception e) {
             log.error("运行算法任务失败", e);
             throw new RuntimeException("运行算法任务失败", e);
+        }
+    }
+
+    /**
+     * 注册任务处理器
+     */
+    private void registerTaskProcessor(AlgoTaskProcessor processor) {
+        taskProcessorMap.put(processor.getAlgoTaskType(), processor);
+    }
+
+    @Override
+    public void afterPropertiesSet() throws Exception {
+        for (AlgoTaskProcessor processor : taskProcessors) {
+            registerTaskProcessor(processor);
         }
     }
 }

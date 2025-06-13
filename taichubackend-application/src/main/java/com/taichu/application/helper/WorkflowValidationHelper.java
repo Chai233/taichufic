@@ -1,18 +1,21 @@
 package com.taichu.application.helper;
 
 import com.alibaba.cola.dto.SingleResponse;
+import com.taichu.common.common.util.StreamUtil;
+import com.taichu.domain.enums.TaskStatusEnum;
 import com.taichu.domain.enums.WorkflowStatusEnum;
-import com.taichu.domain.model.FicAlgoTaskBO;
-import com.taichu.infra.persistance.model.FicTask;
+import com.taichu.domain.model.FicWorkflowTaskBO;
 import com.taichu.infra.persistance.model.FicWorkflow;
 import com.taichu.infra.repo.FicAlgoTaskRepository;
 import com.taichu.infra.repo.FicWorkflowRepository;
+import com.taichu.infra.repo.FicWorkflowTaskRepository;
 import com.taichu.infra.repo.query.SingleWorkflowQuery;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 /**
  * 工作流校验助手类
@@ -25,6 +28,8 @@ public class WorkflowValidationHelper {
 
     @Autowired
     private FicAlgoTaskRepository taskRepository;
+    @Autowired
+    private FicWorkflowTaskRepository ficWorkflowTaskRepository;
 
     /**
      * 校验工作流
@@ -60,8 +65,11 @@ public class WorkflowValidationHelper {
         }
         
         // 5. 校验是否有任务正在执行中
-        List<FicAlgoTaskBO> tasks = taskRepository.findByWorkflowTaskIdAndStatus(workflowId, (byte) 1); // 假设1表示执行中状态
-        if (!tasks.isEmpty()) {
+        List<FicWorkflowTaskBO> workflowTaskBOS = ficWorkflowTaskRepository.findByWorkflowId(workflowId);
+        List<FicWorkflowTaskBO> runningWorkflowTasks = StreamUtil.toStream(workflowTaskBOS)
+                .filter(t -> TaskStatusEnum.RUNNING.getCode().equals(t.getStatus()))
+                .collect(Collectors.toList());
+        if (!runningWorkflowTasks.isEmpty()) {
             return SingleResponse.buildFailure("WORKFLOW_003", "有任务正在执行中");
         }
         

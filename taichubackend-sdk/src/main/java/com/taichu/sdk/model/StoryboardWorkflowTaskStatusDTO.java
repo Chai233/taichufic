@@ -8,7 +8,7 @@ import java.util.List;
  * 分镜任务状态
  */
 @Data
-public class StoryboardTaskStatusDTO extends TaskStatusDTO {
+public class StoryboardWorkflowTaskStatusDTO extends WorkflowTaskStatusDTO {
     /**
      * 已完成的分镜id
      */

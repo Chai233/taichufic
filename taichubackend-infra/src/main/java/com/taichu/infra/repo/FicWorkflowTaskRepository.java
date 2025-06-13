@@ -8,6 +8,7 @@ import com.taichu.infra.persistance.model.FicWorkflowTask;
 import com.taichu.infra.persistance.model.FicWorkflowTaskExample;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
@@ -22,6 +23,18 @@ public class FicWorkflowTaskRepository {
         FicWorkflowTask taskDO = FicWorkflowTaskConvertor.INSTANCE.toDataObject(ficWorkflowTask);
         int res = ficWorkflowTaskMapper.insert(taskDO);
         return (long) res;
+    }
+
+    public FicWorkflowTaskBO findById(Long workflowTaskId) {
+        FicWorkflowTask ficWorkflowTask = ficWorkflowTaskMapper.selectByPrimaryKey(workflowTaskId);
+        return FicWorkflowTaskConvertor.INSTANCE.toDomain(ficWorkflowTask);
+    }
+
+    public List<FicWorkflowTaskBO> findByWorkflowId(Long workflowId) {
+        FicWorkflowTaskExample example = new FicWorkflowTaskExample();
+        example.createCriteria().andWorkflowIdEqualTo(workflowId);
+        List<FicWorkflowTask> taskDOs = ficWorkflowTaskMapper.selectByExample(example);
+        return taskDOs.stream().map(FicWorkflowTaskConvertor.INSTANCE::toDomain).collect(Collectors.toList());
     }
 
     public FicWorkflowTaskBO findByWorkflowIdAndTaskType(Long workflowId, String taskType) {

@@ -1,0 +1,60 @@
+package com.taichu.infra.repo;
+
+import com.taichu.common.common.util.StreamUtil;
+import com.taichu.domain.enums.CommonStatusEnum;
+import com.taichu.domain.model.FicStoryboardBO;
+import com.taichu.infra.convertor.FicStoryboardConvertor;
+import com.taichu.infra.persistance.mapper.FicStoryboardMapper;
+import com.taichu.infra.persistance.model.FicStoryboard;
+import com.taichu.infra.persistance.model.FicStoryboardExample;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Repository;
+
+import java.util.List;
+import java.util.stream.Collectors;
+
+/**
+ * 分镜仓储类
+ */
+@Repository
+public class FicStoryboardRepository {
+
+    @Autowired
+    private FicStoryboardMapper storyboardMapper;
+
+    /**
+     * 创建分镜
+     *
+     * @param storyboard 分镜对象
+     * @return 创建的分镜ID
+     */
+    public long insert(FicStoryboardBO storyboard) {
+        FicStoryboard storyboardDO = FicStoryboardConvertor.INSTANCE.toDataObject(storyboard);
+        int res = storyboardMapper.insert(storyboardDO);
+        return (long) res;
+    }
+
+    /**
+     * 根据ID查询分镜
+     *
+     * @param id 分镜ID
+     * @return 分镜对象
+     */
+    public FicStoryboardBO findById(Long id) {
+        FicStoryboard storyboard = storyboardMapper.selectByPrimaryKey(id);
+        return FicStoryboardConvertor.INSTANCE.toDomain(storyboard);
+    }
+
+    /**
+     * 根据workflowId查询分镜
+     * @param workflowId
+     * @return
+     */
+    public List<FicStoryboardBO> findByWorkflowId(Long workflowId) {
+        FicStoryboardExample example = new FicStoryboardExample();
+        example.createCriteria().andWorkflowIdEqualTo(workflowId).andStatusEqualTo(CommonStatusEnum.VALID.getValue());
+        List<FicStoryboard> storyboardDOs = storyboardMapper.selectByExample(example);
+        return StreamUtil.toStream(storyboardDOs).map(FicStoryboardConvertor.INSTANCE::toDomain).collect(Collectors.toList());
+    }
+}

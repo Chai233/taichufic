@@ -1,5 +1,6 @@
 package com.taichu.domain.model;
 
+import com.taichu.domain.enums.RelevanceType;
 import lombok.Data;
 
 /**
@@ -24,7 +25,7 @@ public class FicAlgoTaskBO {
     private Long workflowTaskId;
 
     /**
-     * 任务状态：0-失败，1-执行中，2-成功
+     * @see com.taichu.domain.enums.CommonStatusEnum
      */
     private Byte status;
 
@@ -37,6 +38,16 @@ public class FicAlgoTaskBO {
      * 算法任务ID
      */
     private Long algoTaskId;
+
+    /**
+     * @see RelevanceType
+     */
+    private String relevantIdType;
+
+    /**
+     *
+     */
+    private Long relevantId;
 
     /**
      * 错误信息
