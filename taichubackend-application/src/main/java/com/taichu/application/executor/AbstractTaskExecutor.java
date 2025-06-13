@@ -27,7 +27,7 @@ public abstract class AbstractTaskExecutor {
     public SingleResponse<Long> submitTask(Long workflowId, Object request) {
         try {
             // 1. 更新工作流状态
-            workflowRepository.updateStatus(workflowId, getNewWorkflowStatus().getCode());
+            workflowRepository.updateStatus(workflowId, getInitWorkflowStatus().getCode());
 
             // 2. 创建任务记录
             FicWorkflowTaskBO ficWorkflowTaskBO = new FicWorkflowTaskBO();
@@ -41,7 +41,7 @@ public abstract class AbstractTaskExecutor {
             ficWorkflowTaskBO.setParams(params);
 
             // 3. 提交后台任务到线程池
-            executorService.submit(() -> startBackgroundProcessing(ficWorkflowTaskBO));
+            executorService.submit(() -> doStartBackgroundProcessing(ficWorkflowTaskBO));
 
             // 4. 返回任务id给前端
             return SingleResponse.of(workflowTaskId);
@@ -61,9 +61,24 @@ public abstract class AbstractTaskExecutor {
 
     protected abstract Logger getLog();
 
-    protected abstract void startBackgroundProcessing(FicWorkflowTaskBO task);
+    protected void startBackgroundProcessing(FicWorkflowTaskBO task) {
+        Long workflowId = task.getWorkflowId();
+        try {
+            doStartBackgroundProcessing(task);
+        } catch (Exception e) {
+            getLog().error("Background processing failed for workflow: " + task.getWorkflowId(), e);
+            workflowRepository.updateStatus(workflowId, getRollbackWorkflowStatus().getCode());
+            return;
+        }
 
-    protected abstract WorkflowStatusEnum getNewWorkflowStatus();
+        workflowRepository.updateStatus(workflowId, getDoneWorkflowStatus().getCode());
+    }
+
+    protected abstract void doStartBackgroundProcessing(FicWorkflowTaskBO task);
+
+    protected abstract WorkflowStatusEnum getInitWorkflowStatus();
+
+    protected abstract WorkflowStatusEnum getDoneWorkflowStatus();
 
     protected abstract WorkflowStatusEnum getRollbackWorkflowStatus();
 

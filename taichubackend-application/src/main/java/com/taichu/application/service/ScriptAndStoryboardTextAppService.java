@@ -83,7 +83,7 @@ public class ScriptAndStoryboardTextAppService {
         }
 
         // 2. 提交任务
-        return scriptTaskExecutor.submitTask(request.getWorkflowId());
+        return scriptTaskExecutor.submitTask(request.getWorkflowId(), request);
     }
 
     /**

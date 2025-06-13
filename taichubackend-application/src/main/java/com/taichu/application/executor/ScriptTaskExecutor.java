@@ -30,7 +30,7 @@ public class ScriptTaskExecutor extends AbstractTaskExecutor {
     }
 
     @Override
-    protected void startBackgroundProcessing(FicWorkflowTaskBO task) {
+    protected void doStartBackgroundProcessing(FicWorkflowTaskBO task) {
         try {
             algoTaskInnerService.runAlgoTask(task, AlgoTaskTypeEnum.SCRIPT_GENERATION);
             // TODO@chai检查 SCRIPT_GENERATION 任务状态
@@ -42,8 +42,13 @@ public class ScriptTaskExecutor extends AbstractTaskExecutor {
     }
 
     @Override
-    protected WorkflowStatusEnum getNewWorkflowStatus() {
+    protected WorkflowStatusEnum getInitWorkflowStatus() {
         return WorkflowStatusEnum.SCRIPT_GEN_INIT;
+    }
+
+    @Override
+    protected WorkflowStatusEnum getDoneWorkflowStatus() {
+        return WorkflowStatusEnum.SCRIPT_GEN_DONE;
     }
 
     @Override

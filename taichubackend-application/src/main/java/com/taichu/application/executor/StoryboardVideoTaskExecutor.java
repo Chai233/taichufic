@@ -32,7 +32,7 @@ public class StoryboardVideoTaskExecutor extends AbstractTaskExecutor {
     }
 
     @Override
-    protected void startBackgroundProcessing(FicWorkflowTaskBO task) {
+    protected void doStartBackgroundProcessing(FicWorkflowTaskBO task) {
         try {
             algoTaskInnerService.runAlgoTask(task, AlgoTaskTypeEnum.STORYBOARD_VIDEO_GENERATION);
         } catch (Exception e) {
@@ -43,8 +43,13 @@ public class StoryboardVideoTaskExecutor extends AbstractTaskExecutor {
     }
 
     @Override
-    protected WorkflowStatusEnum getNewWorkflowStatus() {
+    protected WorkflowStatusEnum getInitWorkflowStatus() {
         return WorkflowStatusEnum.STORYBOARD_VIDEO_GEN_INIT;
+    }
+
+    @Override
+    protected WorkflowStatusEnum getDoneWorkflowStatus() {
+        return WorkflowStatusEnum.STORYBOARD_VIDEO_GEN_DONE;
     }
 
     @Override

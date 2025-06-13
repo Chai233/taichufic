@@ -41,7 +41,7 @@ public class StoryboardImgTaskExecutor extends AbstractTaskExecutor {
     }
 
     @Override
-    protected void startBackgroundProcessing(FicWorkflowTaskBO task) {
+    protected void doStartBackgroundProcessing(FicWorkflowTaskBO task) {
         try {
             algoTaskInnerService.runAlgoTask(task, AlgoTaskTypeEnum.STORYBOARD_IMG_GENERATION);
         } catch (Exception e) {
@@ -51,8 +51,13 @@ public class StoryboardImgTaskExecutor extends AbstractTaskExecutor {
     }
 
     @Override
-    protected WorkflowStatusEnum getNewWorkflowStatus() {
+    protected WorkflowStatusEnum getInitWorkflowStatus() {
         return WorkflowStatusEnum.STORYBOARD_IMG_GEN_INIT;
+    }
+
+    @Override
+    protected WorkflowStatusEnum getDoneWorkflowStatus() {
+        return WorkflowStatusEnum.STORYBOARD_IMG_GEN_DONE;
     }
 
     @Override
