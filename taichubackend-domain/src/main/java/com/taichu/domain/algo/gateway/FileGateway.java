@@ -4,10 +4,14 @@ import org.springframework.web.multipart.MultipartFile;
 
 import com.taichu.common.common.model.Resp;
 
+import java.io.InputStream;
+
 public interface FileGateway {
     Resp<String> saveFile(String fileName, MultipartFile files);
 
     Resp<String> getFileUrl(String fileObjName);
 
-    byte[] getFeadObj(String fileObjName);
+    byte[] getFileObj(String fileObjName);
+
+    InputStream getFileStream(String fileObjName);
 }

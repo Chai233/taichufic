@@ -7,7 +7,7 @@ public enum WorkflowStatusEnum {
     /**
      * 初始化
      */
-    INIT((byte) 0, "初始化"),
+    INIT_WAIT_FOR_FILE((byte) 0, "初始化"),
     
     /**
      * 文件上传完成
@@ -15,29 +15,37 @@ public enum WorkflowStatusEnum {
     UPLOAD_FILE_DONE((byte) 1, "文件上传完成"),
     
     /**
-     * 脚本生成
+     * 剧本生成
      */
-    SCRIPT_GEN((byte) 2, "脚本生成"),
+    SCRIPT_GEN_INIT((byte) 2, "脚本生成"),
+
+    SCRIPT_GEN_DONE((byte) 3, "脚本生成"),
     
     /**
      * 分镜图片生成
      */
-    STORYBOARD_IMG_GEN((byte) 3, "分镜图片生成"),
+    STORYBOARD_IMG_GEN_INIT((byte) 4, "分镜图片生成"),
+
+    STORYBOARD_IMG_GEN_DONE((byte) 5, "分镜图片生成"),
     
     /**
      * 分镜视频生成
      */
-    STORYBOARD_VIDEO_GEN((byte) 4, "分镜视频生成"),
+    STORYBOARD_VIDEO_GEN_INIT((byte) 6, "分镜视频生成中"),
+
+    STORYBOARD_VIDEO_GEN_DONE((byte) 7, "分镜视频生成完成"),
     
     /**
      * 完整视频生成
      */
-    FULL_VIDEO_GEN((byte) 5, "完整视频生成"),
+    FULL_VIDEO_GEN_INIT((byte) 8, "完整视频生成中"),
+
+    FULL_VIDEO_GEN_DONE((byte) 9, "完整视频生成完成"),
     
     /**
      * 关闭
      */
-    CLOSE((byte) 6, "关闭");
+    CLOSE((byte) 10, "关闭");
 
     private final Byte code;
     private final String description;

@@ -1,6 +1,5 @@
 package com.taichu.domain.algo.model.response;
 
-import com.taichu.domain.algo.model.common.RoleDTO;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 
@@ -16,10 +15,6 @@ public class StoryboardTextResult extends BaseAlgoResult {
     /**
      * 分镜文本内容
      */
-    private String content;
-    
-    /**
-     * 角色列表
-     */
-    private List<RoleDTO> roles;
+    private List<String> data;
+
 } 

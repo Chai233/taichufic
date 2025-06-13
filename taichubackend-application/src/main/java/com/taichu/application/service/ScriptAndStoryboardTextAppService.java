@@ -18,7 +18,7 @@ import org.springframework.stereotype.Component;
 
 @Slf4j
 @Component
-public class ScriptAppService {
+public class ScriptAndStoryboardTextAppService {
 
     @Autowired
     private WorkflowValidationHelper workflowValidationHelper;

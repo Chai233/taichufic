@@ -23,7 +23,7 @@ public class FileAppService {
     public SingleResponse<?> uploadFiles(List<MultipartFile> files, Long workflowId, Long userId) {
         try {
             // 校验工作流
-            SingleResponse<?> validateResponse = workflowValidationHelper.validateWorkflow(workflowId, userId, WorkflowStatusEnum.INIT);
+            SingleResponse<?> validateResponse = workflowValidationHelper.validateWorkflow(workflowId, userId, WorkflowStatusEnum.INIT_WAIT_FOR_FILE);
             if (!validateResponse.isSuccess()) {
                 return validateResponse;
             }

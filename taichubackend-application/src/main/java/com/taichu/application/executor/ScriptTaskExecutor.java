@@ -65,7 +65,7 @@ public class ScriptTaskExecutor {
     public SingleResponse<Long> submitTask(Long workflowId) {
         try {
             // 1. 更新工作流状态
-            workflowRepository.updateStatus(workflowId, WorkflowStatusEnum.SCRIPT_GEN.getCode());
+            workflowRepository.updateStatus(workflowId, WorkflowStatusEnum.SCRIPT_GEN_INIT.getCode());
 
             // 2. 创建任务记录
             FicWorkflowTaskBO ficWorkflowTaskBO = new FicWorkflowTaskBO();

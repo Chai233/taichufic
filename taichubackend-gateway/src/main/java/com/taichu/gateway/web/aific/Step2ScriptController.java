@@ -2,7 +2,7 @@ package com.taichu.gateway.web.aific;
 
 import com.alibaba.cola.dto.MultiResponse;
 import com.alibaba.cola.dto.SingleResponse;
-import com.taichu.application.service.ScriptAppService;
+import com.taichu.application.service.ScriptAndStoryboardTextAppService;
 import com.taichu.sdk.model.request.GenerateScriptRequest;
 import com.taichu.sdk.model.ScriptDTO;
 import com.taichu.sdk.model.WorkflowTaskStatusDTO;
@@ -16,10 +16,10 @@ import org.springframework.web.bind.annotation.*;
 @RestController
 @RequestMapping("/api/v1/script")
 @Api(tags = "Page 2 - 剧本接口")
-public class ScriptController {
+public class Step2ScriptController {
 
     @Autowired
-    private ScriptAppService scriptAppService;
+    private ScriptAndStoryboardTextAppService scriptAppService;
 
     @PostMapping("/generate")
     @ApiOperation(value = "提交剧本生成任务", notes = "")
@@ -32,7 +32,6 @@ public class ScriptController {
     @GetMapping("/task/status")
     @ApiOperation(value = "查询任务状态", notes = "")
     public SingleResponse<WorkflowTaskStatusDTO> getScriptTaskStatus(@RequestParam("workflow_id") Long workflowId) {
-        // 轮询任务结果
         return scriptAppService.getScriptTaskStatus(workflowId);
     }
 

@@ -7,6 +7,12 @@ import lombok.Data;
  */
 @Data
 public class SingleStoryboardVideoRegenRequest {
+
+    /**
+     * 工作流id
+     */
+    private Long workflowId;
+
     /**
      * 分镜id
      */

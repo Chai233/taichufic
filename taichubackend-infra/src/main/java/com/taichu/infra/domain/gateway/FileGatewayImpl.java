@@ -43,11 +43,16 @@ public class FileGatewayImpl implements FileGateway {
     }
 
     @Override
-    public byte[] getFeadObj(String fileObjName) {
+    public byte[] getFileObj(String fileObjName) {
         try (InputStream inputStream = ossStorageService.getFileStream(fileObjName)) {
             return inputStream.readAllBytes();
         } catch (IOException e) {
             throw new RuntimeException("获取文件内容失败", e);
         }
+    }
+
+    @Override
+    public InputStream getFileStream(String fileObjName) {
+        return ossStorageService.getFileStream(fileObjName);
     }
 }

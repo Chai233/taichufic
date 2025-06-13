@@ -15,12 +15,12 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/v1/files")
-@Api(tags = "Page1 - 文件接口")
-public class FileController {
+@Api(tags = "Page1 - 上传文件")
+public class Step1FileController {
 
     private FileAppService fileAppService;
 
-    public FileController(FileAppService fileAppService) {
+    public Step1FileController(FileAppService fileAppService) {
         this.fileAppService = fileAppService;
     }
 
