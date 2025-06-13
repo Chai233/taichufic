@@ -107,7 +107,10 @@ public class AlgoTaskInnerService implements InitializingBean {
 
             // 5. 后置处理阶段：执行后置处理
             if (allCompleted) {
-                processor.postProcess(ficWorkflowTaskBO, algoTasks);
+                processor.postProcessAllComplete(ficWorkflowTaskBO, algoTasks);
+            }
+            if (anyFailed) {
+                processor.postProcessAnyFailed(ficWorkflowTaskBO, algoTasks);
             }
 
         } catch (Exception e) {

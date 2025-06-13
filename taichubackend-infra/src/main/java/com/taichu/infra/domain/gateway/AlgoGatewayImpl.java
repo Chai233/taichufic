@@ -59,8 +59,7 @@ public class AlgoGatewayImpl implements AlgoGateway {
         } catch (AlgoHttpException e) {
             ScriptResult result = new ScriptResult();
             result.setTaskId(taskId);
-            result.setErrorCode("ALGO_SCRIPT_GET_ERROR_" + e.getStatusCode());
-            result.setErrorMsg(e.getMessage());
+            log.error("getScriptResult error", e);
             return result;
         }
     }
@@ -97,11 +96,8 @@ public class AlgoGatewayImpl implements AlgoGateway {
         try {
             return algoHttpClient.get("/api/v1/storyboard/text/result/" + taskId, StoryboardTextResult.class);
         } catch (AlgoHttpException e) {
-            StoryboardTextResult result = new StoryboardTextResult();
-            result.setTaskId(taskId);
-            result.setErrorCode("ALGO_STORYBOARD_TEXT_GET_ERROR_" + e.getStatusCode());
-            result.setErrorMsg(e.getMessage());
-            return result;
+            log.error("getStoryboardTextResult error", e);
+            return new StoryboardTextResult();
         }
     }
     

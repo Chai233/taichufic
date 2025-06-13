@@ -8,10 +8,7 @@ import com.taichu.domain.algo.model.AlgoResponse;
 import com.taichu.domain.algo.model.request.StoryboardVideoRequest;
 import com.taichu.domain.enums.*;
 import com.taichu.domain.model.*;
-import com.taichu.infra.repo.FicResourceRepository;
-import com.taichu.infra.repo.FicRoleRepository;
-import com.taichu.infra.repo.FicStoryboardRepository;
-import com.taichu.infra.repo.FicWorkflowTaskRepository;
+import com.taichu.infra.repo.*;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
 import org.slf4j.Logger;
@@ -41,7 +38,9 @@ public class StoryboardVideoAlgoTaskProcessor extends AbstractAlgoTaskProcessor 
     @Autowired
     private FicWorkflowTaskRepository ficWorkflowTaskRepository;
 
-    public StoryboardVideoAlgoTaskProcessor(FicStoryboardRepository ficStoryboardRepository) {
+    @Autowired
+    public StoryboardVideoAlgoTaskProcessor(FicStoryboardRepository ficStoryboardRepository, FicWorkflowTaskRepository ficWorkflowTaskRepository, FicWorkflowRepository ficWorkflowRepository) {
+        super(ficWorkflowTaskRepository, ficWorkflowRepository);
         this.ficStoryboardRepository = ficStoryboardRepository;
     }
 
@@ -189,7 +188,7 @@ public class StoryboardVideoAlgoTaskProcessor extends AbstractAlgoTaskProcessor 
     }
 
     @Override
-    public void postProcess(FicWorkflowTaskBO workflowTask, List<FicAlgoTaskBO> algoTasks) {
+    public void postProcessAllComplete(FicWorkflowTaskBO workflowTask, List<FicAlgoTaskBO> algoTasks) {
 
     }
 

@@ -5,14 +5,26 @@ import com.taichu.domain.algo.model.AlgoResponse;
 import com.taichu.domain.enums.TaskStatusEnum;
 import com.taichu.domain.model.AlgoTaskStatus;
 import com.taichu.domain.model.FicAlgoTaskBO;
+import com.taichu.domain.model.FicWorkflowTaskBO;
+import com.taichu.infra.repo.FicWorkflowRepository;
+import com.taichu.infra.repo.FicWorkflowTaskRepository;
 import org.slf4j.Logger;
 
+import java.util.List;
 import java.util.Objects;
 import java.util.function.Supplier;
 
 public abstract class AbstractAlgoTaskProcessor implements AlgoTaskProcessor {
     private static final int MAX_RETRY = 3;
     private static final int WAIT_INTERVAL = 5000;
+
+    protected final FicWorkflowTaskRepository ficWorkflowTaskRepository;
+    protected final FicWorkflowRepository ficWorkflowRepository;
+
+    protected AbstractAlgoTaskProcessor(FicWorkflowTaskRepository ficWorkflowTaskRepository, FicWorkflowRepository ficWorkflowRepository) {
+        this.ficWorkflowTaskRepository = ficWorkflowTaskRepository;
+        this.ficWorkflowRepository = ficWorkflowRepository;
+    }
 
     /**
      * 调用算法服务并处理重试逻辑
@@ -118,4 +130,30 @@ public abstract class AbstractAlgoTaskProcessor implements AlgoTaskProcessor {
 
         return TaskStatusEnum.FAILED;
     }
+
+
+    @Override
+    public void postProcessAllComplete(FicWorkflowTaskBO workflowTask, List<FicAlgoTaskBO> algoTasks) {
+        try {
+            // 更新工作流任务状态为成功
+            workflowTask.setStatus(TaskStatusEnum.COMPLETED.getCode());
+            ficWorkflowTaskRepository.updateTaskStatus(workflowTask.getId(), TaskStatusEnum.COMPLETED);
+            getLogger().info("All script generation tasks completed successfully for workflow: " + workflowTask.getWorkflowId());
+        } catch (Exception e) {
+            getLogger().error("Failed to process script generation workflow: " + workflowTask.getWorkflowId(), e);
+            workflowTask.setStatus(TaskStatusEnum.FAILED.getCode());
+            ficWorkflowTaskRepository.updateTaskStatus(workflowTask.getId(), TaskStatusEnum.FAILED);
+        }
+    }
+
+
+
+    @Override
+    public void postProcessAnyFailed(FicWorkflowTaskBO workflowTask, List<FicAlgoTaskBO> algoTasks) {
+        // 如果有任何任务失败，将工作流任务标记为失败
+        workflowTask.setStatus(TaskStatusEnum.FAILED.getCode());
+        ficWorkflowTaskRepository.updateTaskStatus(workflowTask.getId(), TaskStatusEnum.FAILED);
+        getLogger().error("Script generation failed for workflow: " + workflowTask.getWorkflowId());
+    }
+
 }

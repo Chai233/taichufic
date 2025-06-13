@@ -13,6 +13,8 @@ import com.taichu.domain.model.FicStoryboardBO;
 import com.taichu.domain.model.FicWorkflowTaskBO;
 import com.taichu.infra.repo.FicScriptRepository;
 import com.taichu.infra.repo.FicStoryboardRepository;
+import com.taichu.infra.repo.FicWorkflowRepository;
+import com.taichu.infra.repo.FicWorkflowTaskRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
 import org.slf4j.Logger;
@@ -38,7 +40,9 @@ public class StoryboardTextAlgoTaskProcessor extends AbstractAlgoTaskProcessor {
     @Autowired
     private AlgoGateway algoGateway;
 
-    public StoryboardTextAlgoTaskProcessor(FicScriptRepository ficScriptRepository, FicStoryboardRepository ficStoryboardRepository) {
+    @Autowired
+    public StoryboardTextAlgoTaskProcessor(FicScriptRepository ficScriptRepository, FicStoryboardRepository ficStoryboardRepository, FicWorkflowTaskRepository ficWorkflowTaskRepository, FicWorkflowRepository ficWorkflowRepository) {
+        super(ficWorkflowTaskRepository, ficWorkflowRepository);
         this.ficScriptRepository = ficScriptRepository;
         this.ficStoryboardRepository = ficStoryboardRepository;
     }
@@ -142,21 +146,6 @@ public class StoryboardTextAlgoTaskProcessor extends AbstractAlgoTaskProcessor {
                 algoTask.getAlgoTaskId(), script.getId());
         } catch (Exception e) {
             log.error("处理分镜文本失败, algoTaskId: {}", algoTask.getAlgoTaskId(), e);
-        }
-    }
-
-    @Override
-    public void postProcess(FicWorkflowTaskBO workflowTask, List<FicAlgoTaskBO> algoTasks) {
-        // 所有分镜文本生成任务完成后，更新工作流任务状态 ?
-        if (CollectionUtils.isNotEmpty(algoTasks)) {
-            boolean allSuccess = algoTasks.stream()
-                .allMatch(task -> TaskStatusEnum.COMPLETED.getCode().equals(task.getStatus()));
-            
-            if (allSuccess) {
-                workflowTask.setStatus(TaskStatusEnum.COMPLETED.getCode());
-            } else {
-                workflowTask.setStatus(TaskStatusEnum.FAILED.getCode());
-            }
         }
     }
 

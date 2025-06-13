@@ -1,28 +1,19 @@
 package com.taichu.application.service.inner.algo;
 
-import com.taichu.common.common.model.ByteArrayMultipartFile;
 import com.taichu.common.common.model.Resp;
 import com.taichu.domain.algo.gateway.AlgoGateway;
 import com.taichu.domain.algo.gateway.FileGateway;
 import com.taichu.domain.algo.model.AlgoResponse;
 import com.taichu.domain.algo.model.common.RoleDTO;
 import com.taichu.domain.algo.model.request.StoryboardImageRequest;
-import com.taichu.domain.algo.model.response.StoryboardImageResult;
-import com.taichu.domain.enums.AlgoTaskTypeEnum;
-import com.taichu.domain.enums.CommonStatusEnum;
-import com.taichu.domain.enums.ResourceStorageTypeEnum;
-import com.taichu.domain.enums.ResourceTypeEnum;
-import com.taichu.domain.enums.TaskStatusEnum;
+import com.taichu.domain.enums.*;
 import com.taichu.domain.model.FicAlgoTaskBO;
 import com.taichu.domain.model.FicResourceBO;
 import com.taichu.domain.model.FicRoleBO;
 import com.taichu.domain.model.FicStoryboardBO;
 import com.taichu.domain.model.FicWorkflowTaskBO;
 import com.taichu.domain.model.AlgoTaskStatus;
-import com.taichu.infra.repo.FicResourceRepository;
-import com.taichu.infra.repo.FicRoleRepository;
-import com.taichu.infra.repo.FicStoryboardRepository;
-import com.taichu.infra.repo.FicWorkflowTaskRepository;
+import com.taichu.infra.repo.*;
 import lombok.extern.slf4j.Slf4j;
 
 import org.apache.commons.collections4.CollectionUtils;
@@ -40,21 +31,20 @@ import java.util.stream.Collectors;
 @Component
 @Slf4j
 public class StoryboardImgAlgoTaskProcessor extends AbstractAlgoTaskProcessor {
-    @Autowired
     private final FicStoryboardRepository ficStoryboardRepository;
-    @Autowired
-    private AlgoGateway algoGateway;
-    @Autowired
-    private FicRoleRepository ficRoleRepository;
-    @Autowired
-    private FileGateway fileGateway;
-    @Autowired
-    private FicResourceRepository ficResourceRepository;
-    @Autowired
-    private FicWorkflowTaskRepository ficWorkflowTaskRepository;
+    private final AlgoGateway algoGateway;
+    private final FicRoleRepository ficRoleRepository;
+    private final FileGateway fileGateway;
+    private final FicResourceRepository ficResourceRepository;
 
-    public StoryboardImgAlgoTaskProcessor(FicStoryboardRepository ficStoryboardRepository) {
+    @Autowired
+    public StoryboardImgAlgoTaskProcessor(FicStoryboardRepository ficStoryboardRepository, AlgoGateway algoGateway, FicRoleRepository ficRoleRepository, FileGateway fileGateway, FicResourceRepository ficResourceRepository, FicWorkflowTaskRepository ficWorkflowTaskRepository, FicWorkflowRepository ficWorkflowRepository) {
+        super(ficWorkflowTaskRepository, ficWorkflowRepository);
         this.ficStoryboardRepository = ficStoryboardRepository;
+        this.algoGateway = algoGateway;
+        this.ficRoleRepository = ficRoleRepository;
+        this.fileGateway = fileGateway;
+        this.ficResourceRepository = ficResourceRepository;
     }
 
     @Override
@@ -198,11 +188,6 @@ public class StoryboardImgAlgoTaskProcessor extends AbstractAlgoTaskProcessor {
         } catch (Exception e) {
             log.error("处理分镜图片失败, algoTaskId: {}", algoTask.getAlgoTaskId(), e);
         }
-    }
-
-    @Override
-    public void postProcess(FicWorkflowTaskBO workflowTask, List<FicAlgoTaskBO> algoTasks) {
-
     }
 
     @Override

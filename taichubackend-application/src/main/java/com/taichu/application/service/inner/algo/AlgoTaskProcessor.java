@@ -34,5 +34,10 @@ public interface AlgoTaskProcessor {
     /**
      * 后置处理阶段：处理任务完成后的业务逻辑
      */
-    void postProcess(FicWorkflowTaskBO workflowTask, List<FicAlgoTaskBO> algoTasks);
+    void postProcessAllComplete(FicWorkflowTaskBO workflowTask, List<FicAlgoTaskBO> algoTasks);
+
+    /**
+     * 后置处理阶段：处理任务完成后的业务逻辑
+     */
+    void postProcessAnyFailed(FicWorkflowTaskBO workflowTask, List<FicAlgoTaskBO> algoTasks);
 }

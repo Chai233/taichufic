@@ -1,7 +1,6 @@
 package com.taichu.domain.algo.model.response;
 
 import lombok.Data;
-import lombok.EqualsAndHashCode;
 
 import java.util.List;
 
@@ -9,8 +8,7 @@ import java.util.List;
  * 分镜文本生成结果
  */
 @Data
-@EqualsAndHashCode(callSuper = true)
-public class StoryboardTextResult extends BaseAlgoResult {
+public class StoryboardTextResult {
     
     /**
      * 分镜文本内容
