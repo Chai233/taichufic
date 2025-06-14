@@ -26,7 +26,7 @@ public interface FicResourceConvertor {
      * @param bo 业务对象
      * @return 数据对象
      */
-    @Mapping(target = "extendInfo", source = "orginName", qualifiedByName = "originNameToExtendInfo")
+    @Mapping(target = "extendInfo", source = "originName", qualifiedByName = "originNameToExtendInfo")
     FicResource toDataObject(FicResourceBO bo);
 
     /**
@@ -34,7 +34,7 @@ public interface FicResourceConvertor {
      * @param dataObject 数据对象
      * @return 业务对象
      */
-    @Mapping(target = "orginName", source = "extendInfo", qualifiedByName = "extendInfoToOriginName")
+    @Mapping(target = "originName", source = "extendInfo", qualifiedByName = "extendInfoToOriginName")
     FicResourceBO toDomain(FicResource dataObject);
 
     /**

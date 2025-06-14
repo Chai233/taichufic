@@ -4,7 +4,6 @@ import com.taichu.common.common.model.Resp;
 import com.taichu.domain.algo.gateway.AlgoGateway;
 import com.taichu.domain.algo.gateway.FileGateway;
 import com.taichu.domain.algo.model.AlgoResponse;
-import com.taichu.domain.algo.model.common.RoleDTO;
 import com.taichu.domain.algo.model.request.StoryboardImageRequest;
 import com.taichu.domain.enums.*;
 import com.taichu.domain.model.FicAlgoTaskBO;
@@ -18,7 +17,6 @@ import lombok.extern.slf4j.Slf4j;
 
 import org.apache.commons.collections4.CollectionUtils;
 import org.slf4j.Logger;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -111,8 +109,8 @@ public class StoryboardImgAlgoTaskProcessor extends AbstractAlgoTaskProcessor {
 
                     Long defaultImageResourceId = roleBO.getDefaultImageResourceId();
                     FicResourceBO ficResourceBO = ficResourceRepository.findById(defaultImageResourceId);
-                    ficResourceBO.getOrginName();
-                    roleDTO.setImage(ficResourceBO.getOrginName());
+                    ficResourceBO.getOriginName();
+                    roleDTO.setImage(ficResourceBO.getOriginName());
                     return roleDTO;
                 })
                 .collect(Collectors.toList());
@@ -193,7 +191,7 @@ public class StoryboardImgAlgoTaskProcessor extends AbstractAlgoTaskProcessor {
             ficResourceBO.setResourceStorageType(ResourceStorageTypeEnum.ALI_CLOUD_OSS.name());
             ficResourceBO.setStatus(CommonStatusEnum.VALID.getValue());
             ficResourceBO.setGmtCreate(System.currentTimeMillis());
-            ficResourceBO.setOrginName(storyboardImgResult.getOriginalFilename());
+            ficResourceBO.setOriginName(storyboardImgResult.getOriginalFilename());
 
             // 保存到数据库
             ficResourceRepository.insert(ficResourceBO);

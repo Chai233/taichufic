@@ -181,7 +181,7 @@ public class StoryboardVideoAlgoTaskProcessor extends AbstractAlgoTaskProcessor 
             ficResourceBO.setResourceStorageType(ResourceStorageTypeEnum.ALI_CLOUD_OSS.name());
             ficResourceBO.setStatus(CommonStatusEnum.VALID.getValue());
             ficResourceBO.setGmtCreate(System.currentTimeMillis());
-            ficResourceBO.setOrginName(storyboardVideoResult.getOriginalFilename());
+            ficResourceBO.setOriginName(storyboardVideoResult.getOriginalFilename());
 
             // 保存到数据库
             ficResourceRepository.insert(ficResourceBO);

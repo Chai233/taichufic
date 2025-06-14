@@ -149,7 +149,7 @@ public class FullVideoGenAlgoTaskProcessor extends AbstractAlgoTaskProcessor {
             ficResourceBO.setResourceStorageType(ResourceStorageTypeEnum.ALI_CLOUD_OSS.name());
             ficResourceBO.setStatus(CommonStatusEnum.VALID.getValue());
             ficResourceBO.setGmtCreate(System.currentTimeMillis());
-            ficResourceBO.setOrginName(videoResult.getOriginalFilename());
+            ficResourceBO.setOriginName(videoResult.getOriginalFilename());
 
             // 保存到数据库
             ficResourceRepository.insert(ficResourceBO);

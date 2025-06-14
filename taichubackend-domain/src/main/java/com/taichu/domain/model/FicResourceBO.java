@@ -60,6 +60,6 @@ public class FicResourceBO {
     /**
      * 算法返回时的原始文件名称
      */
-    private String orginName;
+    private String originName;
 
 } 
