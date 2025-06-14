@@ -131,8 +131,8 @@ public class StoryboardVideoAlgoTaskProcessor extends AbstractAlgoTaskProcessor 
         /*
          * 下载图片，上传OSS
          */
-        MultipartFile storyboardImgResult = algoGateway.getStoryboardVideoResult(Objects.toString(algoTask.getAlgoTaskId()));
-        if (storyboardImgResult == null) {
+        MultipartFile storyboardVideoResult = algoGateway.getStoryboardVideoResult(Objects.toString(algoTask.getAlgoTaskId()));
+        if (storyboardVideoResult == null) {
             log.error("获取分镜视频结果失败, algoTaskId: {}", algoTask.getAlgoTaskId());
             return;
         }
@@ -150,10 +150,10 @@ public class StoryboardVideoAlgoTaskProcessor extends AbstractAlgoTaskProcessor 
             String fileName = String.format("storyboard_video_%s_%s_%s",
                     workflowId,
                     algoTask.getAlgoTaskId(),
-                    storyboardImgResult.getName());
+                    storyboardVideoResult.getName());
 
             // 上传到 OSS
-            Resp<String> uploadResp = fileGateway.saveFile(fileName, storyboardImgResult);
+            Resp<String> uploadResp = fileGateway.saveFile(fileName, storyboardVideoResult);
             if (!uploadResp.isSuccess()) {
                 log.error("上传分镜视频到OSS失败, algoTaskId: {}, error: {}",
                         algoTask.getAlgoTaskId(), uploadResp.getMessage());
@@ -181,6 +181,7 @@ public class StoryboardVideoAlgoTaskProcessor extends AbstractAlgoTaskProcessor 
             ficResourceBO.setResourceStorageType(ResourceStorageTypeEnum.ALI_CLOUD_OSS.name());
             ficResourceBO.setStatus(CommonStatusEnum.VALID.getValue());
             ficResourceBO.setGmtCreate(System.currentTimeMillis());
+            ficResourceBO.setOrginName(storyboardVideoResult.getOriginalFilename());
 
             // 保存到数据库
             ficResourceRepository.insert(ficResourceBO);

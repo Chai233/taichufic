@@ -102,12 +102,7 @@ public class AlgoHttpClient {
                     ? response.getHeaders().getContentType().toString()
                     : "application/octet-stream";
 
-            return new FileResponse(
-                    response.getBody(),
-                    fileName,
-                    contentType,
-                    true
-            );
+            return new FileResponse(response.getBody(), fileName, contentType, true);
 
         } catch (HttpStatusCodeException e) {
             log.error("HTTP 文件下载请求失败, path: {}, statusCode: {}, responseBody: {}",
@@ -116,13 +111,16 @@ public class AlgoHttpClient {
         } catch (RestClientException e) {
             log.error("HTTP 文件下载请求失败, path: {}, error: {}", path, e.getMessage(), e);
             throw new AlgoHttpException("HTTP 文件下载请求失败: " + e.getMessage());
+        } catch (Exception e) {
+            log.error("HTTP 文件下载请求失败, path: {}, error: {}", path, e.getMessage(), e);
+            throw new RuntimeException(e);
         }
     }
 
     /**
      * 从响应头中提取文件名
      */
-    private String extractFileName(HttpHeaders headers) {
+    private String extractFileName(HttpHeaders headers) throws Exception {
         String contentDisposition = headers.getFirst("Content-Disposition");
         if (contentDisposition != null && contentDisposition.contains("filename=")) {
             // 提取 filename="..." 中的文件名
@@ -137,6 +135,6 @@ public class AlgoHttpClient {
             }
         }
         // 如果无法提取文件名，生成一个默认名称
-        return "storyboard_" + System.currentTimeMillis() + ".png";
+        throw new Exception("无法提取到文件名");
     }
 } 
