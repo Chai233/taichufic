@@ -24,6 +24,7 @@ import org.springframework.web.multipart.MultipartFile;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Component
@@ -85,8 +86,12 @@ public class FullVideoGenAlgoTaskProcessor extends AbstractAlgoTaskProcessor {
             VideoMergeRequest request = new VideoMergeRequest();
             request.setWorkflow_id(String.valueOf(workflowTask.getWorkflowId()));
             request.setStoryboard_ids(storyboardIds);
-            request.setVoice_type(VoiceTypeEnum.DEFAULT_MAN_SOUND.getValue());
-            request.setBgm_type(null);
+
+            Optional.ofNullable(workflowTask.getParams().get(WorkflowTaskConstant.VIDEO_VOICE_TYPE))
+                    .ifPresent(request::setVoice_type);
+            Optional.ofNullable(workflowTask.getParams().get(WorkflowTaskConstant.VIDEO_BGM_TYPE))
+                    .ifPresentOrElse(request::setBgm_type, 
+                            () -> request.setBgm_type("摇滚质感"));
 
             // 调用算法服务生成剧本
             AlgoResponse response = algoGateway.createVideoMergeTask(request);

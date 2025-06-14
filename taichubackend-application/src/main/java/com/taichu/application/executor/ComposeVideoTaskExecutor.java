@@ -4,6 +4,7 @@ import com.taichu.application.service.inner.algo.AlgoTaskInnerService;
 import com.taichu.domain.enums.AlgoTaskTypeEnum;
 import com.taichu.domain.enums.TaskTypeEnum;
 import com.taichu.domain.enums.WorkflowStatusEnum;
+import com.taichu.domain.enums.WorkflowTaskConstant;
 import com.taichu.domain.model.FicWorkflowTaskBO;
 import com.taichu.infra.repo.FicWorkflowRepository;
 import com.taichu.infra.repo.FicWorkflowTaskRepository;
@@ -15,6 +16,7 @@ import org.springframework.stereotype.Component;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
 
 @Slf4j
 @Component
@@ -62,8 +64,12 @@ public class ComposeVideoTaskExecutor extends AbstractTaskExecutor {
             return Map.of();
         }
 
-        // TODO@chai 可能有特殊参数
-        return new HashMap<>();
+        Map<String, String> params = new HashMap<>();
+        ComposeVideoRequest composeVideoRequest = (ComposeVideoRequest) request;
+        Optional.ofNullable(composeVideoRequest.getBgmType()).ifPresent(s -> params.put(WorkflowTaskConstant.VIDEO_BGM_TYPE, s));
+        Optional.ofNullable(composeVideoRequest.getVoiceType()).ifPresent(s -> params.put(WorkflowTaskConstant.VIDEO_VOICE_TYPE, s));
+
+        return params;
     }
 
     @Override
