@@ -72,4 +72,25 @@ public class FicScriptRepository {
         int res = scriptMapper.updateByPrimaryKeySelective(scriptDO);
         return res == 1;
     }
+
+    /**
+     * 将workflowId下所有状态为VALID的script设置为INVALID
+     * @param workflowId 工作流ID
+     */
+    public void offlineByWorkflowId(Long workflowId) {
+        FicScriptExample example = new FicScriptExample();
+        example.createCriteria()
+                .andWorkflowIdEqualTo(workflowId)
+                .andStatusEqualTo(CommonStatusEnum.VALID.getValue());
+        List<FicScript> scripts = scriptMapper.selectByExample(example);
+
+        if (scripts.isEmpty()) {
+            return;
+        }
+
+        for (FicScript script : scripts) {
+            script.setStatus(CommonStatusEnum.INVALID.getValue());
+            scriptMapper.updateByPrimaryKeySelective(script);
+        }
+    }
 } 

@@ -126,18 +126,15 @@ public class ScriptGenAlgoTaskProcessor extends AbstractAlgoTaskProcessor {
                 return;
             }
             
-            // 将所有剧本片段合并为一个字符串
-            String scriptContent = String.join("\n", result.getScripts());
-            
-            // 更新算法任务结果
-            algoTask.setTaskAbstract(scriptContent);
-            
             // 根据 workflowTaskId 查询工作流任务，获取 workflowId
             FicWorkflowTaskBO workflowTask = ficWorkflowTaskRepository.findById(algoTask.getWorkflowTaskId());
             if (workflowTask == null) {
                 log.error("工作流任务不存在, workflowTaskId: {}", algoTask.getWorkflowTaskId());
                 return;
             }
+
+            // 下线workflow所有状态为VALID的 script
+            ficScriptRepository.offlineByWorkflowId(workflowTask.getWorkflowId());
             
             // 保存每个剧本片段
             for (int i = 0; i < result.getScripts().size(); i++) {

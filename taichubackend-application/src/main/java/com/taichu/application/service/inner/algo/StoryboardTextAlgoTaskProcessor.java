@@ -97,7 +97,7 @@ public class StoryboardTextAlgoTaskProcessor extends AbstractAlgoTaskProcessor {
 
         // 构建请求参数并调用算法服务
         StoryboardTextRequest request = new StoryboardTextRequest();
-        request.setWorkflowId(String.valueOf(workflowId));
+        request.setWorkflow_id(String.valueOf(workflowId));
         request.setScript(script.getContent());
         return algoGateway.createStoryboardTextTask(request);
     }

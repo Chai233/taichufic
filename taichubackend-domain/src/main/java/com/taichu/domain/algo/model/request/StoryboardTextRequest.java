@@ -5,5 +5,5 @@ import lombok.Data;
 @Data
 public class StoryboardTextRequest {
     private String script;      // 剧本片段
-    private String workflowId;  // 工作流ID
+    private String workflow_id;  // 工作流ID
 } 
