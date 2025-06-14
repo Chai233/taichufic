@@ -10,6 +10,11 @@ public enum AlgoTaskTypeEnum {
     SCRIPT_GENERATION,
 
     /**
+     * 角色图片生成
+     */
+    ROLE_IMG_GENERATION,
+
+    /**
      * 分镜生成
      */
     STORYBOARD_TEXT_GENERATION,

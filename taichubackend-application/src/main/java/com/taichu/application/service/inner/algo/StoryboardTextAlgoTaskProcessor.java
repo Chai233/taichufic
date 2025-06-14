@@ -6,6 +6,7 @@ import com.taichu.domain.algo.model.request.StoryboardTextRequest;
 import com.taichu.domain.algo.model.response.StoryboardTextResult;
 import com.taichu.domain.enums.AlgoTaskTypeEnum;
 import com.taichu.domain.enums.CommonStatusEnum;
+import com.taichu.domain.enums.RelevanceType;
 import com.taichu.domain.enums.TaskStatusEnum;
 import com.taichu.domain.model.FicAlgoTaskBO;
 import com.taichu.domain.model.FicScriptBO;
@@ -53,7 +54,7 @@ public class StoryboardTextAlgoTaskProcessor extends AbstractAlgoTaskProcessor {
     }
 
     @Override
-    public List<AlgoResponse> generateTasks(FicWorkflowTaskBO workflowTask) {
+    public List<AlgoTaskBO> generateTasks(FicWorkflowTaskBO workflowTask) {
         Long workflowId = workflowTask.getWorkflowId();
 
         // 1. 查询剧本片段
@@ -62,7 +63,7 @@ public class StoryboardTextAlgoTaskProcessor extends AbstractAlgoTaskProcessor {
             return List.of();
         }
 
-        List<AlgoResponse> algoResponseList = new ArrayList<>(ficScriptBOList.size());
+        List<AlgoTaskBO> resultList = new ArrayList<>(ficScriptBOList.size());
         for (FicScriptBO ficScriptBO : ficScriptBOList) {
             // 调用算法服务
             String operationName = "Call algorithm service for workflow: " + workflowId;
@@ -76,10 +77,14 @@ public class StoryboardTextAlgoTaskProcessor extends AbstractAlgoTaskProcessor {
             }
 
             // 添加到返回列表
-            algoResponseList.add(response);
+            AlgoTaskBO algoTaskBO = new AlgoTaskBO();
+            algoTaskBO.setAlgoTaskId(response.getTaskId());
+            algoTaskBO.setRelevantId(ficScriptBO.getId());
+            algoTaskBO.setRelevantIdType(RelevanceType.SCRIPT_ID);
+            resultList.add(algoTaskBO);
         }
 
-        return algoResponseList;
+        return resultList;
     }
 
     /**

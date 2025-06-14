@@ -32,4 +32,7 @@ public interface AlgoGateway {
     
     // 任务状态查询
     AlgoTaskStatus checkTaskStatus(String taskId);
+
+    AlgoResponse createRoleImageTask(RoleImageRequest request);
+    MultipartFile getRoleImageResult(String taskId);
 } 

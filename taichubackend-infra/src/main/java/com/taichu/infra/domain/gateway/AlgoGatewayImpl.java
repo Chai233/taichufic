@@ -271,4 +271,16 @@ public class AlgoGatewayImpl implements AlgoGateway {
             return status;
         }
     }
+
+    @Override
+    public AlgoResponse createRoleImageTask(RoleImageRequest request) {
+        // TODO
+        return null;
+    }
+
+    @Override
+    public MultipartFile getRoleImageResult(String taskId) {
+        // TODO
+        return null;
+    }
 } 

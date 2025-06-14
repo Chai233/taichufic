@@ -4,6 +4,7 @@ import com.taichu.domain.algo.gateway.AlgoGateway;
 import com.taichu.domain.algo.gateway.FileGateway;
 import com.taichu.domain.algo.model.AlgoResponse;
 import com.taichu.domain.enums.AlgoTaskTypeEnum;
+import com.taichu.domain.enums.RelevanceType;
 import com.taichu.domain.model.FicStoryboardBO;
 import com.taichu.domain.model.FicWorkflowTaskBO;
 import com.taichu.infra.repo.*;
@@ -35,7 +36,7 @@ public class SingleStoryboardImgAlgoTaskProcessor extends StoryboardImgAlgoTaskP
     }
 
     @Override
-    public List<AlgoResponse> generateTasks(FicWorkflowTaskBO workflowTask) {
+    public List<AlgoTaskBO> generateTasks(FicWorkflowTaskBO workflowTask) {
         Long storyboardId = getStoryboardId(workflowTask);
         if (storyboardId == null) {
             log.error("分镜ID为空, workflowTaskId: {}", workflowTask.getId());
@@ -61,7 +62,13 @@ public class SingleStoryboardImgAlgoTaskProcessor extends StoryboardImgAlgoTaskP
             return Collections.emptyList();
         }
 
-        return Collections.singletonList(response);
+        // 添加到返回列表
+        AlgoTaskBO algoTaskBO = new AlgoTaskBO();
+        algoTaskBO.setAlgoTaskId(response.getTaskId());
+        algoTaskBO.setRelevantId(storyboardId);
+        algoTaskBO.setRelevantIdType(RelevanceType.STORYBOARD_ID);
+
+        return Collections.singletonList(algoTaskBO);
     }
 
     @Override

@@ -8,6 +8,11 @@ public enum ResourceTypeEnum {
     NOVEL_FILE,
 
     /**
+     * 角色图片
+     */
+    ROLE_IMAGE,
+
+    /**
      * 分镜图片
      */
     STORYBOARD_IMG,

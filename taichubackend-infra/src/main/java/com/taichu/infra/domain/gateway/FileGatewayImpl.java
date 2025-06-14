@@ -25,8 +25,8 @@ public class FileGatewayImpl implements FileGateway {
             String processedFileName = FileNameUtils.processFileName(fileName);
             
             // 上传文件
-            String fileUrl = ossStorageService.uploadFile(files, processedFileName);
-            return Resp.success(fileUrl);
+            ossStorageService.uploadFile(files, processedFileName);
+            return Resp.success(processedFileName);
         } catch (Exception e) {
             return Resp.error("FILE_UPLOAD_ERROR", "文件上传失败：" + e.getMessage());
         }

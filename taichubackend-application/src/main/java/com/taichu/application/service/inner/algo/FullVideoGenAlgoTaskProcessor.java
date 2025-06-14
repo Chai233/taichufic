@@ -21,10 +21,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Component
@@ -68,9 +65,10 @@ public class FullVideoGenAlgoTaskProcessor extends AbstractAlgoTaskProcessor {
     }
 
     @Override
-    public List<AlgoResponse> generateTasks(FicWorkflowTaskBO workflowTask) {
+    public List<AlgoTaskBO> generateTasks(FicWorkflowTaskBO workflowTask) {
+        Long workflowId = workflowTask.getWorkflowId();
         try {
-            List<FicStoryboardBO> storyboardBOS = ficStoryboardRepository.findByWorkflowId(workflowTask.getWorkflowId());
+            List<FicStoryboardBO> storyboardBOS = ficStoryboardRepository.findByWorkflowId(workflowId);
             List<String> storyboardIds = StreamUtil.toStream(storyboardBOS)
                     .filter(Objects::nonNull)
                     .map(FicStoryboardBO::getId)
@@ -78,13 +76,13 @@ public class FullVideoGenAlgoTaskProcessor extends AbstractAlgoTaskProcessor {
                     .collect(Collectors.toList());
 
             if (storyboardIds.isEmpty()) {
-                log.error("故事板ID列表为空, workflowId: {}", workflowTask.getWorkflowId());
+                log.error("故事板ID列表为空, workflowId: {}", workflowId);
                 return new ArrayList<>();
             }
 
             // 构建剧本生成请求
             VideoMergeRequest request = new VideoMergeRequest();
-            request.setWorkflow_id(String.valueOf(workflowTask.getWorkflowId()));
+            request.setWorkflow_id(String.valueOf(workflowId));
             request.setStoryboard_ids(storyboardIds);
 
             Optional.ofNullable(workflowTask.getParams().get(WorkflowTaskConstant.VIDEO_VOICE_TYPE))
@@ -96,11 +94,13 @@ public class FullVideoGenAlgoTaskProcessor extends AbstractAlgoTaskProcessor {
             AlgoResponse response = algoGateway.createVideoMergeTask(request);
             
             // 返回响应列表
-            List<AlgoResponse> responses = new ArrayList<>();
-            responses.add(response);
-            return responses;
+            AlgoTaskBO algoTaskBO = new AlgoTaskBO();
+            algoTaskBO.setAlgoTaskId(response.getTaskId());
+            algoTaskBO.setRelevantId(workflowId);
+            algoTaskBO.setRelevantIdType(RelevanceType.WORKFLOW_ID);
+            return Collections.singletonList(algoTaskBO);
         } catch (Exception e) {
-            log.error("Failed to generate script task for workflow: " + workflowTask.getWorkflowId(), e);
+            log.error("Failed to generate script task for workflow: " + workflowId, e);
             return new ArrayList<>();
         }
     }

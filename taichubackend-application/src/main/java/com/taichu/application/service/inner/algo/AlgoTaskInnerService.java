@@ -49,20 +49,22 @@ public class AlgoTaskInnerService implements InitializingBean {
             }
 
             // 2. 生成阶段：创建算法任务
-            List<AlgoResponse> responses = processor.generateTasks(ficWorkflowTaskBO);
-            if (responses == null || responses.isEmpty()) {
+            List<AlgoTaskBO> algoTaskBOList = processor.generateTasks(ficWorkflowTaskBO);
+            if (algoTaskBOList == null || algoTaskBOList.isEmpty()) {
                 log.error("创建算法任务失败，未返回任务ID");
                 return;
             }
 
             // 3. 保存算法任务记录
-            List<FicAlgoTaskBO> algoTasks = responses.stream()
-                    .map(algoResponse -> {
+            List<FicAlgoTaskBO> algoTasks = algoTaskBOList.stream()
+                    .map(algoTaskBO -> {
                         FicAlgoTaskBO algoTask = new FicAlgoTaskBO();
                         algoTask.setWorkflowTaskId(workflowTaskId);
                         algoTask.setStatus(TaskStatusEnum.RUNNING.getCode());
                         algoTask.setTaskType(algoTaskTypeEnum.name());
-                        algoTask.setAlgoTaskId(Longs.tryParse(algoResponse.getTaskId()));
+                        algoTask.setAlgoTaskId(Longs.tryParse(algoTaskBO.getAlgoTaskId()));
+                        algoTask.setRelevantId(algoTaskBO.getRelevantId());
+                        algoTask.setRelevantIdType(algoTaskBO.getRelevantIdType().getValue());
                         return algoTask;
                     })
                     .collect(Collectors.toList());

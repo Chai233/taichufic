@@ -1,6 +1,5 @@
 package com.taichu.application.service.inner.algo;
 
-import com.taichu.domain.algo.model.AlgoResponse;
 import com.taichu.domain.enums.AlgoTaskTypeEnum;
 import com.taichu.domain.enums.TaskStatusEnum;
 import com.taichu.domain.model.FicAlgoTaskBO;
@@ -18,7 +17,7 @@ public interface AlgoTaskProcessor {
     /**
      * 生成阶段：创建所有算法任务
      */
-    List<AlgoResponse> generateTasks(FicWorkflowTaskBO workflowTask);
+    List<AlgoTaskBO> generateTasks(FicWorkflowTaskBO workflowTask);
 
     /**
      * 状态检查阶段：检查任务状态

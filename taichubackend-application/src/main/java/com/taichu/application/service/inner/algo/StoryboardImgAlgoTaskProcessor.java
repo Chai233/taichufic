@@ -51,7 +51,7 @@ public class StoryboardImgAlgoTaskProcessor extends AbstractAlgoTaskProcessor {
     }
 
     @Override
-    public List<AlgoResponse> generateTasks(FicWorkflowTaskBO workflowTask) {
+    public List<AlgoTaskBO> generateTasks(FicWorkflowTaskBO workflowTask) {
         Long workflowId = workflowTask.getWorkflowId();
 
         // 1. 查询分镜
@@ -60,8 +60,9 @@ public class StoryboardImgAlgoTaskProcessor extends AbstractAlgoTaskProcessor {
             return List.of();
         }
 
-        List<AlgoResponse> algoResponseList = new ArrayList<>(ficStoryboardBOList.size());
+        List<AlgoTaskBO> algoResponseList = new ArrayList<>(ficStoryboardBOList.size());
         for (FicStoryboardBO ficStoryboardBO : ficStoryboardBOList) {
+            Long storyboardId = ficStoryboardBO.getId();
             // 调用算法服务
             String operationName = "Call algorithm service for workflow: " + workflowId;
             AlgoResponse response = callAlgoServiceWithRetry(operationName, () -> callAlgoServiceGenStoryboardImg(workflowTask, workflowId, ficStoryboardBO.getId()));
@@ -74,7 +75,12 @@ public class StoryboardImgAlgoTaskProcessor extends AbstractAlgoTaskProcessor {
             }
 
             // 添加到返回列表
-            algoResponseList.add(response);
+            // 添加到返回列表
+            AlgoTaskBO algoTaskBO = new AlgoTaskBO();
+            algoTaskBO.setAlgoTaskId(response.getTaskId());
+            algoTaskBO.setRelevantId(storyboardId);
+            algoTaskBO.setRelevantIdType(RelevanceType.STORYBOARD_ID);
+            algoResponseList.add(algoTaskBO);
         }
 
         return algoResponseList;

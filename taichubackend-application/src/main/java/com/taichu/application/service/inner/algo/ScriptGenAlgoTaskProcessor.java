@@ -3,18 +3,18 @@ package com.taichu.application.service.inner.algo;
 import com.taichu.domain.algo.gateway.AlgoGateway;
 import com.taichu.domain.algo.gateway.FileGateway;
 import com.taichu.domain.algo.model.AlgoResponse;
+import com.taichu.domain.algo.model.common.RoleDTO;
 import com.taichu.domain.algo.model.common.UploadFile;
 import com.taichu.domain.algo.model.request.ScriptTaskRequest;
 import com.taichu.domain.algo.model.response.ScriptResult;
-import com.taichu.domain.enums.AlgoTaskTypeEnum;
-import com.taichu.domain.enums.CommonStatusEnum;
-import com.taichu.domain.enums.ResourceTypeEnum;
-import com.taichu.domain.enums.WorkflowTaskConstant;
+import com.taichu.domain.enums.*;
 import com.taichu.domain.model.FicAlgoTaskBO;
 import com.taichu.domain.model.FicResourceBO;
+import com.taichu.domain.model.FicRoleBO;
 import com.taichu.domain.model.FicScriptBO;
 import com.taichu.domain.model.FicWorkflowTaskBO;
 import com.taichu.infra.repo.FicResourceRepository;
+import com.taichu.infra.repo.FicRoleRepository;
 import com.taichu.infra.repo.FicScriptRepository;
 import com.taichu.infra.repo.FicWorkflowRepository;
 import com.taichu.infra.repo.FicWorkflowTaskRepository;
@@ -22,10 +22,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.slf4j.Logger;
 import org.springframework.stereotype.Component;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Component
@@ -36,6 +33,7 @@ public class ScriptGenAlgoTaskProcessor extends AbstractAlgoTaskProcessor {
     private final FicScriptRepository ficScriptRepository;
     private final FicWorkflowTaskRepository ficWorkflowTaskRepository;
     private final FicResourceRepository ficResourceRepository;
+    private final FicRoleRepository ficRoleRepository;
     private final FileGateway fileGateway;
 
     public ScriptGenAlgoTaskProcessor(AlgoGateway algoGateway, 
@@ -43,12 +41,14 @@ public class ScriptGenAlgoTaskProcessor extends AbstractAlgoTaskProcessor {
                                     FicWorkflowTaskRepository ficWorkflowTaskRepository,  
                                     FicWorkflowRepository ficWorkflowRepository,
                                     FicResourceRepository ficResourceRepository,
+                                    FicRoleRepository ficRoleRepository,
                                     FileGateway fileGateway) {
         super(ficWorkflowTaskRepository, ficWorkflowRepository);
         this.algoGateway = algoGateway;
         this.ficScriptRepository = ficScriptRepository;
         this.ficWorkflowTaskRepository = ficWorkflowTaskRepository;
         this.ficResourceRepository = ficResourceRepository;
+        this.ficRoleRepository = ficRoleRepository;
         this.fileGateway = fileGateway;
     }
 
@@ -68,22 +68,23 @@ public class ScriptGenAlgoTaskProcessor extends AbstractAlgoTaskProcessor {
     }
 
     @Override
-    public List<AlgoResponse> generateTasks(FicWorkflowTaskBO workflowTask) {
+    public List<AlgoTaskBO> generateTasks(FicWorkflowTaskBO workflowTask) {
+        Long workflowId = workflowTask.getWorkflowId();
         try {
             // 获取小说文件
             List<FicResourceBO> novelFiles = ficResourceRepository.findByWorkflowIdAndResourceType(
-                workflowTask.getWorkflowId(), 
+                    workflowId,
                 ResourceTypeEnum.NOVEL_FILE
             );
             
             if (novelFiles.isEmpty()) {
-                log.error("未找到小说文件, workflowId: {}", workflowTask.getWorkflowId());
+                log.error("未找到小说文件, workflowId: {}", workflowId);
                 return new ArrayList<>();
             }
             
             // 构建剧本生成请求
             ScriptTaskRequest request = new ScriptTaskRequest();
-            request.setWorkflowId(String.valueOf(workflowTask.getWorkflowId()));
+            request.setWorkflowId(String.valueOf(workflowId));
             Optional.ofNullable(workflowTask.getParams().get(WorkflowTaskConstant.SCRIPT_PROMPT)).ifPresentOrElse(request::setPrompt, () -> request.setPrompt(""));
             
             // 设置小说文件，支持 txt 和 pdf
@@ -105,13 +106,17 @@ public class ScriptGenAlgoTaskProcessor extends AbstractAlgoTaskProcessor {
             
             // 调用算法服务生成剧本
             AlgoResponse response = algoGateway.createScriptTask(request);
-            
+
+            // 添加到返回列表
+            AlgoTaskBO algoTaskBO = new AlgoTaskBO();
+            algoTaskBO.setAlgoTaskId(response.getTaskId());
+            algoTaskBO.setRelevantId(workflowId);
+            algoTaskBO.setRelevantIdType(RelevanceType.WORKFLOW_ID);
+
             // 返回响应列表
-            List<AlgoResponse> responses = new ArrayList<>();
-            responses.add(response);
-            return responses;
+            return Collections.singletonList(algoTaskBO);
         } catch (Exception e) {
-            log.error("Failed to generate script task for workflow: " + workflowTask.getWorkflowId(), e);
+            log.error("Failed to generate script task for workflow: " + workflowId, e);
             return new ArrayList<>();
         }
     }
@@ -144,6 +149,24 @@ public class ScriptGenAlgoTaskProcessor extends AbstractAlgoTaskProcessor {
                 scriptBO.setOrderIndex((long) (i + 1));
                 scriptBO.setStatus(CommonStatusEnum.VALID.getValue());
                 ficScriptRepository.insert(scriptBO);
+            }
+
+            // 保存每个角色
+            if (result.getRoles() != null && !result.getRoles().isEmpty()) {
+                // 下线workflow所有状态为VALID的角色
+                ficRoleRepository.offlineByWorkflowId(workflowTask.getWorkflowId());
+                
+                // 保存新的角色信息
+                for (RoleDTO roleDTO : result.getRoles()) {
+                    FicRoleBO roleBO = new FicRoleBO();
+                    roleBO.setWorkflowId(workflowTask.getWorkflowId());
+                    roleBO.setRoleName(roleDTO.getName());
+                    roleBO.setDescription(roleDTO.getDescription());
+                    roleBO.setPrompt(roleDTO.getPrompt());
+                    roleBO.setStatus(CommonStatusEnum.VALID.getValue());
+                    roleBO.setGmtCreate(System.currentTimeMillis());
+                    ficRoleRepository.insert(roleBO);
+                }
             }
             
             log.info("Script generation completed for task: " + algoTask.getAlgoTaskId());

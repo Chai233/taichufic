@@ -61,4 +61,30 @@ public class FicRoleRepository {
                 .map(FicRoleConvertor.INSTANCE::toDomain)
                 .collect(Collectors.toList());
     }
-} 
+
+    /**
+     * 下线指定工作流的所有有效角色
+     * @param workflowId 工作流ID
+     */
+    public void offlineByWorkflowId(Long workflowId) {
+        // 先查询所有需要下线的角色
+        List<FicRoleBO> roles = findByWorkflowId(workflowId);
+        
+        // 逐个更新角色状态为无效
+        for (FicRoleBO role : roles) {
+            FicRole roleDO = new FicRole();
+            roleDO.setId(role.getId());
+            roleDO.setStatus(CommonStatusEnum.INVALID.getValue());
+            roleMapper.updateByPrimaryKeySelective(roleDO);
+        }
+    }
+
+    /**
+     * 更新角色
+     * @param role
+     */
+    public void update(FicRoleBO role) {
+        FicRole roleDO = FicRoleConvertor.INSTANCE.toDataObject(role);
+        roleMapper.updateByPrimaryKeySelective(roleDO);
+    }
+}

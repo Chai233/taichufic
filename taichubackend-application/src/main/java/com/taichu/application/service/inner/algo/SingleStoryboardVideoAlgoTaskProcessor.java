@@ -31,7 +31,7 @@ public class SingleStoryboardVideoAlgoTaskProcessor extends StoryboardVideoAlgoT
     }
 
     @Override
-    public List<AlgoResponse> generateTasks(FicWorkflowTaskBO workflowTask) {
+    public List<AlgoTaskBO> generateTasks(FicWorkflowTaskBO workflowTask) {
         Long storyboardId = getStoryboardId(workflowTask);
         if (storyboardId == null) {
             log.error("分镜ID为空, workflowTaskId: {}", workflowTask.getId());
@@ -57,7 +57,13 @@ public class SingleStoryboardVideoAlgoTaskProcessor extends StoryboardVideoAlgoT
             return Collections.emptyList();
         }
 
-        return Collections.singletonList(response);
+        // 添加到返回列表
+        AlgoTaskBO algoTaskBO = new AlgoTaskBO();
+        algoTaskBO.setAlgoTaskId(response.getTaskId());
+        algoTaskBO.setRelevantId(storyboardId);
+        algoTaskBO.setRelevantIdType(RelevanceType.STORYBOARD_ID);
+
+        return Collections.singletonList(algoTaskBO);
     }
 
     static Long getStoryboardId(FicWorkflowTaskBO workflowTask) {
