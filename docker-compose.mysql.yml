@@ -13,6 +13,13 @@ services:
       - "3306:3306"
     volumes:
       - mysql_data:/var/lib/mysql
+    networks:
+      - taichu_network
+
+networks:
+  taichu_network:
+    name: taichu_network
+    driver: bridge
 
 volumes:
-  mysql_data:
+  mysql_data: 
