@@ -37,6 +37,12 @@ public class Step5ComposeController {
         return composeVideoAppService.submitComposeVideoTask(request, null);
     }
 
+    @PostMapping("/userReGenerate")
+    public SingleResponse<Long> reGenerateComposeVideo(@RequestBody ComposeVideoRequest request) {
+        // TODO@chai
+        return null;
+    }
+
     @GetMapping("/task/status")
     @ApiOperation(value = "获取任务进度", notes = "")
     public SingleResponse<WorkflowTaskStatusDTO> getComposeTaskStatus(@RequestParam("taskId") Long taskId) {

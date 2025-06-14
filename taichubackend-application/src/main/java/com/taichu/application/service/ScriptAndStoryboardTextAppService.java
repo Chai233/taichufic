@@ -13,7 +13,7 @@ import com.taichu.domain.model.FicWorkflowTaskBO;
 import com.taichu.infra.repo.FicScriptRepository;
 import com.taichu.infra.repo.FicWorkflowTaskRepository;
 import com.taichu.sdk.model.request.GenerateScriptRequest;
-import com.taichu.sdk.model.ScriptDTO;
+import com.taichu.sdk.model.ScriptVO;
 import com.taichu.sdk.model.WorkflowTaskStatusDTO;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -109,7 +109,7 @@ public class ScriptAndStoryboardTextAppService {
      * @param workflowId
      * @return
      */
-    public MultiResponse<ScriptDTO> getScript(Long workflowId) {
+    public MultiResponse<ScriptVO> getScript(Long workflowId) {
         // TODO@chai 获取剧本
         return MultiResponse.buildSuccess();
     }

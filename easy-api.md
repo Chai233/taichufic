@@ -1,6 +1,6 @@
 # taichubackend-gateway
 
-exported at 2025-06-14 16:57:53
+exported at 2025-06-14 23:06:55
 
 ## Step5ComposeController
 
@@ -13,6 +13,74 @@ Step5ComposeController
 > BASIC
 
 **Path:** /api/compose/generate
+
+**Method:** POST
+
+> REQUEST
+
+**Headers:**
+
+| name | value | required | desc |
+| ------------ | ------------ | ------------ | ------------ |
+| Content-Type | application/json | YES |  |
+
+**Request Body:**
+
+| name | type | desc |
+| ------------ | ------------ | ------------ |
+| workflowId | integer | 必填<br>工作流id |
+| voiceType | string | 必填<br>旁白配音风格，默认“磁性男声” |
+| bgmType | string | 必填<br>bgm风格 |
+
+**Request Demo:**
+
+```json
+{
+  "workflowId": 0,
+  "voiceType": "",
+  "bgmType": ""
+}
+```
+
+
+
+> RESPONSE
+
+**Headers:**
+
+| name | value | required | desc |
+| ------------ | ------------ | ------------ | ------------ |
+| content-type | application/json;charset=UTF-8 | NO |  |
+
+**Body:**
+
+| name | type | desc |
+| ------------ | ------------ | ------------ |
+| success | boolean |  |
+| errCode | string |  |
+| errMessage | string |  |
+| data | integer |  |
+
+**Response Demo:**
+
+```json
+{
+  "success": false,
+  "errCode": "",
+  "errMessage": "",
+  "data": 0
+}
+```
+
+
+
+
+---
+### reGenerateComposeVideo
+
+> BASIC
+
+**Path:** /api/compose/userReGenerate
 
 **Method:** POST
 
@@ -680,6 +748,74 @@ Step2ScriptController
 
 
 ---
+### reGenerateScript
+
+> BASIC
+
+**Path:** /api/v1/script/userReGenerate
+
+**Method:** POST
+
+> REQUEST
+
+**Headers:**
+
+| name | value | required | desc |
+| ------------ | ------------ | ------------ | ------------ |
+| Content-Type | application/json | YES |  |
+
+**Request Body:**
+
+| name | type | desc |
+| ------------ | ------------ | ------------ |
+| workflowId | integer | 流程id |
+| userPrompt | string | 用户自定义prompt |
+| tag | string | 标签：赛博朋克/外星文明 |
+
+**Request Demo:**
+
+```json
+{
+  "workflowId": 0,
+  "userPrompt": "",
+  "tag": ""
+}
+```
+
+
+
+> RESPONSE
+
+**Headers:**
+
+| name | value | required | desc |
+| ------------ | ------------ | ------------ | ------------ |
+| content-type | application/json;charset=UTF-8 | NO |  |
+
+**Body:**
+
+| name | type | desc |
+| ------------ | ------------ | ------------ |
+| success | boolean |  |
+| errCode | string |  |
+| errMessage | string |  |
+| data | integer |  |
+
+**Response Demo:**
+
+```json
+{
+  "success": false,
+  "errCode": "",
+  "errMessage": "",
+  "data": 0
+}
+```
+
+
+
+
+---
 ### getScriptTaskStatus
 
 > BASIC
@@ -786,6 +922,161 @@ Step2ScriptController
     {
       "order": 0,
       "scriptContent": ""
+    }
+  ]
+}
+```
+
+
+
+
+---
+### getRoles
+
+> BASIC
+
+**Path:** /api/v1/script/getRoles
+
+**Method:** GET
+
+> REQUEST
+
+**Query:**
+
+| name | value | required | desc |
+| ------------ | ------------ | ------------ | ------------ |
+| workflowId |  | YES |  |
+
+
+
+> RESPONSE
+
+**Headers:**
+
+| name | value | required | desc |
+| ------------ | ------------ | ------------ | ------------ |
+| content-type | application/json;charset=UTF-8 | NO |  |
+
+**Body:**
+
+| name | type | desc |
+| ------------ | ------------ | ------------ |
+| success | boolean |  |
+| errCode | string |  |
+| errMessage | string |  |
+| data | array |  |
+| &ensp;&ensp;&#124;─ | object |  |
+| &ensp;&ensp;&ensp;&ensp;&#124;─roleId | integer | 角色id |
+| &ensp;&ensp;&ensp;&ensp;&#124;─roleName | string | 角色名称 |
+| &ensp;&ensp;&ensp;&ensp;&#124;─description | string | 描述说明 |
+| &ensp;&ensp;&ensp;&ensp;&#124;─selectedImage | object | 选中头像图片 |
+| &ensp;&ensp;&ensp;&ensp;&ensp;&ensp;&#124;─resourceId | integer | 资源id |
+| &ensp;&ensp;&ensp;&ensp;&ensp;&ensp;&#124;─resourceUrl | string | 资源下载url（OSS url） |
+| &ensp;&ensp;&ensp;&ensp;&#124;─allImageList | array | 所有头像图片 |
+| &ensp;&ensp;&ensp;&ensp;&ensp;&ensp;&#124;─ | object |  |
+| &ensp;&ensp;&ensp;&ensp;&ensp;&ensp;&ensp;&ensp;&#124;─resourceId | integer | 资源id |
+| &ensp;&ensp;&ensp;&ensp;&ensp;&ensp;&ensp;&ensp;&#124;─resourceUrl | string | 资源下载url（OSS url） |
+
+**Response Demo:**
+
+```json
+{
+  "success": false,
+  "errCode": "",
+  "errMessage": "",
+  "data": [
+    {
+      "roleId": 0,
+      "roleName": "",
+      "description": "",
+      "selectedImage": {
+        "resourceId": 0,
+        "resourceUrl": ""
+      },
+      "allImageList": [
+        {
+          "resourceId": 0,
+          "resourceUrl": ""
+        }
+      ]
+    }
+  ]
+}
+```
+
+
+
+
+---
+### updateSelectedRoleImage
+
+> BASIC
+
+**Path:** /api/v1/script/updateSelectedImage
+
+**Method:** POST
+
+> REQUEST
+
+**Query:**
+
+| name | value | required | desc |
+| ------------ | ------------ | ------------ | ------------ |
+| roleId |  | NO | 角色id |
+| resourceId |  | NO | 资源id |
+
+
+
+> RESPONSE
+
+**Headers:**
+
+| name | value | required | desc |
+| ------------ | ------------ | ------------ | ------------ |
+| content-type | application/json;charset=UTF-8 | NO |  |
+
+**Body:**
+
+| name | type | desc |
+| ------------ | ------------ | ------------ |
+| success | boolean |  |
+| errCode | string |  |
+| errMessage | string |  |
+| data | array |  |
+| &ensp;&ensp;&#124;─ | object |  |
+| &ensp;&ensp;&ensp;&ensp;&#124;─roleId | integer | 角色id |
+| &ensp;&ensp;&ensp;&ensp;&#124;─roleName | string | 角色名称 |
+| &ensp;&ensp;&ensp;&ensp;&#124;─description | string | 描述说明 |
+| &ensp;&ensp;&ensp;&ensp;&#124;─selectedImage | object | 选中头像图片 |
+| &ensp;&ensp;&ensp;&ensp;&ensp;&ensp;&#124;─resourceId | integer | 资源id |
+| &ensp;&ensp;&ensp;&ensp;&ensp;&ensp;&#124;─resourceUrl | string | 资源下载url（OSS url） |
+| &ensp;&ensp;&ensp;&ensp;&#124;─allImageList | array | 所有头像图片 |
+| &ensp;&ensp;&ensp;&ensp;&ensp;&ensp;&#124;─ | object |  |
+| &ensp;&ensp;&ensp;&ensp;&ensp;&ensp;&ensp;&ensp;&#124;─resourceId | integer | 资源id |
+| &ensp;&ensp;&ensp;&ensp;&ensp;&ensp;&ensp;&ensp;&#124;─resourceUrl | string | 资源下载url（OSS url） |
+
+**Response Demo:**
+
+```json
+{
+  "success": false,
+  "errCode": "",
+  "errMessage": "",
+  "data": [
+    {
+      "roleId": 0,
+      "roleName": "",
+      "description": "",
+      "selectedImage": {
+        "resourceId": 0,
+        "resourceUrl": ""
+      },
+      "allImageList": [
+        {
+          "resourceId": 0,
+          "resourceUrl": ""
+        }
+      ]
     }
   ]
 }
@@ -1245,6 +1536,120 @@ Step3StoryboardImgController
 
 
 
+## UserController
+
+UserController
+
+
+---
+### login
+
+> BASIC
+
+**Path:** /api/v1/user/login
+
+**Method:** POST
+
+> REQUEST
+
+**Query:**
+
+| name | value | required | desc |
+| ------------ | ------------ | ------------ | ------------ |
+| phone |  | YES |  |
+| verifyCode |  | YES |  |
+
+
+
+> RESPONSE
+
+**Headers:**
+
+| name | value | required | desc |
+| ------------ | ------------ | ------------ | ------------ |
+| content-type | application/json;charset=UTF-8 | NO |  |
+
+**Body:**
+
+| name | type | desc |
+| ------------ | ------------ | ------------ |
+| success | boolean |  |
+| errCode | string |  |
+| errMessage | string |  |
+| data | object |  |
+| &ensp;&ensp;&#124;─authId | string |  |
+| &ensp;&ensp;&#124;─userId | integer |  |
+| &ensp;&ensp;&#124;─phone | string |  |
+
+**Response Demo:**
+
+```json
+{
+  "success": false,
+  "errCode": "",
+  "errMessage": "",
+  "data": {
+    "authId": "",
+    "userId": 0,
+    "phone": ""
+  }
+}
+```
+
+
+
+
+---
+### getVerificationCode
+
+> BASIC
+
+**Path:** /api/v1/user/getVerificationCode
+
+**Method:** POST
+
+> REQUEST
+
+**Query:**
+
+| name | value | required | desc |
+| ------------ | ------------ | ------------ | ------------ |
+| phone |  | YES |  |
+
+
+
+> RESPONSE
+
+**Headers:**
+
+| name | value | required | desc |
+| ------------ | ------------ | ------------ | ------------ |
+| content-type | application/json;charset=UTF-8 | NO |  |
+
+**Body:**
+
+| name | type | desc |
+| ------------ | ------------ | ------------ |
+| success | boolean |  |
+| errCode | string |  |
+| errMessage | string |  |
+| data | object |  |
+
+**Response Demo:**
+
+```json
+{
+  "success": false,
+  "errCode": "",
+  "errMessage": "",
+  "data": null
+}
+```
+
+
+
+
+
 ## WorkflowController
 
 WorkflowController
@@ -1336,70 +1741,6 @@ WorkflowController
   "data": {
     "id": 0,
     "currentStage": ""
-  }
-}
-```
-
-
-
-
-
-## UserController
-
-UserController
-
-
----
-### login
-
-> BASIC
-
-**Path:** /api/v1/user/login
-
-**Method:** POST
-
-> REQUEST
-
-**Query:**
-
-| name | value | required | desc |
-| ------------ | ------------ | ------------ | ------------ |
-| phone |  | YES |  |
-| verifyCode |  | YES |  |
-
-
-
-> RESPONSE
-
-**Headers:**
-
-| name | value | required | desc |
-| ------------ | ------------ | ------------ | ------------ |
-| content-type | application/json;charset=UTF-8 | NO |  |
-
-**Body:**
-
-| name | type | desc |
-| ------------ | ------------ | ------------ |
-| success | boolean |  |
-| errCode | string |  |
-| errMessage | string |  |
-| data | object |  |
-| &ensp;&ensp;&#124;─authId | string |  |
-| &ensp;&ensp;&#124;─userId | integer |  |
-| &ensp;&ensp;&#124;─phone | string |  |
-
-**Response Demo:**
-
-```json
-{
-  "success": false,
-  "errCode": "",
-  "errMessage": "",
-  "data": {
-    "authId": "",
-    "userId": 0,
-    "phone": ""
   }
 }
 ```

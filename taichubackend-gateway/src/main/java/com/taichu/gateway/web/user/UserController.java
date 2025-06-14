@@ -27,4 +27,12 @@ public class UserController {
         AuthDTO authDTO = userAppService.login(phone, verifyCode);
         return SingleResponse.of(authDTO);
     }
+
+    @PostMapping("/getVerificationCode")
+    @ApiOperation(value = "获取验证码")
+    public SingleResponse<Void> getVerificationCode(
+            @ApiParam(required = true) @RequestParam String phone) {
+        // TODO
+        return SingleResponse.of(null);
+    }
 }

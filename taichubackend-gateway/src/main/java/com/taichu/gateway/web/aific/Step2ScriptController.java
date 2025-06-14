@@ -4,7 +4,7 @@ import com.alibaba.cola.dto.MultiResponse;
 import com.alibaba.cola.dto.SingleResponse;
 import com.taichu.application.service.ScriptAndStoryboardTextAppService;
 import com.taichu.sdk.model.request.GenerateScriptRequest;
-import com.taichu.sdk.model.ScriptDTO;
+import com.taichu.sdk.model.ScriptVO;
 import com.taichu.sdk.model.WorkflowTaskStatusDTO;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -41,6 +41,14 @@ public class Step2ScriptController {
         return scriptAppService.submitGenScriptTask(request, null);
     }
 
+    @PostMapping("/userReGenerate")
+    @ApiOperation(value = "提交剧本生成任务", notes = "")
+    public SingleResponse<Long> reGenerateScript(@RequestBody GenerateScriptRequest request) {
+        // 重新生成
+        // TODO@chai
+        return null;
+    }
+
     @GetMapping("/task/status")
     @ApiOperation(value = "查询任务状态", notes = "")
     public SingleResponse<WorkflowTaskStatusDTO> getScriptTaskStatus(@RequestParam("workflow_id") Long workflowId) {
@@ -49,15 +57,29 @@ public class Step2ScriptController {
 
     @GetMapping("/getScript")
     @ApiOperation(value = "获取剧本", notes = "")
-    public MultiResponse<ScriptDTO> getScript(@RequestParam Long workflowId) {
+    public MultiResponse<ScriptVO> getScript(@RequestParam Long workflowId) {
         return scriptAppService.getScript(workflowId);
+    }
+
+    @GetMapping("/getRoles")
+    @ApiOperation(value = "获取角色", notes = "")
+    public MultiResponse<RoleVO> getRoles(@RequestParam Long workflowId) {
+        // TODO
+        return null;
+    }
+
+    @PostMapping("/updateSelectedImage")
+    @ApiOperation(value = "更改默认头像", notes = "")
+    public MultiResponse<RoleVO> updateSelectedRoleImage(@RequestParam UpdateRoleImageRequest request) {
+        // TODO
+        return null;
     }
 
     @GetMapping("/downloadScript")
     @ApiOperation(value = "下载剧本", notes = "")
     public ResponseEntity<Resource> downloadScript(@RequestParam Long workflowId) {
         // 1. 获取所有剧本信息
-        MultiResponse<ScriptDTO> scriptListResponse = scriptAppService.getScript(workflowId);
+        MultiResponse<ScriptVO> scriptListResponse = scriptAppService.getScript(workflowId);
         if (!scriptListResponse.isSuccess() || scriptListResponse.getData() == null || scriptListResponse.getData().isEmpty()) {
             return ResponseEntity.notFound().build();
         }
@@ -69,7 +91,7 @@ public class Step2ScriptController {
 
         try (ZipOutputStream zipOut = new ZipOutputStream(new FileOutputStream(zipFilePath))) {
             // 3. 下载每个剧本并添加到zip文件
-            for (ScriptDTO script : scriptListResponse.getData()) {
+            for (ScriptVO script : scriptListResponse.getData()) {
                 if (script.getScriptContent() == null) {
                     continue;
                 }
