@@ -8,6 +8,10 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.client.HttpStatusCodeException;
 import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
+import org.springframework.core.io.ByteArrayResource;
+import org.springframework.util.LinkedMultiValueMap;
+import org.springframework.util.MultiValueMap;
+import com.taichu.domain.algo.model.common.UploadFile;
 
 /**
  * 算法服务 HTTP 客户端工具类
@@ -136,5 +140,39 @@ public class AlgoHttpClient {
         }
         // 如果无法提取文件名，生成一个默认名称
         throw new Exception("无法提取到文件名");
+    }
+
+    public <R> R postMultipart(String path, String prompt, String workflowId, java.util.List<UploadFile> files, Class<R> responseType) {
+        try {
+            String url = baseUrl + path;
+            MultiValueMap<String, Object> body = new LinkedMultiValueMap<>();
+            body.add("prompt", prompt);
+            body.add("workflow_id", workflowId);
+
+            if (files != null) {
+                for (UploadFile file : files) {
+                    ByteArrayResource resource = new ByteArrayResource(file.getFileContent()) {
+                        @Override
+                        public String getFilename() {
+                            return file.getFileName();
+                        }
+                    };
+                    body.add("files", resource);
+                }
+            }
+
+            HttpHeaders headers = new HttpHeaders();
+            headers.setContentType(MediaType.MULTIPART_FORM_DATA);
+
+            HttpEntity<MultiValueMap<String, Object>> httpEntity = new HttpEntity<>(body, headers);
+
+            return restTemplate.postForObject(url, httpEntity, responseType);
+        } catch (HttpStatusCodeException e) {
+            log.error("HTTP MULTIPART POST 请求失败, path: {}, statusCode: {}, responseBody: {}", path, e.getStatusCode(), e.getResponseBodyAsString(), e);
+            throw new AlgoHttpException("HTTP MULTIPART POST 请求失败: " + e.getResponseBodyAsString(), e.getStatusCode().value());
+        } catch (RestClientException e) {
+            log.error("HTTP MULTIPART POST 请求失败, path: {}, error: {}", path, e.getMessage(), e);
+            throw new AlgoHttpException("HTTP MULTIPART POST 请求失败: " + e.getMessage());
+        }
     }
 } 

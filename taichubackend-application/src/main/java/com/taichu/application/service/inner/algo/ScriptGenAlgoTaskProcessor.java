@@ -1,27 +1,32 @@
 package com.taichu.application.service.inner.algo;
 
 import com.taichu.domain.algo.gateway.AlgoGateway;
+import com.taichu.domain.algo.gateway.FileGateway;
 import com.taichu.domain.algo.model.AlgoResponse;
+import com.taichu.domain.algo.model.common.UploadFile;
 import com.taichu.domain.algo.model.request.ScriptTaskRequest;
 import com.taichu.domain.algo.model.response.ScriptResult;
 import com.taichu.domain.enums.AlgoTaskTypeEnum;
 import com.taichu.domain.enums.CommonStatusEnum;
-import com.taichu.domain.enums.TaskStatusEnum;
-import com.taichu.domain.enums.WorkflowStatusEnum;
+import com.taichu.domain.enums.ResourceTypeEnum;
+import com.taichu.domain.enums.WorkflowTaskConstant;
 import com.taichu.domain.model.FicAlgoTaskBO;
+import com.taichu.domain.model.FicResourceBO;
 import com.taichu.domain.model.FicScriptBO;
 import com.taichu.domain.model.FicWorkflowTaskBO;
+import com.taichu.infra.repo.FicResourceRepository;
 import com.taichu.infra.repo.FicScriptRepository;
 import com.taichu.infra.repo.FicWorkflowRepository;
 import com.taichu.infra.repo.FicWorkflowTaskRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.slf4j.Logger;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Component
 @Slf4j
@@ -30,13 +35,21 @@ public class ScriptGenAlgoTaskProcessor extends AbstractAlgoTaskProcessor {
     private final AlgoGateway algoGateway;
     private final FicScriptRepository ficScriptRepository;
     private final FicWorkflowTaskRepository ficWorkflowTaskRepository;
+    private final FicResourceRepository ficResourceRepository;
+    private final FileGateway fileGateway;
 
-    @Autowired
-    public ScriptGenAlgoTaskProcessor(AlgoGateway algoGateway, FicScriptRepository ficScriptRepository, FicWorkflowTaskRepository ficWorkflowTaskRepository,  FicWorkflowRepository ficWorkflowRepository) {
+    public ScriptGenAlgoTaskProcessor(AlgoGateway algoGateway, 
+                                    FicScriptRepository ficScriptRepository, 
+                                    FicWorkflowTaskRepository ficWorkflowTaskRepository,  
+                                    FicWorkflowRepository ficWorkflowRepository,
+                                    FicResourceRepository ficResourceRepository,
+                                    FileGateway fileGateway) {
         super(ficWorkflowTaskRepository, ficWorkflowRepository);
         this.algoGateway = algoGateway;
         this.ficScriptRepository = ficScriptRepository;
         this.ficWorkflowTaskRepository = ficWorkflowTaskRepository;
+        this.ficResourceRepository = ficResourceRepository;
+        this.fileGateway = fileGateway;
     }
 
     @Override
@@ -57,9 +70,38 @@ public class ScriptGenAlgoTaskProcessor extends AbstractAlgoTaskProcessor {
     @Override
     public List<AlgoResponse> generateTasks(FicWorkflowTaskBO workflowTask) {
         try {
+            // 获取小说文件
+            List<FicResourceBO> novelFiles = ficResourceRepository.findByWorkflowIdAndResourceType(
+                workflowTask.getWorkflowId(), 
+                ResourceTypeEnum.NOVEL_FILE
+            );
+            
+            if (novelFiles.isEmpty()) {
+                log.error("未找到小说文件, workflowId: {}", workflowTask.getWorkflowId());
+                return new ArrayList<>();
+            }
+            
             // 构建剧本生成请求
             ScriptTaskRequest request = new ScriptTaskRequest();
             request.setWorkflowId(String.valueOf(workflowTask.getWorkflowId()));
+            Optional.ofNullable(workflowTask.getParams().get(WorkflowTaskConstant.SCRIPT_PROMPT)).ifPresentOrElse(request::setPrompt, () -> request.setPrompt(""));
+            
+            // 设置小说文件，支持 txt 和 pdf
+            List<UploadFile> files = novelFiles.stream()
+                .map(novelFile -> {
+                    UploadFile uploadFile = new UploadFile();
+                    uploadFile.setFileName(novelFile.getOriginName());
+                    uploadFile.setFileContent(fileGateway.getFileObj(novelFile.getResourceUrl()));
+                    String lowerName = novelFile.getOriginName() != null ? novelFile.getOriginName().toLowerCase() : "";
+                    if (lowerName.endsWith(".pdf")) {
+                        uploadFile.setContentType("application/pdf");
+                    } else {
+                        uploadFile.setContentType("text/plain");
+                    }
+                    return uploadFile;
+                })
+                .collect(Collectors.toList());
+            request.setFiles(files);
             
             // 调用算法服务生成剧本
             AlgoResponse response = algoGateway.createScriptTask(request);

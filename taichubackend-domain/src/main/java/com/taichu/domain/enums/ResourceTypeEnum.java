@@ -1,6 +1,12 @@
 package com.taichu.domain.enums;
 
 public enum ResourceTypeEnum {
+
+    /**
+     * 小说文本
+     */
+    NOVEL_FILE,
+
     /**
      * 分镜图片
      */

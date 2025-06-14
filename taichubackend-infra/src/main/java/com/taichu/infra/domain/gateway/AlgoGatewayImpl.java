@@ -35,7 +35,13 @@ public class AlgoGatewayImpl implements AlgoGateway {
     @Override
     public AlgoResponse createScriptTask(ScriptTaskRequest request) {
         try {
-            return algoHttpClient.post("/api/v1/script/task", request, AlgoResponse.class);
+            return algoHttpClient.postMultipart(
+                "/api/v1/script/task",
+                request.getPrompt(),
+                request.getWorkflowId(),
+                request.getFiles(),
+                AlgoResponse.class
+            );
         } catch (AlgoHttpException e) {
             AlgoResponse response = new AlgoResponse();
             response.setSuccess(false);

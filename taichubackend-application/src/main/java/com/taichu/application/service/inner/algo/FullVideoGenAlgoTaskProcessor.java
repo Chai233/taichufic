@@ -147,7 +147,7 @@ public class FullVideoGenAlgoTaskProcessor extends AbstractAlgoTaskProcessor {
             // 保存资源信息
             FicResourceBO ficResourceBO = new FicResourceBO();
             ficResourceBO.setWorkflowId(workflowTask.getWorkflowId());
-            ficResourceBO.setResourceType(FicResourceTypeEnum.FULL_VIDEO.getValue());
+            ficResourceBO.setResourceType(ResourceTypeEnum.FULL_VIDEO.name());
             ficResourceBO.setResourceUrl(uploadResp.getData());
             ficResourceBO.setRelevanceId(algoTask.getRelevantId());
             ficResourceBO.setRelevanceType(algoTask.getRelevantIdType());
