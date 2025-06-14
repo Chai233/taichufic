@@ -90,8 +90,7 @@ public class FullVideoGenAlgoTaskProcessor extends AbstractAlgoTaskProcessor {
             Optional.ofNullable(workflowTask.getParams().get(WorkflowTaskConstant.VIDEO_VOICE_TYPE))
                     .ifPresent(request::setVoice_type);
             Optional.ofNullable(workflowTask.getParams().get(WorkflowTaskConstant.VIDEO_BGM_TYPE))
-                    .ifPresentOrElse(request::setBgm_type, 
-                            () -> request.setBgm_type("摇滚质感"));
+                    .ifPresentOrElse(request::setBgm_type, () -> request.setBgm_type("摇滚质感"));
 
             // 调用算法服务生成剧本
             AlgoResponse response = algoGateway.createVideoMergeTask(request);
