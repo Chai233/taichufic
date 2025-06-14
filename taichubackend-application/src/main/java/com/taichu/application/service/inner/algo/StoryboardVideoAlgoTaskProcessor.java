@@ -46,7 +46,7 @@ public class StoryboardVideoAlgoTaskProcessor extends AbstractAlgoTaskProcessor 
 
     @Override
     public AlgoTaskTypeEnum getAlgoTaskType() {
-        return AlgoTaskTypeEnum.STORYBOARD_IMG_GENERATION;
+        return AlgoTaskTypeEnum.STORYBOARD_VIDEO_GENERATION;
     }
 
     @Override
@@ -114,7 +114,7 @@ public class StoryboardVideoAlgoTaskProcessor extends AbstractAlgoTaskProcessor 
 
         // 构建请求参数并调用算法服务
         String voiceType = workflowTask.getParams().get("voice_type");
-        voiceType = StringUtils.isEmptyOrWhitespaceOnly(voiceType) ? "磁性男声" : voiceType;
+        voiceType = StringUtils.isEmptyOrWhitespaceOnly(voiceType) ? VoiceTypeEnum.DEFAULT_MAN_SOUND.getValue() : voiceType;
         String videoStyle = workflowTask.getParams().get("video_style");
         videoStyle = StringUtils.isEmptyOrWhitespaceOnly(videoStyle) ? "赛博朋克" : videoStyle;
 
@@ -185,11 +185,6 @@ public class StoryboardVideoAlgoTaskProcessor extends AbstractAlgoTaskProcessor 
         } catch (Exception e) {
             log.error("处理视频图片失败, algoTaskId: {}", algoTask.getAlgoTaskId(), e);
         }
-    }
-
-    @Override
-    public void postProcessAllComplete(FicWorkflowTaskBO workflowTask, List<FicAlgoTaskBO> algoTasks) {
-
     }
 
     @Override

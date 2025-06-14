@@ -6,6 +6,26 @@ import java.util.List;
 
 @Data
 public class VideoMergeRequest {
-    private List<UploadFile> files;  // 视频文件列表
-    private String workflowId;       // 工作流ID
+    /**
+     * 必须：是
+     * 工作流id
+     */
+    private String workflow_id;
+    /**
+     * 必须：是
+     * 需要合并的分镜id列表
+     */
+    private List<String> storyboard_ids;
+
+    /**
+     * 必须：否
+     * 旁白配音风格，默认“磁性男声”
+     */
+    private String voice_type;
+
+    /**
+     * 必须：是
+     * bgm风格
+     */
+    private String bgm_type;
 } 

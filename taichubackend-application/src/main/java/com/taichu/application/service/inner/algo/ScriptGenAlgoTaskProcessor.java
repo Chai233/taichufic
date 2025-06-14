@@ -23,9 +23,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
-/**
- * TODO@chai
- */
 @Component
 @Slf4j
 public class ScriptGenAlgoTaskProcessor extends AbstractAlgoTaskProcessor {
@@ -115,30 +112,4 @@ public class ScriptGenAlgoTaskProcessor extends AbstractAlgoTaskProcessor {
             log.error("Failed to process script generation result for task: " + algoTask.getAlgoTaskId(), e);
         }
     }
-
-    @Override
-    public void postProcessAllComplete(FicWorkflowTaskBO workflowTask, List<FicAlgoTaskBO> algoTasks) {
-        try {
-            // 检查是否所有任务都已完成
-            boolean allSuccess = algoTasks.stream()
-                    .allMatch(task -> TaskStatusEnum.COMPLETED.getCode().equals(task.getStatus()));
-            
-            if (allSuccess) {
-                // 更新工作流任务状态为成功
-                workflowTask.setStatus(TaskStatusEnum.COMPLETED.getCode());
-                ficWorkflowTaskRepository.updateTaskStatus(workflowTask.getId(), TaskStatusEnum.COMPLETED);
-                log.info("All script generation tasks completed successfully for workflow: " + workflowTask.getWorkflowId());
-            } else {
-                // 如果有任何任务失败，将工作流任务标记为失败
-                workflowTask.setStatus(TaskStatusEnum.FAILED.getCode());
-                ficWorkflowTaskRepository.updateTaskStatus(workflowTask.getId(), TaskStatusEnum.FAILED);
-                log.error("Script generation failed for workflow: " + workflowTask.getWorkflowId());
-            }
-        } catch (Exception e) {
-            log.error("Failed to process script generation workflow: " + workflowTask.getWorkflowId(), e);
-            workflowTask.setStatus(TaskStatusEnum.FAILED.getCode());
-            ficWorkflowTaskRepository.updateTaskStatus(workflowTask.getId(), TaskStatusEnum.FAILED);
-        }
-    }
-
 }
