@@ -2,14 +2,13 @@ package com.taichu.application.service;
 
 import com.alibaba.cola.dto.MultiResponse;
 import com.alibaba.cola.dto.SingleResponse;
+import com.taichu.application.executor.ComposeVideoTaskExecutor;
 import com.taichu.application.helper.WorkflowValidationHelper;
 import com.taichu.common.common.util.StreamUtil;
 import com.taichu.domain.algo.gateway.FileGateway;
 import com.taichu.domain.enums.*;
-import com.taichu.domain.model.FicAlgoTaskBO;
 import com.taichu.domain.model.FicResourceBO;
 import com.taichu.domain.model.FicWorkflowTaskBO;
-import com.taichu.infra.repo.FicAlgoTaskRepository;
 import com.taichu.infra.repo.FicResourceRepository;
 import com.taichu.infra.repo.FicWorkflowTaskRepository;
 import com.taichu.sdk.model.FullVideoListItemDTO;
@@ -42,6 +41,9 @@ public class ComposeVideoAppService {
     @Autowired
     private FileGateway fileGateway;
 
+    @Autowired
+    private ComposeVideoTaskExecutor composeVideoTaskExecutor;
+
     /**
      * 提交视频合成任务
      */
@@ -53,16 +55,8 @@ public class ComposeVideoAppService {
             return SingleResponse.buildFailure(validateResponse.getErrCode(), validateResponse.getErrMessage());
         }
 
-        // 2. 创建任务
-        FicWorkflowTaskBO ficWorkflowTaskBO = new FicWorkflowTaskBO();
-        ficWorkflowTaskBO.setWorkflowId(request.getWorkflowId());
-        ficWorkflowTaskBO.setTaskType(TaskTypeEnum.FULL_VIDEO_GENERATION.name());
-        ficWorkflowTaskBO.setStatus(TaskStatusEnum.RUNNING.getCode());
-        ficWorkflowTaskBO.setGmtCreate(System.currentTimeMillis());
-        long workflowTaskId = ficWorkflowTaskRepository.createFicWorkflowTask(ficWorkflowTaskBO);
-        ficWorkflowTaskBO.setId(workflowTaskId);
-
-        return SingleResponse.of(workflowTaskId);
+        // 2. 提交任务
+        return composeVideoTaskExecutor.submitTask(request.getWorkflowId(), request);
     }
 
     /**
