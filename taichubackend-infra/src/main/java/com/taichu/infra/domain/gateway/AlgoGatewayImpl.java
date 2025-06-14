@@ -35,13 +35,14 @@ public class AlgoGatewayImpl implements AlgoGateway {
     @Override
     public AlgoResponse createScriptTask(ScriptTaskRequest request) {
         try {
-            return algoHttpClient.postMultipart(
+            AlgoApiResponse<TaskIdData> apiResp = algoHttpClient.postMultipart(
                 "/api/v1/script/task",
                 request.getPrompt(),
                 request.getWorkflowId(),
                 request.getFiles(),
-                AlgoResponse.class
+                AlgoApiResponse.class
             );
+            return convertApiResponse(apiResp, "ALGO_SCRIPT_CREATE_ERROR");
         } catch (AlgoHttpException e) {
             AlgoResponse response = new AlgoResponse();
             response.setSuccess(false);
@@ -80,7 +81,12 @@ public class AlgoGatewayImpl implements AlgoGateway {
     @Override
     public AlgoResponse createStoryboardTextTask(StoryboardTextRequest request) {
         try {
-            return algoHttpClient.post("/api/v1/storyboard/text/task", request, AlgoResponse.class);
+            AlgoApiResponse<TaskIdData> apiResp = algoHttpClient.post(
+                "/api/v1/storyboard/text/task",
+                request,
+                AlgoApiResponse.class
+            );
+            return convertApiResponse(apiResp, "ALGO_STORYBOARD_TEXT_CREATE_ERROR");
         } catch (AlgoHttpException e) {
             AlgoResponse response = new AlgoResponse();
             response.setSuccess(false);
@@ -117,7 +123,12 @@ public class AlgoGatewayImpl implements AlgoGateway {
     @Override
     public AlgoResponse createStoryboardImageTask(StoryboardImageRequest request) {
         try {
-            return algoHttpClient.post("/api/v1/storyboard/image/task", request, AlgoResponse.class);
+            AlgoApiResponse<TaskIdData> apiResp = algoHttpClient.post(
+                "/api/v1/storyboard/image/task",
+                request,
+                AlgoApiResponse.class
+            );
+            return convertApiResponse(apiResp, "ALGO_STORYBOARD_IMAGE_CREATE_ERROR");
         } catch (AlgoHttpException e) {
             AlgoResponse response = new AlgoResponse();
             response.setSuccess(false);
@@ -166,7 +177,12 @@ public class AlgoGatewayImpl implements AlgoGateway {
     @Override
     public AlgoResponse createStoryboardVideoTask(StoryboardVideoRequest request) {
         try {
-            return algoHttpClient.post("/api/v1/storyboard/video/task", request, AlgoResponse.class);
+            AlgoApiResponse<TaskIdData> apiResp = algoHttpClient.post(
+                "/api/v1/storyboard/video/task",
+                request,
+                AlgoApiResponse.class
+            );
+            return convertApiResponse(apiResp, "ALGO_STORYBOARD_VIDEO_CREATE_ERROR");
         } catch (AlgoHttpException e) {
             AlgoResponse response = new AlgoResponse();
             response.setSuccess(false);
@@ -215,7 +231,12 @@ public class AlgoGatewayImpl implements AlgoGateway {
     @Override
     public AlgoResponse createVideoMergeTask(VideoMergeRequest request) {
         try {
-            return algoHttpClient.post("/api/v1/video/merge/task", request, AlgoResponse.class);
+            AlgoApiResponse<TaskIdData> apiResp = algoHttpClient.post(
+                "/api/v1/video/merge/task",
+                request,
+                AlgoApiResponse.class
+            );
+            return convertApiResponse(apiResp, "ALGO_VIDEO_MERGE_CREATE_ERROR");
         } catch (AlgoHttpException e) {
             AlgoResponse response = new AlgoResponse();
             response.setSuccess(false);
@@ -274,13 +295,71 @@ public class AlgoGatewayImpl implements AlgoGateway {
 
     @Override
     public AlgoResponse createRoleImageTask(RoleImageRequest request) {
-        // TODO
-        return null;
+        try {
+            AlgoApiResponse<TaskIdData> apiResp = algoHttpClient.post(
+                "/generate_role_image",
+                request,
+                AlgoApiResponse.class
+            );
+            return convertApiResponse(apiResp, "ALGO_ROLE_IMAGE_CREATE_ERROR");
+        } catch (AlgoHttpException e) {
+            AlgoResponse response = new AlgoResponse();
+            response.setSuccess(false);
+            response.setErrorCode("ALGO_ROLE_IMAGE_CREATE_ERROR_" + e.getStatusCode());
+            response.setErrorMsg(e.getMessage());
+            return response;
+        }
     }
 
     @Override
     public MultipartFile getRoleImageResult(String taskId) {
-        // TODO
-        return null;
+        try {
+            FileResponse imageData = algoHttpClient.downloadFile("/get_role_image/" + taskId);
+            
+            if (!imageData.isSuccess()) {
+                log.error("获取角色图片失败, taskId: {}, 服务器返回失败", taskId);
+                return null;
+            }
+            
+            return new ByteArrayMultipartFile(
+                imageData.getData(),
+                imageData.getFileName(),
+                imageData.getContentType()
+            );
+        } catch (AlgoHttpException e) {
+            log.error("获取角色图片失败, taskId: {}, error: {}", taskId, e.getMessage());
+            return null;
+        }
+    }
+
+    /**
+     * 通用算法接口响应转换
+     */
+    private AlgoResponse convertApiResponse(AlgoApiResponse apiResp, String errorPrefix) {
+        AlgoResponse resp = new AlgoResponse();
+        if (apiResp == null) {
+            resp.setSuccess(false);
+            resp.setErrorCode(errorPrefix + "_NULL");
+            resp.setErrorMsg("算法服务无响应");
+            return resp;
+        }
+        if (apiResp.getCode() == 200 && apiResp.getData() != null) {
+            resp.setSuccess(true);
+            Object data = apiResp.getData();
+            try {
+                // 兼容反序列化为LinkedHashMap的情况
+                if (data instanceof TaskIdData) {
+                    resp.setTaskId(((TaskIdData) data).getTask_id());
+                } else if (data instanceof java.util.Map) {
+                    Object tid = ((java.util.Map) data).get("task_id");
+                    if (tid != null) resp.setTaskId(tid.toString());
+                }
+            } catch (Exception ignore) {}
+        } else {
+            resp.setSuccess(false);
+            resp.setErrorCode(errorPrefix + "_" + apiResp.getCode());
+            resp.setErrorMsg(apiResp.getMsg());
+        }
+        return resp;
     }
 } 
