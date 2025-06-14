@@ -21,8 +21,8 @@ fi
 
 # 3. 创建日志目录并设置权限
 echo "创建日志目录..."
-mkdir -p logs
-chmod 777 logs
+mkdir -p ~/logs/taichu-fic
+chmod 777 ~/logs/taichu-fic
 
 # 4. 启动应用服务
 echo "启动应用服务..."
@@ -48,11 +48,11 @@ fi
 
 # 8. 检查日志文件是否创建
 echo "检查日志文件..."
-if [ ! -f logs/application.log ]; then
+if [ ! -f ~/logs/taichu-fic/application.log ]; then
     echo "警告：应用日志文件未创建，请检查应用日志配置"
 fi
 
 echo "应用部署完成！"
-echo "日志文件位置：./logs/"
+echo "日志文件位置：~/logs/taichu-fic/"
 echo "- application.log：应用日志"
 echo "- error.log：错误日志" 

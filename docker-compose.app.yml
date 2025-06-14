@@ -10,9 +10,9 @@ services:
       - SPRING_DATASOURCE_URL=jdbc:mysql://mysql_demo:3306/demo_db_taichu?useSSL=false&serverTimezone=UTC
       - SPRING_DATASOURCE_USERNAME=demo
       - SPRING_DATASOURCE_PASSWORD=demo123
-      - LOG_PATH=/app/logs
+      - LOG_PATH=/home/${USER}/logs/taichu-fic
     volumes:
-      - ./logs:/app/logs
+      - ~/logs/taichu-fic:/home/${USER}/logs/taichu-fic
     logging:
       driver: "json-file"
       options:

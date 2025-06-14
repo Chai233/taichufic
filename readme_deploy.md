@@ -1,61 +1,143 @@
-好的，我来总结一下在云服务器上部署这个项目的完整步骤：
+# 部署说明文档
 
-1. **准备工作**：
+## 一、环境要求
+
+- Linux 服务器
+- Docker
+- Docker Compose
+- Docker源改为阿里云
+- 开放端口：
+  - 8080：应用服务
+  - 3306：数据库服务
+
+### HowTo: Docker源改为阿里云
+切换镜像源为阿里云，参考 https://cr.console.aliyun.com/cn-hangzhou/instances/mirrors
+```shell
+sudo mkdir -p /etc/docker
+sudo tee /etc/docker/daemon.json <<-'EOF'
+{
+  "registry-mirrors": ["https://yf8jt11h.mirror.aliyuncs.com"]
+}
+EOF
+sudo systemctl daemon-reload
+sudo systemctl restart docker
+```
+
+## 二、首次部署
+
+### 1. 准备工作
+
 ```bash
-# 1. 将项目代码复制到云服务器
-# 可以使用 git clone 或者 scp 等方式
-
-# 2. 进入项目目录
+# 克隆项目代码
+git clone <项目仓库地址>
 cd taichubackend
 
-# 3. 给部署脚本添加执行权限
+# 给部署脚本添加执行权限
 chmod +x deploy-mysql.sh deploy-app.sh
 ```
 
-2. **部署数据库**：
+### 2. 部署数据库
+
 ```bash
 # 运行数据库部署脚本
 ./deploy-mysql.sh
 ```
-这个脚本会：
+
+该脚本会：
 - 检查并安装 Docker 和 Docker Compose
 - 启动 MySQL 容器
 - 初始化数据库
 - 创建必要的表
 
-3. **部署应用**：
+### 3. 部署应用
+
 ```bash
 # 运行应用部署脚本
 ./deploy-app.sh
 ```
-这个脚本会：
+
+该脚本会：
 - 检查数据库是否正常运行
 - 创建日志目录
 - 构建并启动应用容器
 - 检查应用健康状态
 
-4. **验证部署**：
+### 4. 验证部署
+
 ```bash
 # 检查容器状态
 docker ps
 
 # 查看应用日志
-tail -f logs/application.log
+tail -f ~/logs/taichu-fic/application.log
 
 # 查看错误日志
-tail -f logs/error.log
+tail -f ~/logs/taichu-fic/error.log
 
 # 测试应用健康状态
 curl http://localhost:8080/actuator/health
 ```
 
-5. **常用维护命令**：
-```bash
-# 查看数据库日志
-docker-compose -f docker-compose.mysql.yml logs -f
+## 三、更新部署
 
+### 1. 准备工作
+
+```bash
+# 更新代码
+git pull
+
+# 给更新脚本添加执行权限
+chmod +x update-app.sh
+```
+
+### 2. 执行更新
+
+```bash
+# 运行更新脚本
+./update-app.sh
+```
+
+该脚本会：
+- 检查数据库是否运行
+- 备份当前日志
+- 停止并删除旧的应用容器
+- 清理构建缓存
+- 重新构建并启动应用
+- 验证应用健康状态
+
+## 四、日志管理
+
+### 1. 日志位置
+
+所有日志文件存储在 `~/logs/taichu-fic/` 目录下：
+```
+~/logs/taichu-fic/
+├── application.log                # 当前应用日志
+├── application.2024-01-20.0.log  # 按日期和大小分割的日志
+├── error.log                     # 当前错误日志
+└── error.2024-01-20.0.log        # 按日期和大小分割的错误日志
+```
+
+### 2. 查看日志
+
+```bash
 # 查看应用日志
+tail -f ~/logs/taichu-fic/application.log
+
+# 查看错误日志
+tail -f ~/logs/taichu-fic/error.log
+
+# 查看容器日志
 docker-compose -f docker-compose.app.yml logs -f
+```
+
+## 五、常用维护命令
+
+### 1. 容器管理
+
+```bash
+# 查看所有容器状态
+docker ps
 
 # 重启数据库
 docker-compose -f docker-compose.mysql.yml restart
@@ -70,36 +152,38 @@ docker-compose -f docker-compose.mysql.yml down
 docker-compose -f docker-compose.app.yml down
 ```
 
-6. **注意事项**：
-- 确保云服务器防火墙开放了 8080 端口（应用）和 3306 端口（数据库）
-- 数据库数据会持久化在 Docker volume 中
-- 应用日志保存在 `./logs` 目录下
-- 如果遇到权限问题，可能需要使用 `sudo` 运行部署脚本
+### 2. 日志管理
 
-7. **目录结构**：
-```
-taichubackend/
-├── docker-compose.mysql.yml    # 数据库配置
-├── docker-compose.app.yml      # 应用配置
-├── Dockerfile                  # 应用构建文件
-├── deploy-mysql.sh            # 数据库部署脚本
-├── deploy-app.sh              # 应用部署脚本
-├── logs/                      # 日志目录
-│   ├── application.log        # 应用日志
-│   └── error.log             # 错误日志
-└── taichubackend-starter/     # 应用代码
+```bash
+# 查看数据库日志
+docker-compose -f docker-compose.mysql.yml logs -f
+
+# 查看应用日志
+docker-compose -f docker-compose.app.yml logs -f
+
+# 查看特定时间段的日志
+docker-compose -f docker-compose.app.yml logs --since 2024-01-01T00:00:00
 ```
 
-8. **故障排查**：
-- 如果数据库启动失败，检查 `docker-compose.mysql.yml` 配置
-- 如果应用启动失败，检查 `docker-compose.app.yml` 配置
-- 查看容器日志：`docker logs <container_name>`
-- 检查网络连接：`docker network inspect taichu_network`
+## 六、故障排查
 
-如果你需要：
-- 修改数据库配置
-- 调整应用配置
-- 更改日志配置
-- 添加其他服务
+1. **数据库连接问题**
+   - 检查数据库容器是否运行：`docker ps | grep mysql_demo`
+   - 检查数据库日志：`docker-compose -f docker-compose.mysql.yml logs`
 
-请告诉我，我可以帮你进行相应的调整。
+2. **应用启动问题**
+   - 检查应用容器是否运行：`docker ps | grep taichu_app`
+   - 检查应用日志：`tail -f ~/logs/taichu-fic/application.log`
+   - 检查错误日志：`tail -f ~/logs/taichu-fic/error.log`
+
+3. **网络问题**
+   - 检查网络连接：`docker network inspect taichu_network`
+   - 检查端口占用：`netstat -tulpn | grep 8080`
+
+## 七、注意事项
+
+1. 部署前确保服务器有足够的磁盘空间
+2. 确保防火墙已开放必要端口
+3. 数据库数据会持久化在 Docker volume 中
+4. 应用日志会自动按日期和大小分割
+5. 更新时会自动备份旧日志
