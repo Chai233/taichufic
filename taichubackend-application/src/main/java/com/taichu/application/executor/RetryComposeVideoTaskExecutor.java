@@ -1,7 +1,10 @@
 package com.taichu.application.executor;
 
+import com.taichu.application.service.inner.algo.AlgoTaskInnerService;
+import com.taichu.domain.enums.AlgoTaskTypeEnum;
 import com.taichu.domain.enums.TaskTypeEnum;
 import com.taichu.domain.enums.WorkflowStatusEnum;
+import com.taichu.domain.model.FicWorkflowTaskBO;
 import com.taichu.infra.repo.FicWorkflowRepository;
 import com.taichu.infra.repo.FicWorkflowTaskRepository;
 import lombok.extern.slf4j.Slf4j;
@@ -11,8 +14,20 @@ import org.springframework.stereotype.Component;
 @Component
 @Slf4j
 public class RetryComposeVideoTaskExecutor extends ComposeVideoTaskExecutor {
-    public RetryComposeVideoTaskExecutor(FicWorkflowRepository workflowRepository, FicWorkflowTaskRepository ficWorkflowTaskRepository) {
+    private final AlgoTaskInnerService algoTaskInnerService;
+
+    public RetryComposeVideoTaskExecutor(FicWorkflowRepository workflowRepository, FicWorkflowTaskRepository ficWorkflowTaskRepository, AlgoTaskInnerService algoTaskInnerService) {
         super(workflowRepository, ficWorkflowTaskRepository);
+        this.algoTaskInnerService = algoTaskInnerService;
+    }
+
+    @Override
+    protected void doStartBackgroundProcessing(FicWorkflowTaskBO task) {
+        try {
+            algoTaskInnerService.runAlgoTask(task, AlgoTaskTypeEnum.USER_RETRY_FULL_VIDEO_GENERATION);
+        } catch (Exception e) {
+            log.error("Background processing failed for workflow: " + task.getWorkflowId(), e);
+        }
     }
 
     @Override

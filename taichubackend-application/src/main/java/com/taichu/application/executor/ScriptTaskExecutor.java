@@ -29,14 +29,9 @@ public class ScriptTaskExecutor extends AbstractTaskExecutor {
 
     @Override
     protected void doStartBackgroundProcessing(FicWorkflowTaskBO task) {
-        try {
-            algoTaskInnerService.runAlgoTask(task, AlgoTaskTypeEnum.SCRIPT_GENERATION);
-            // TODO@chai检查 SCRIPT_GENERATION 任务状态
-            algoTaskInnerService.runAlgoTask(task, AlgoTaskTypeEnum.STORYBOARD_TEXT_GENERATION);
-            // TODO@chai检查 STORYBOARD_TEXT_GENERATION 任务状态
-        } catch (Exception e) {
-            log.error("Background processing failed for workflow: " + task.getWorkflowId(), e);
-        }
+        algoTaskInnerService.runAlgoTask(task, AlgoTaskTypeEnum.SCRIPT_GENERATION);
+        algoTaskInnerService.runAlgoTask(task, AlgoTaskTypeEnum.ROLE_IMG_GENERATION);
+        algoTaskInnerService.runAlgoTask(task, AlgoTaskTypeEnum.STORYBOARD_TEXT_GENERATION);
     }
 
     @Override

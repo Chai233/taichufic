@@ -1,8 +1,6 @@
 package com.taichu.application.service.inner.algo;
 
 import com.google.common.primitives.Longs;
-import com.taichu.domain.algo.gateway.AlgoGateway;
-import com.taichu.domain.algo.model.AlgoResponse;
 import com.taichu.domain.enums.AlgoTaskTypeEnum;
 import com.taichu.domain.enums.TaskStatusEnum;
 import com.taichu.domain.model.FicAlgoTaskBO;
@@ -22,14 +20,12 @@ import java.util.stream.Collectors;
 @Service
 public class AlgoTaskInnerService implements InitializingBean {
 
-    public static final int WAIT_INTERVAL_MILLIS = 5000;
-    private final AlgoGateway algoGateway;
+    public static final int WAIT_INTERVAL_MILLIS = 30000;
     private final FicAlgoTaskRepository ficAlgoTaskRepository;
     private final List<AlgoTaskProcessor> taskProcessors = new ArrayList<>();
     private final Map<AlgoTaskTypeEnum, AlgoTaskProcessor> taskProcessorMap = new ConcurrentHashMap<>();
 
-    public AlgoTaskInnerService(AlgoGateway algoGateway, FicAlgoTaskRepository ficAlgoTaskRepository, List<AlgoTaskProcessor> algoTaskProcessors) {
-        this.algoGateway = algoGateway;
+    public AlgoTaskInnerService(FicAlgoTaskRepository ficAlgoTaskRepository, List<AlgoTaskProcessor> algoTaskProcessors) {
         this.ficAlgoTaskRepository = ficAlgoTaskRepository;
         this.taskProcessors.addAll(algoTaskProcessors);
     }
@@ -113,6 +109,7 @@ public class AlgoTaskInnerService implements InitializingBean {
             }
             if (anyFailed) {
                 processor.postProcessAnyFailed(ficWorkflowTaskBO, algoTasks);
+                throw new RuntimeException("运行算法任务失败");
             }
 
         } catch (Exception e) {
