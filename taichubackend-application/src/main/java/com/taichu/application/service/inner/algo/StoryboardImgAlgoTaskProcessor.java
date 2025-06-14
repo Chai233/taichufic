@@ -24,6 +24,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Component
@@ -121,6 +122,15 @@ public class StoryboardImgAlgoTaskProcessor extends AbstractAlgoTaskProcessor {
         request.setStoryboard_id(String.valueOf(storyboardId));
         request.setRoles(roleDTOList);
         request.setStoryboard(ficStoryboardBO.getContent());
+
+        Optional.ofNullable(workflowTask.getParams().get(WorkflowTaskConstant.IMG_IMAGE_STYLE)).ifPresent(request::setImage_style);
+        Optional.ofNullable(workflowTask.getParams().get(WorkflowTaskConstant.IMG_SCALE))
+                .map(Float::parseFloat)
+                .ifPresent(request::setScale);
+        Optional.ofNullable(workflowTask.getParams().get(WorkflowTaskConstant.IMG_STYLE_SCALE))
+                .map(Float::parseFloat)
+                .ifPresent(request::setStyle_scale);
+    
         return algoGateway.createStoryboardImageTask(request);
     }
 

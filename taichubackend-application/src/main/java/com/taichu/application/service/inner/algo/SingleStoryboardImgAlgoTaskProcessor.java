@@ -52,7 +52,7 @@ public class SingleStoryboardImgAlgoTaskProcessor extends StoryboardImgAlgoTaskP
 
         // 调用算法服务
         String operationName = "Call algorithm service for workflow: " + workflowId;
-        AlgoResponse response = callAlgoServiceWithRetry(operationName, () -> callAlgoServiceGenStoryboardImg(workflowId, ficStoryboardBO.getId()));
+        AlgoResponse response = callAlgoServiceWithRetry(operationName, () -> callAlgoServiceGenStoryboardImg(workflowTask, workflowId, ficStoryboardBO.getId()));
 
         // 检查算法服务响应
         if (response == null) {
