@@ -25,24 +25,23 @@ import java.util.stream.Collectors;
 @Component
 @Slf4j
 public class StoryboardVideoAlgoTaskProcessor extends AbstractAlgoTaskProcessor {
-    @Autowired
     private final FicStoryboardRepository ficStoryboardRepository;
-    @Autowired
-    private AlgoGateway algoGateway;
-    @Autowired
-    private FicRoleRepository ficRoleRepository;
-    @Autowired
-    private FileGateway fileGateway;
-    @Autowired
-    private FicResourceRepository ficResourceRepository;
-    @Autowired
-    private FicWorkflowTaskRepository ficWorkflowTaskRepository;
+    private final AlgoGateway algoGateway;
+    private final FicRoleRepository ficRoleRepository;
+    private final FileGateway fileGateway;
+    private final FicResourceRepository ficResourceRepository;
+    private final FicWorkflowTaskRepository ficWorkflowTaskRepository;
 
-    @Autowired
-    public StoryboardVideoAlgoTaskProcessor(FicStoryboardRepository ficStoryboardRepository, FicWorkflowTaskRepository ficWorkflowTaskRepository, FicWorkflowRepository ficWorkflowRepository) {
+    protected StoryboardVideoAlgoTaskProcessor(FicWorkflowTaskRepository ficWorkflowTaskRepository, FicWorkflowRepository ficWorkflowRepository, FicStoryboardRepository ficStoryboardRepository, AlgoGateway algoGateway, FicRoleRepository ficRoleRepository, FileGateway fileGateway, FicResourceRepository ficResourceRepository) {
         super(ficWorkflowTaskRepository, ficWorkflowRepository);
+        this.ficWorkflowTaskRepository = ficWorkflowTaskRepository;
         this.ficStoryboardRepository = ficStoryboardRepository;
+        this.algoGateway = algoGateway;
+        this.ficRoleRepository = ficRoleRepository;
+        this.fileGateway = fileGateway;
+        this.ficResourceRepository = ficResourceRepository;
     }
+
 
     @Override
     public AlgoTaskTypeEnum getAlgoTaskType() {
@@ -63,7 +62,7 @@ public class StoryboardVideoAlgoTaskProcessor extends AbstractAlgoTaskProcessor 
         for (FicStoryboardBO ficStoryboardBO : ficStoryboardBOList) {
             // 调用算法服务
             String operationName = "Call algorithm service for workflow: " + workflowId;
-            AlgoResponse response = callAlgoServiceWithRetry(operationName, () -> callAlgoService(workflowTask, ficStoryboardBO.getId()));
+            AlgoResponse response = callAlgoServiceWithRetry(operationName, () -> callAlgoGenStoryboardVideo(workflowTask, ficStoryboardBO.getId()));
 
             // 检查算法服务响应
             if (response == null) {
@@ -80,13 +79,13 @@ public class StoryboardVideoAlgoTaskProcessor extends AbstractAlgoTaskProcessor 
     }
 
     /**
-     * 调用算法服务生成分镜图片
-     * 
+     * 调用算法服务生成分镜视频
+     *
      * @param workflowTask 工作流任务对象
      * @param storyboardId 分镜ID
-     * @return 算法服务响应结果,如果分镜不存在或角色列表为空则返回null
+     * @return 算法服务响应结果, 如果分镜不存在或角色列表为空则返回null
      */
-    private AlgoResponse callAlgoService(FicWorkflowTaskBO workflowTask, Long storyboardId) {
+    protected AlgoResponse callAlgoGenStoryboardVideo(FicWorkflowTaskBO workflowTask, Long storyboardId) {
         Long workflowId = workflowTask.getWorkflowId();
         // 查询分镜信息
         FicStoryboardBO ficStoryboardBO = ficStoryboardRepository.findById(storyboardId);
@@ -101,7 +100,7 @@ public class StoryboardVideoAlgoTaskProcessor extends AbstractAlgoTaskProcessor 
             log.warn("角色列表为空, workflowId: {}", workflowId);
             return null;
         }
-        
+
         // 将FicRoleBO列表转换为RoleDTO列表
         List<StoryboardVideoRequest.RoleDTO> roleDTOList = ficRoleBOList.stream()
                 .map(roleBO -> {
@@ -129,11 +128,6 @@ public class StoryboardVideoAlgoTaskProcessor extends AbstractAlgoTaskProcessor 
     }
 
     @Override
-    public TaskStatusEnum checkSingleTaskStatus(FicAlgoTaskBO algoTask) {
-        return super.checkSingleTaskStatus(algoTask);
-    }
-
-    @Override
     public void singleTaskSuccessPostProcess(FicAlgoTaskBO algoTask) {
         /*
          * 下载图片，上传OSS
@@ -151,24 +145,36 @@ public class StoryboardVideoAlgoTaskProcessor extends AbstractAlgoTaskProcessor 
                 log.error("工作流任务不存在, workflowTaskId: {}", algoTask.getWorkflowTaskId());
                 return;
             }
+            Long workflowId = workflowTask.getWorkflowId();
 
             // 构建文件名
             String fileName = String.format("storyboard_video_%s_%s_%s",
-                workflowTask.getWorkflowId(), 
-                algoTask.getAlgoTaskId(),
-                storyboardImgResult.getName());
+                    workflowId,
+                    algoTask.getAlgoTaskId(),
+                    storyboardImgResult.getName());
 
             // 上传到 OSS
             Resp<String> uploadResp = fileGateway.saveFile(fileName, storyboardImgResult);
             if (!uploadResp.isSuccess()) {
                 log.error("上传分镜视频到OSS失败, algoTaskId: {}, error: {}",
-                    algoTask.getAlgoTaskId(), uploadResp.getMessage());
+                        algoTask.getAlgoTaskId(), uploadResp.getMessage());
                 return;
+            }
+
+            // 删除旧的资源
+            List<FicResourceBO> oldFullVideoResources = ficResourceRepository.findByWorkflowIdAndResourceType(workflowId, ResourceTypeEnum.STORYBOARD_VIDEO);
+            for (FicResourceBO resource : oldFullVideoResources) {
+                if (Objects.equals(resource.getRelevanceId(), algoTask.getRelevantId())
+                        && Objects.equals(resource.getResourceType(), algoTask.getRelevantIdType())
+                ) {
+                    ficResourceRepository.offlineResourceById(resource.getId());
+                    break;
+                }
             }
 
             // 保存资源信息
             FicResourceBO ficResourceBO = new FicResourceBO();
-            ficResourceBO.setWorkflowId(workflowTask.getWorkflowId());
+            ficResourceBO.setWorkflowId(workflowId);
             ficResourceBO.setResourceType(ResourceTypeEnum.STORYBOARD_VIDEO.name());
             ficResourceBO.setResourceUrl(uploadResp.getData());
             ficResourceBO.setRelevanceId(algoTask.getRelevantId());
@@ -181,7 +187,7 @@ public class StoryboardVideoAlgoTaskProcessor extends AbstractAlgoTaskProcessor 
             ficResourceRepository.insert(ficResourceBO);
 
             log.info("分镜视频处理完成, algoTaskId: {}, resourceId: {}",
-                algoTask.getAlgoTaskId(), ficResourceBO.getId());
+                    algoTask.getAlgoTaskId(), ficResourceBO.getId());
         } catch (Exception e) {
             log.error("处理视频图片失败, algoTaskId: {}", algoTask.getAlgoTaskId(), e);
         }

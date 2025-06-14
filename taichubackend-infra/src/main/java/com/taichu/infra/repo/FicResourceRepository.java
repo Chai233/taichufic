@@ -63,4 +63,13 @@ public class FicResourceRepository {
                 .map(FicResourceConvertor.INSTANCE::toDomain)
                 .collect(Collectors.toList());
     }
+
+    public void offlineResourceById(Long id) {
+        FicResource resource = resourceMapper.selectByPrimaryKey(id);
+        if (resource == null) {
+            return;
+        }
+        resource.setStatus(CommonStatusEnum.INVALID.getValue());
+        resourceMapper.updateByPrimaryKey(resource);
+    }
 } 

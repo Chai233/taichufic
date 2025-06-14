@@ -66,7 +66,7 @@ public class StoryboardImgAlgoTaskProcessor extends AbstractAlgoTaskProcessor {
         for (FicStoryboardBO ficStoryboardBO : ficStoryboardBOList) {
             // 调用算法服务
             String operationName = "Call algorithm service for workflow: " + workflowId;
-            AlgoResponse response = callAlgoServiceWithRetry(operationName, () -> callAlgoService(workflowId, ficStoryboardBO.getId()));
+            AlgoResponse response = callAlgoServiceWithRetry(operationName, () -> callAlgoServiceGenStoryboardImg(workflowId, ficStoryboardBO.getId()));
 
             // 检查算法服务响应
             if (response == null) {
@@ -84,12 +84,12 @@ public class StoryboardImgAlgoTaskProcessor extends AbstractAlgoTaskProcessor {
 
     /**
      * 调用算法服务生成分镜图片
-     * 
-     * @param workflowId 工作流ID
+     *
+     * @param workflowId   工作流ID
      * @param storyboardId 分镜ID
-     * @return 算法服务响应结果,如果分镜不存在或角色列表为空则返回null
+     * @return 算法服务响应结果, 如果分镜不存在或角色列表为空则返回null
      */
-    private AlgoResponse callAlgoService(Long workflowId, Long storyboardId) {
+    protected AlgoResponse callAlgoServiceGenStoryboardImg(Long workflowId, Long storyboardId) {
         // 查询分镜信息
         FicStoryboardBO ficStoryboardBO = ficStoryboardRepository.findById(storyboardId);
         if (ficStoryboardBO == null) {
@@ -103,7 +103,7 @@ public class StoryboardImgAlgoTaskProcessor extends AbstractAlgoTaskProcessor {
             log.warn("角色列表为空, workflowId: {}", workflowId);
             return null;
         }
-        
+
         // 将FicRoleBO列表转换为RoleDTO列表
         List<RoleDTO> roleDTOList = ficRoleBOList.stream()
                 .map(roleBO -> {
@@ -154,24 +154,36 @@ public class StoryboardImgAlgoTaskProcessor extends AbstractAlgoTaskProcessor {
                 log.error("工作流任务不存在, workflowTaskId: {}", algoTask.getWorkflowTaskId());
                 return;
             }
+            Long workflowId = workflowTask.getWorkflowId();
 
             // 构建文件名
             String fileName = String.format("storyboard_img_%s_%s_%s",
-                workflowTask.getWorkflowId(), 
-                algoTask.getAlgoTaskId(),
-                storyboardImgResult.getName());
+                    workflowId,
+                    algoTask.getAlgoTaskId(),
+                    storyboardImgResult.getName());
 
             // 上传到 OSS
             Resp<String> uploadResp = fileGateway.saveFile(fileName, storyboardImgResult);
             if (!uploadResp.isSuccess()) {
-                log.error("上传分镜图片到OSS失败, algoTaskId: {}, error: {}", 
-                    algoTask.getAlgoTaskId(), uploadResp.getMessage());
+                log.error("上传分镜图片到OSS失败, algoTaskId: {}, error: {}",
+                        algoTask.getAlgoTaskId(), uploadResp.getMessage());
                 return;
+            }
+
+            // 删除旧的资源
+            List<FicResourceBO> oldFullVideoResources = ficResourceRepository.findByWorkflowIdAndResourceType(workflowId, ResourceTypeEnum.STORYBOARD_IMG);
+            for (FicResourceBO resource : oldFullVideoResources) {
+                if (Objects.equals(resource.getRelevanceId(), algoTask.getRelevantId())
+                        && Objects.equals(resource.getResourceType(), algoTask.getRelevantIdType())
+                ) {
+                    ficResourceRepository.offlineResourceById(resource.getId());
+                    break;
+                }
             }
 
             // 保存资源信息
             FicResourceBO ficResourceBO = new FicResourceBO();
-            ficResourceBO.setWorkflowId(workflowTask.getWorkflowId());
+            ficResourceBO.setWorkflowId(workflowId);
             ficResourceBO.setResourceType(ResourceTypeEnum.STORYBOARD_IMG.name());
             ficResourceBO.setResourceUrl(uploadResp.getData());
             ficResourceBO.setRelevanceId(algoTask.getRelevantId());
@@ -183,8 +195,8 @@ public class StoryboardImgAlgoTaskProcessor extends AbstractAlgoTaskProcessor {
             // 保存到数据库
             ficResourceRepository.insert(ficResourceBO);
 
-            log.info("分镜图片处理完成, algoTaskId: {}, resourceId: {}", 
-                algoTask.getAlgoTaskId(), ficResourceBO.getId());
+            log.info("分镜图片处理完成, algoTaskId: {}, resourceId: {}",
+                    algoTask.getAlgoTaskId(), ficResourceBO.getId());
         } catch (Exception e) {
             log.error("处理分镜图片失败, algoTaskId: {}", algoTask.getAlgoTaskId(), e);
         }

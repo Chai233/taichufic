@@ -71,12 +71,6 @@ public class StoryboardVideoAppService {
         }
 
         // 2. 创建任务
-        FicWorkflowTaskBO ficWorkflowTaskBO = new FicWorkflowTaskBO();
-        ficWorkflowTaskBO.setWorkflowId(request.getWorkflowId());
-        ficWorkflowTaskBO.setTaskType(TaskTypeEnum.STORYBOARD_VIDEO_GENERATION.name());
-        ficWorkflowTaskBO.setStatus(TaskStatusEnum.RUNNING.getCode());
-        ficWorkflowTaskRepository.createFicWorkflowTask(ficWorkflowTaskBO);
-
         return storyboardVideoTaskExecutor.submitTask(request.getWorkflowId(), request);
     }
 
@@ -186,12 +180,6 @@ public class StoryboardVideoAppService {
         }
 
         // 2. 创建任务
-        FicWorkflowTaskBO ficWorkflowTaskBO = new FicWorkflowTaskBO();
-        ficWorkflowTaskBO.setWorkflowId(request.getWorkflowId());
-        ficWorkflowTaskBO.setTaskType(TaskTypeEnum.USER_RETRY_SINGLE_STORYBOARD_VIDEO_GENERATION.name());
-        ficWorkflowTaskBO.setStatus(TaskStatusEnum.RUNNING.getCode());
-        ficWorkflowTaskRepository.createFicWorkflowTask(ficWorkflowTaskBO);
-
         return singleStoryboardVideoTaskExecutor.submitTask(request.getWorkflowId(), request);
     }
 

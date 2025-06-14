@@ -104,7 +104,7 @@ public class StoryboardImgAppService {
         if (ficWorkflowTaskBO == null) {
             return SingleResponse.buildFailure("", "taskId不存在");
         }
-        if (!TaskTypeEnum.STORYBOARD_IMG_GENERATION.name().equals(ficWorkflowTaskBO.getTaskType())) {
+        if (!TaskTypeEnum.STORYBOARD_TEXT_AND_IMG_GENERATION.name().equals(ficWorkflowTaskBO.getTaskType())) {
             return SingleResponse.buildFailure("", "不是分镜图生成任务");
         }
 
@@ -227,12 +227,6 @@ public class StoryboardImgAppService {
         }
 
         // 3. 创建任务
-        FicWorkflowTaskBO ficWorkflowTaskBO = new FicWorkflowTaskBO();
-        ficWorkflowTaskBO.setWorkflowId(ficStoryboardBO.getWorkflowId());
-        ficWorkflowTaskBO.setTaskType(TaskTypeEnum.USER_RETRY_SINGLE_STORYBOARD_IMG_GENERATION.name());
-        ficWorkflowTaskBO.setStatus(TaskStatusEnum.RUNNING.getCode());
-        ficWorkflowTaskRepository.createFicWorkflowTask(ficWorkflowTaskBO);
-
         return singleStoryboardImgTaskExecutor.submitTask(ficStoryboardBO.getWorkflowId(), request);
     }
 }

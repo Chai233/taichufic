@@ -22,8 +22,6 @@ import org.springframework.core.io.Resource;
 import org.springframework.stereotype.Component;
 
 import java.io.InputStream;
-import java.util.List;
-import java.util.stream.Collectors;
 
 @Slf4j
 @Component
@@ -93,7 +91,7 @@ public class ScriptAndStoryboardTextAppService {
      */
     public SingleResponse<WorkflowTaskStatusDTO> getScriptTaskStatus(Long workflowId) {
         // 1. 查询任务
-        FicWorkflowTaskBO task = ficWorkflowTaskRepository.findByWorkflowIdAndTaskType(workflowId, TaskTypeEnum.SCRIPT_GENERATION.name());
+        FicWorkflowTaskBO task = ficWorkflowTaskRepository.findByWorkflowIdAndTaskType(workflowId, TaskTypeEnum.SCRIPT_AND_ROLE_GENERATION.name());
         if (task == null) {
             return SingleResponse.buildFailure("TASK_NOT_FOUND", "任务不存在");
         }

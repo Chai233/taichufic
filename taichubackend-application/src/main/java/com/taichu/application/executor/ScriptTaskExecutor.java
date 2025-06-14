@@ -1,12 +1,10 @@
 package com.taichu.application.executor;
 
 import com.taichu.application.service.inner.algo.AlgoTaskInnerService;
-import com.taichu.domain.algo.gateway.AlgoGateway;
 import com.taichu.domain.enums.AlgoTaskTypeEnum;
 import com.taichu.domain.enums.TaskTypeEnum;
 import com.taichu.domain.enums.WorkflowStatusEnum;
 import com.taichu.domain.model.FicWorkflowTaskBO;
-import com.taichu.infra.repo.FicAlgoTaskRepository;
 import com.taichu.infra.repo.FicWorkflowRepository;
 import com.taichu.infra.repo.FicWorkflowTaskRepository;
 import lombok.extern.slf4j.Slf4j;
@@ -58,7 +56,7 @@ public class ScriptTaskExecutor extends AbstractTaskExecutor {
 
     @Override
     protected TaskTypeEnum getWorkflowTaskType() {
-        return TaskTypeEnum.SCRIPT_GENERATION;
+        return TaskTypeEnum.SCRIPT_AND_ROLE_GENERATION;
     }
 
     @Override

@@ -6,11 +6,7 @@ import com.taichu.domain.algo.gateway.AlgoGateway;
 import com.taichu.domain.algo.gateway.FileGateway;
 import com.taichu.domain.algo.model.AlgoResponse;
 import com.taichu.domain.algo.model.request.VideoMergeRequest;
-import com.taichu.domain.enums.AlgoTaskTypeEnum;
-import com.taichu.domain.enums.CommonStatusEnum;
-import com.taichu.domain.enums.FicResourceTypeEnum;
-import com.taichu.domain.enums.ResourceStorageTypeEnum;
-import com.taichu.domain.enums.VoiceTypeEnum;
+import com.taichu.domain.enums.*;
 import com.taichu.domain.model.FicAlgoTaskBO;
 import com.taichu.domain.model.FicResourceBO;
 import com.taichu.domain.model.FicStoryboardBO;
@@ -121,10 +117,11 @@ public class FullVideoGenAlgoTaskProcessor extends AbstractAlgoTaskProcessor {
                 log.error("工作流任务不存在, workflowTaskId: {}", algoTask.getWorkflowTaskId());
                 return;
             }
+            Long workflowId = workflowTask.getWorkflowId();
 
             // 构建文件名
             String fileName = String.format("full_video_%s_%s_%s",
-                workflowTask.getWorkflowId(), 
+                workflowId,
                 algoTask.getAlgoTaskId(),
                 videoResult.getName());
 
@@ -134,6 +131,12 @@ public class FullVideoGenAlgoTaskProcessor extends AbstractAlgoTaskProcessor {
                 log.error("上传完整视频到OSS失败, algoTaskId: {}, error: {}",
                     algoTask.getAlgoTaskId(), uploadResp.getMessage());
                 return;
+            }
+
+            // 删除旧的资源
+            List<FicResourceBO> oldFullVideoResources = ficResourceRepository.findByWorkflowIdAndResourceType(workflowId, ResourceTypeEnum.FULL_VIDEO);
+            for (FicResourceBO oldFullVideoResource : oldFullVideoResources) {
+                ficResourceRepository.offlineResourceById(oldFullVideoResource.getId());
             }
 
             // 保存资源信息

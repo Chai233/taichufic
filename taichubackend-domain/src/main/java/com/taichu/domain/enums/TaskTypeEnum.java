@@ -5,19 +5,14 @@ package com.taichu.domain.enums;
  */
 public enum TaskTypeEnum {
     /**
-     * 剧本生成
+     * 剧本 & 角色图生成
      */
-    SCRIPT_GENERATION,
+    SCRIPT_AND_ROLE_GENERATION,
 
     /**
-     * 分镜生成
+     * 分镜片段 & 分镜图生成
      */
-    STORYBOARD_GENERATION,
-
-    /**
-     * 分镜图片生成
-     */
-    STORYBOARD_IMG_GENERATION,
+    STORYBOARD_TEXT_AND_IMG_GENERATION,
 
     /**
      * 分镜视频生成
