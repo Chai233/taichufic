@@ -85,9 +85,16 @@ public class RoleImgAlgoTaskProcessor extends AbstractAlgoTaskProcessor {
         Long workflowId = workflowTask.getWorkflowId();
 
         // 构建请求参数并调用算法服务
+        RoleImageRequest.RoleInfo roleInfo = new RoleImageRequest.RoleInfo();
+        roleInfo.setRole(ficRoleBO.getRoleName());
+        roleInfo.setPrompt(ficRoleBO.getPrompt());
+
         RoleImageRequest request = new RoleImageRequest();
-        // TODO 填充参数
-    
+        request.setImage_num(4);
+        request.setRole_info(roleInfo);
+        request.setImage_style(ImageVideoStyleEnum.CYBER_PUNK.getValue());       // TODO 从 workflowMeta获取
+        request.setWorkflow_id(Objects.toString(workflowId));
+
         return algoGateway.createRoleImageTask(request);
     }
 
