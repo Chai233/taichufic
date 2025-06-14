@@ -54,7 +54,7 @@ public class FicStoryboardRepository {
     public List<FicStoryboardBO> findByWorkflowId(Long workflowId) {
         FicStoryboardExample example = new FicStoryboardExample();
         example.createCriteria().andWorkflowIdEqualTo(workflowId).andStatusEqualTo(CommonStatusEnum.VALID.getValue());
-        List<FicStoryboard> storyboardDOs = storyboardMapper.selectByExample(example);
+        List<FicStoryboard> storyboardDOs = storyboardMapper.selectByExampleWithBLOBs(example);
         return StreamUtil.toStream(storyboardDOs).map(FicStoryboardConvertor.INSTANCE::toDomain).collect(Collectors.toList());
     }
 }

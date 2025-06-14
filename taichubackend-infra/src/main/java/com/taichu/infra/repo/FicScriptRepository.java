@@ -55,7 +55,7 @@ public class FicScriptRepository {
         example.createCriteria()
                 .andWorkflowIdEqualTo(workflowId)
                 .andStatusEqualTo(CommonStatusEnum.VALID.getValue());
-        List<FicScript> scriptDOs = scriptMapper.selectByExample(example);
+        List<FicScript> scriptDOs = scriptMapper.selectByExampleWithBLOBs(example);
         return StreamUtil.toStream(scriptDOs)
                 .map(FicScriptConvertor.INSTANCE::toDomain)
                 .collect(Collectors.toList());
