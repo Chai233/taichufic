@@ -35,13 +35,15 @@ public abstract class AbstractTaskExecutor {
             ficWorkflowTaskBO.setGmtCreate(System.currentTimeMillis());
             ficWorkflowTaskBO.setTaskType(getWorkflowTaskType().name());
             ficWorkflowTaskBO.setStatus(TaskStatusEnum.RUNNING.getCode());
-            long workflowTaskId = ficWorkflowTaskRepository.createFicWorkflowTask(ficWorkflowTaskBO);
-            ficWorkflowTaskBO.setId(workflowTaskId);
             Map<String, String> params = constructTaskParams(workflowId, request);
             ficWorkflowTaskBO.setParams(params);
+            // 写入DB
+            long workflowTaskId = ficWorkflowTaskRepository.createFicWorkflowTask(ficWorkflowTaskBO);
+            // 回写workflowTaskId
+            ficWorkflowTaskBO.setId(workflowTaskId);
 
             // 3. 提交后台任务到线程池
-            executorService.submit(() -> doStartBackgroundProcessing(ficWorkflowTaskBO));
+            executorService.submit(() -> startBackgroundProcessing(ficWorkflowTaskBO));
 
             // 4. 返回任务id给前端
             return SingleResponse.of(workflowTaskId);

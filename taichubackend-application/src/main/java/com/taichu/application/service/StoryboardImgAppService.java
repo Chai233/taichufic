@@ -18,8 +18,7 @@ import com.taichu.infra.repo.FicStoryboardRepository;
 import com.taichu.infra.repo.FicWorkflowTaskRepository;
 import com.taichu.sdk.model.StoryboardImgListItemDTO;
 import com.taichu.sdk.model.StoryboardWorkflowTaskStatusDTO;
-import com.taichu.sdk.model.request.GenerateStoryboardRequest;
-import com.taichu.sdk.model.request.SingleStoryboardRegenRequest;
+import com.taichu.sdk.model.request.GenerateStoryboardImgRequest;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.InputStreamResource;
@@ -82,7 +81,7 @@ public class StoryboardImgAppService {
      * @param userId
      * @return
      */
-    public SingleResponse<Long> submitGenStoryboardTask(GenerateStoryboardRequest request, Long userId) {
+    public SingleResponse<Long> submitGenStoryboardTask(GenerateStoryboardImgRequest request, Long userId) {
         // 1. 校验工作流状态
         SingleResponse<?> validateResponse = workflowValidationHelper.validateWorkflow(
                 request.getWorkflowId(), userId, WorkflowStatusEnum.SCRIPT_GEN_DONE);
@@ -212,7 +211,7 @@ public class StoryboardImgAppService {
         return MultiResponse.of(storyboardImgList);
     }
 
-    public SingleResponse<Long> regenerateSingleStoryboard(Long userId, SingleStoryboardRegenRequest request) {
+    public SingleResponse<Long> regenerateSingleStoryboard(Long userId, GenerateStoryboardImgRequest request) {
         // 1. 根据 storyboardId 查询分镜信息
         FicStoryboardBO ficStoryboardBO = ficStoryboardRepository.findById(request.getStoryboardId());
         if (ficStoryboardBO == null) {

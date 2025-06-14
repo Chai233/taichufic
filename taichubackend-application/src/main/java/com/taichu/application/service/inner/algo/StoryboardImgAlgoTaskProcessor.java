@@ -37,7 +37,6 @@ public class StoryboardImgAlgoTaskProcessor extends AbstractAlgoTaskProcessor {
     private final FileGateway fileGateway;
     private final FicResourceRepository ficResourceRepository;
 
-    @Autowired
     public StoryboardImgAlgoTaskProcessor(FicStoryboardRepository ficStoryboardRepository, AlgoGateway algoGateway, FicRoleRepository ficRoleRepository, FileGateway fileGateway, FicResourceRepository ficResourceRepository, FicWorkflowTaskRepository ficWorkflowTaskRepository, FicWorkflowRepository ficWorkflowRepository) {
         super(ficWorkflowTaskRepository, ficWorkflowRepository);
         this.ficStoryboardRepository = ficStoryboardRepository;
@@ -66,7 +65,7 @@ public class StoryboardImgAlgoTaskProcessor extends AbstractAlgoTaskProcessor {
         for (FicStoryboardBO ficStoryboardBO : ficStoryboardBOList) {
             // 调用算法服务
             String operationName = "Call algorithm service for workflow: " + workflowId;
-            AlgoResponse response = callAlgoServiceWithRetry(operationName, () -> callAlgoServiceGenStoryboardImg(workflowId, ficStoryboardBO.getId()));
+            AlgoResponse response = callAlgoServiceWithRetry(operationName, () -> callAlgoServiceGenStoryboardImg(workflowTask, workflowId, ficStoryboardBO.getId()));
 
             // 检查算法服务响应
             if (response == null) {
@@ -89,7 +88,7 @@ public class StoryboardImgAlgoTaskProcessor extends AbstractAlgoTaskProcessor {
      * @param storyboardId 分镜ID
      * @return 算法服务响应结果, 如果分镜不存在或角色列表为空则返回null
      */
-    protected AlgoResponse callAlgoServiceGenStoryboardImg(Long workflowId, Long storyboardId) {
+    protected AlgoResponse callAlgoServiceGenStoryboardImg(FicWorkflowTaskBO workflowTask, Long workflowId, Long storyboardId) {
         // 查询分镜信息
         FicStoryboardBO ficStoryboardBO = ficStoryboardRepository.findById(storyboardId);
         if (ficStoryboardBO == null) {
@@ -105,20 +104,23 @@ public class StoryboardImgAlgoTaskProcessor extends AbstractAlgoTaskProcessor {
         }
 
         // 将FicRoleBO列表转换为RoleDTO列表
-        List<RoleDTO> roleDTOList = ficRoleBOList.stream()
+        List<StoryboardImageRequest.RoleDTO> roleDTOList = ficRoleBOList.stream()
                 .map(roleBO -> {
-                    RoleDTO roleDTO = new RoleDTO();
-                    roleDTO.setPrompt(roleBO.getPrompt());
-                    roleDTO.setName(roleBO.getRoleName());
-                    roleDTO.setDescription(roleBO.getDescription());
+                    StoryboardImageRequest.RoleDTO roleDTO = new StoryboardImageRequest.RoleDTO();
+                    roleDTO.setRole(roleBO.getRoleName());
+
+                    Long defaultImageResourceId = roleBO.getDefaultImageResourceId();
+                    FicResourceBO ficResourceBO = ficResourceRepository.findById(defaultImageResourceId);
+                    ficResourceBO.getOrginName();
+                    roleDTO.setImage(ficResourceBO.getOrginName());
                     return roleDTO;
                 })
                 .collect(Collectors.toList());
 
         // 构建请求参数并调用算法服务
         StoryboardImageRequest request = new StoryboardImageRequest();
-        request.setWorkflowId(String.valueOf(workflowId));
-        request.setStoryboardId(String.valueOf(storyboardId));
+        request.setWorkflow_id(String.valueOf(workflowId));
+        request.setStoryboard_id(String.valueOf(storyboardId));
         request.setRoles(roleDTOList);
         request.setStoryboard(ficStoryboardBO.getContent());
         return algoGateway.createStoryboardImageTask(request);

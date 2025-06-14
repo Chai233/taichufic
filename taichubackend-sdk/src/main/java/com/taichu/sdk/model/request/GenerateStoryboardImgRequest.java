@@ -6,7 +6,13 @@ import lombok.Data;
  * 单分镜重生成请求
  */
 @Data
-public class SingleStoryboardRegenRequest {
+public class GenerateStoryboardImgRequest {
+
+    /**
+     * 工作流Id
+     */
+    private Long workflowId;
+
     /**
      * 分镜id
      */
@@ -14,15 +20,21 @@ public class SingleStoryboardRegenRequest {
     /**
      * 文本引导强度
      */
-    private Long paramWenbenyindaoqiangdu;
+    private Double scale;
     /**
      * 风格强度
      */
-    private Long paramFenggeqiangdu;
+    private Double styleScale;
     /**
      * 用户自定义prompt
      */
     private String userPrompt;
+
+    /**
+     * 图片风格
+     */
+    private String imageStyle;
+
     /**
      * 用户选定图片范围
      */

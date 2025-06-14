@@ -44,7 +44,8 @@ public class FicRoleBO {
     private String prompt;
 
     /**
-     * 扩展字段，jsonObject格式
+     * 默认角色图片resourceId
      */
-    private String extendInfo;
+    private Long defaultImageResourceId;
+
 } 

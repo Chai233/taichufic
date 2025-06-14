@@ -83,6 +83,16 @@ create table fic_workflow
     extend_info text    null comment '扩展字段，jsonObject格式'
 );
 
+create table fic_workflow_meta
+(
+    id          bigint auto_increment comment 'id'
+        primary key,
+    workflow_id bigint        not null comment 'workflow_id',
+    style_type  varchar(256)  null comment '基础风格 (外星文明/赛博朋克/...)',
+    story_name  varchar(256)  null comment '小说名称',
+    story_info  varchar(1024) null comment '小说信息（json格式）: 章节数、字数...'
+);
+
 create table fic_workflow_task
 (
     id          bigint auto_increment comment 'workflow task id'

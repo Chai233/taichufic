@@ -3,8 +3,7 @@ package com.taichu.gateway.web.aific;
 import com.alibaba.cola.dto.MultiResponse;
 import com.alibaba.cola.dto.SingleResponse;
 import com.taichu.application.service.StoryboardImgAppService;
-import com.taichu.sdk.model.request.GenerateStoryboardRequest;
-import com.taichu.sdk.model.request.SingleStoryboardRegenRequest;
+import com.taichu.sdk.model.request.GenerateStoryboardImgRequest;
 import com.taichu.sdk.model.StoryboardImgListItemDTO;
 import com.taichu.sdk.model.StoryboardWorkflowTaskStatusDTO;
 import io.swagger.annotations.Api;
@@ -43,7 +42,7 @@ public class Step3StoryboardImgController {
      */
     @PostMapping("/generate")
     @ApiOperation(value = "提交分镜图生成任务。返回taskId", notes = "")
-    public SingleResponse<Long> generateStoryboard(@RequestBody GenerateStoryboardRequest request) {
+    public SingleResponse<Long> generateStoryboard(@RequestBody GenerateStoryboardImgRequest request) {
         // 提交分镜生成任务
         // TODO@chai 获取userId
         return storyboardImgAppService.submitGenStoryboardTask(request, null);
@@ -71,7 +70,7 @@ public class Step3StoryboardImgController {
 
     @PostMapping("/regenerate")
     @ApiOperation(value = "分镜图重新生成", notes = "修改单张分镜。返回修改任务id")
-    public SingleResponse<Long> regenerateSingleStoryboard(@RequestBody SingleStoryboardRegenRequest request) {
+    public SingleResponse<Long> regenerateSingleStoryboard(@RequestBody GenerateStoryboardImgRequest request) {
         // 单张分镜重新生成
         Long userId = 1L;
         return storyboardImgAppService.regenerateSingleStoryboard(userId, request);

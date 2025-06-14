@@ -12,7 +12,6 @@ import com.taichu.infra.repo.*;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
 import org.slf4j.Logger;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -115,7 +114,7 @@ public class StoryboardVideoAlgoTaskProcessor extends AbstractAlgoTaskProcessor 
         String voiceType = workflowTask.getParams().get("voice_type");
         voiceType = StringUtils.isEmptyOrWhitespaceOnly(voiceType) ? VoiceTypeEnum.DEFAULT_MAN_SOUND.getValue() : voiceType;
         String videoStyle = workflowTask.getParams().get("video_style");
-        videoStyle = StringUtils.isEmptyOrWhitespaceOnly(videoStyle) ? "赛博朋克" : videoStyle;
+        videoStyle = StringUtils.isEmptyOrWhitespaceOnly(videoStyle) ? ImageVideoStyleEnum.CYBER_PUNK.getValue() : videoStyle;
 
         StoryboardVideoRequest request = new StoryboardVideoRequest();
         request.setWorkflow_id(String.valueOf(workflowId));

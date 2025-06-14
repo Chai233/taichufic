@@ -7,7 +7,7 @@ import com.taichu.domain.enums.WorkflowStatusEnum;
 import com.taichu.domain.model.FicWorkflowTaskBO;
 import com.taichu.infra.repo.FicWorkflowRepository;
 import com.taichu.infra.repo.FicWorkflowTaskRepository;
-import com.taichu.sdk.model.request.SingleStoryboardRegenRequest;
+import com.taichu.sdk.model.request.GenerateStoryboardImgRequest;
 import lombok.extern.slf4j.Slf4j;
 import org.slf4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -63,14 +63,14 @@ public class SingleStoryboardImgTaskExecutor extends AbstractTaskExecutor {
 
     @Override
     protected Map<String, String> constructTaskParams(Long workflowId, Object request) {
-        if (!(request instanceof SingleStoryboardRegenRequest)) {
+        if (!(request instanceof GenerateStoryboardImgRequest)) {
             return Map.of();
         }
-        SingleStoryboardRegenRequest regenRequest = (SingleStoryboardRegenRequest) request;
+        GenerateStoryboardImgRequest regenRequest = (GenerateStoryboardImgRequest) request;
         return Map.of(
             "storyboardId", String.valueOf(regenRequest.getStoryboardId()),
-            "paramWenbenyindaoqiangdu", String.valueOf(regenRequest.getParamWenbenyindaoqiangdu()),
-            "paramFenggeqiangdu", String.valueOf(regenRequest.getParamFenggeqiangdu()),
+            "paramWenbenyindaoqiangdu", String.valueOf(regenRequest.getScale()),
+            "paramFenggeqiangdu", String.valueOf(regenRequest.getStyleScale()),
             "userPrompt", regenRequest.getUserPrompt()
         );
     }

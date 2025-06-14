@@ -1,27 +1,22 @@
 package com.taichu.application.executor;
 
-import com.alibaba.cola.dto.SingleResponse;
 import com.taichu.application.service.inner.algo.AlgoTaskInnerService;
-import com.taichu.application.util.ThreadPoolManager;
-import com.taichu.domain.algo.gateway.AlgoGateway;
 import com.taichu.domain.enums.AlgoTaskTypeEnum;
-import com.taichu.domain.enums.TaskStatusEnum;
 import com.taichu.domain.enums.TaskTypeEnum;
 import com.taichu.domain.enums.WorkflowStatusEnum;
+import com.taichu.domain.enums.WorkflowTaskConstant;
 import com.taichu.domain.model.FicWorkflowTaskBO;
-import com.taichu.infra.repo.FicAlgoTaskRepository;
 import com.taichu.infra.repo.FicWorkflowRepository;
 import com.taichu.infra.repo.FicWorkflowTaskRepository;
-import lombok.RequiredArgsConstructor;
+import com.taichu.sdk.model.request.GenerateStoryboardImgRequest;
 import lombok.extern.slf4j.Slf4j;
 import org.slf4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
-import java.util.concurrent.ExecutorService;
+import java.util.Optional;
 
 @Slf4j
 @Component
@@ -72,6 +67,19 @@ public class StoryboardImgTaskExecutor extends AbstractTaskExecutor {
 
     @Override
     protected Map<String, String> constructTaskParams(Long workflowId, Object request) {
-        return new HashMap<>(0);
+        if (!(request instanceof GenerateStoryboardImgRequest)) {
+            return Map.of();
+        }
+        GenerateStoryboardImgRequest storyboardImgRequest = (GenerateStoryboardImgRequest) request;
+        Double styleScale = storyboardImgRequest.getStyleScale();
+        Double scale = storyboardImgRequest.getScale();
+        String imageStyle = storyboardImgRequest.getImageStyle();
+
+        Map<String, String> params = new HashMap<>();
+        Optional.ofNullable(styleScale).ifPresent(s -> params.put(WorkflowTaskConstant.IMG_STYLE_SCALE, s.toString()));
+        Optional.ofNullable(scale).ifPresent(s -> params.put(WorkflowTaskConstant.IMG_SCALE, s.toString()));
+        Optional.ofNullable(imageStyle).ifPresent(s -> params.put(WorkflowTaskConstant.IMG_IMAGE_STYLE, s));
+        return params;
+
     }
 }

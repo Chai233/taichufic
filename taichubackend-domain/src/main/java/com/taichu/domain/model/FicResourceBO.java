@@ -1,7 +1,6 @@
 package com.taichu.domain.model;
 
 import com.taichu.domain.enums.RelevanceType;
-import lombok.Builder;
 import lombok.Data;
 
 /**
@@ -59,7 +58,8 @@ public class FicResourceBO {
     private String resourceUrl;
 
     /**
-     * 扩展字段，jsonObject格式
+     * 算法返回时的原始文件名称
      */
-    private String extendInfo;
+    private String orginName;
+
 } 
