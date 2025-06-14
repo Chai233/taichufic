@@ -27,9 +27,4 @@ public class UserController {
         AuthDTO authDTO = userAppService.login(phone, verifyCode);
         return SingleResponse.of(authDTO);
     }
-
-    @GetMapping("get-active-workflow")
-    public SingleResponse<WorkflowDTO> getWorkflow(@RequestParam Long userId) {
-        return SingleResponse.buildSuccess();
-    }
 }

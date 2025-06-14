@@ -2,6 +2,7 @@ package com.taichu.gateway.web.aific;
 
 import com.alibaba.cola.dto.SingleResponse;
 import com.taichu.application.service.WorkflowAppService;
+import com.taichu.gateway.web.user.WorkflowDTO;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -21,6 +22,12 @@ public class WorkflowController {
         // TODO 从用户会话中获取用户ID
         Long userId = 1L;
         return workflowAppService.createWorkflow(userId);
+    }
+
+
+    @GetMapping("get-active-workflow")
+    public SingleResponse<WorkflowDTO> getWorkflow() {
+        return SingleResponse.buildSuccess();
     }
 }
 

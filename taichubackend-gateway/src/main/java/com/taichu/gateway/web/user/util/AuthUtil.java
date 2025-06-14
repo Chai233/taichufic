@@ -10,11 +10,11 @@ import javax.servlet.http.HttpServletRequest;
 public class AuthUtil {
     private static final String AUTH_HEADER = "X-Auth-Id";
     private static AuthCache authCache;
-    
+
     public static void setAuthCache(AuthCache cache) {
         authCache = cache;
     }
-    
+
     public static String getAuthId() {
         HttpServletRequest request = ((ServletRequestAttributes) RequestContextHolder.getRequestAttributes()).getRequest();
         return request.getHeader(AUTH_HEADER);
@@ -33,8 +33,5 @@ public class AuthUtil {
         
         return authDTO.getUserId();
     }
-    
-    public static void validateAuth() {
-        getCurrentUserId();
-    }
+
 } 
