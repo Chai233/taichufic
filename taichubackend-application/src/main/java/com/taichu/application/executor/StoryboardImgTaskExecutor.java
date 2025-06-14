@@ -67,7 +67,7 @@ public class StoryboardImgTaskExecutor extends AbstractTaskExecutor {
 
     @Override
     protected TaskTypeEnum getWorkflowTaskType() {
-        return TaskTypeEnum.STORYBOARD_IMG_GENERATION;
+        return TaskTypeEnum.STORYBOARD_TEXT_AND_IMG_GENERATION;
     }
 
     @Override
