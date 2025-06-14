@@ -1,6 +1,6 @@
 # taichubackend-gateway
 
-exported at 2025-06-14 16:52:38
+exported at 2025-06-14 16:57:53
 
 ## Step5ComposeController
 
@@ -1294,6 +1294,55 @@ WorkflowController
 
 
 
+---
+### getWorkflow
+
+> BASIC
+
+**Path:** /api/workflow/get-active-workflow
+
+**Method:** GET
+
+> REQUEST
+
+
+
+> RESPONSE
+
+**Headers:**
+
+| name | value | required | desc |
+| ------------ | ------------ | ------------ | ------------ |
+| content-type | application/json;charset=UTF-8 | NO |  |
+
+**Body:**
+
+| name | type | desc |
+| ------------ | ------------ | ------------ |
+| success | boolean |  |
+| errCode | string |  |
+| errMessage | string |  |
+| data | object |  |
+| &ensp;&ensp;&#124;─id | integer | 工作流ID |
+| &ensp;&ensp;&#124;─currentStage | string | 初始化 :初始化<br>文件上传完成 :文件上传完成<br>脚本生成 :剧本生成<br>脚本生成 :SCRIPT_GEN_DONE<br>分镜图片生成 :分镜图片生成<br>分镜图片生成 :STORYBOARD_IMG_GEN_DONE<br>分镜视频生成中 :分镜视频生成<br>分镜视频生成完成 :STORYBOARD_VIDEO_GEN_DONE<br>完整视频生成中 :完整视频生成<br>完整视频生成完成 :FULL_VIDEO_GEN_DONE<br>关闭 :关闭 |
+
+**Response Demo:**
+
+```json
+{
+  "success": false,
+  "errCode": "",
+  "errMessage": "",
+  "data": {
+    "id": 0,
+    "currentStage": ""
+  }
+}
+```
+
+
+
+
 
 ## UserController
 
@@ -1351,61 +1400,6 @@ UserController
     "authId": "",
     "userId": 0,
     "phone": ""
-  }
-}
-```
-
-
-
-
----
-### getWorkflow
-
-> BASIC
-
-**Path:** /api/v1/user/get-active-workflow
-
-**Method:** GET
-
-> REQUEST
-
-**Query:**
-
-| name | value | required | desc |
-| ------------ | ------------ | ------------ | ------------ |
-| userId |  | YES |  |
-
-
-
-> RESPONSE
-
-**Headers:**
-
-| name | value | required | desc |
-| ------------ | ------------ | ------------ | ------------ |
-| content-type | application/json;charset=UTF-8 | NO |  |
-
-**Body:**
-
-| name | type | desc |
-| ------------ | ------------ | ------------ |
-| success | boolean |  |
-| errCode | string |  |
-| errMessage | string |  |
-| data | object |  |
-| &ensp;&ensp;&#124;─id | integer | 工作流ID |
-| &ensp;&ensp;&#124;─currentStage | string | 初始化 :初始化<br>文件上传完成 :文件上传完成<br>脚本生成 :剧本生成<br>脚本生成 :SCRIPT_GEN_DONE<br>分镜图片生成 :分镜图片生成<br>分镜图片生成 :STORYBOARD_IMG_GEN_DONE<br>分镜视频生成中 :分镜视频生成<br>分镜视频生成完成 :STORYBOARD_VIDEO_GEN_DONE<br>完整视频生成中 :完整视频生成<br>完整视频生成完成 :FULL_VIDEO_GEN_DONE<br>关闭 :关闭 |
-
-**Response Demo:**
-
-```json
-{
-  "success": false,
-  "errCode": "",
-  "errMessage": "",
-  "data": {
-    "id": 0,
-    "currentStage": ""
   }
 }
 ```

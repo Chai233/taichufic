@@ -2,29 +2,29 @@ create table fic_algo_task
 (
     id               bigint auto_increment comment 'task id'
         primary key,
-    gmt_create       bigint      not null comment '创建时间（毫秒时间戳）',
-    workflow_task_id bigint      not null comment 'workflow_task_id',
-    status           tinyint     not null comment '1-RUNNING 2-SUCCESS 0-FAIL',
-    task_type        varchar(64) not null comment 'SCRIPT_GENERATION, STORYBOARD_GENERATION, STORYBOARD_IMG_GENERATION, STORYBOARD_VIDEO_GENERATION, FULL_VIDEO_GENERATION',
-    algo_task_id     bigint      null comment '算法task id',
-    task_abstract    text        null comment '任务参数摘要',
-    relevant_id_type varchar(64) null comment 'workflowId / 分镜id',
-    relevant_id      bigint      null comment 'workflowId 或者 分镜id'
+    gmt_create       bigint        not null comment '创建时间（毫秒时间戳）',
+    workflow_task_id bigint        not null comment 'workflow_task_id',
+    status           tinyint       not null comment '1-RUNNING 2-SUCCESS 0-FAIL',
+    task_type        varchar(64)   not null comment 'SCRIPT_GENERATION, STORYBOARD_GENERATION, STORYBOARD_IMG_GENERATION, STORYBOARD_VIDEO_GENERATION, FULL_VIDEO_GENERATION',
+    algo_task_id     bigint        null comment '算法task id',
+    task_abstract    varchar(4096) null comment '任务参数摘要',
+    relevant_id_type varchar(64)   null comment 'workflowId / 分镜id',
+    relevant_id      bigint        null comment 'workflowId 或者 分镜id'
 );
 
 create table fic_resource
 (
     id                    bigint auto_increment comment 'id'
         primary key,
-    gmt_create            bigint       not null,
-    workflow_id           bigint       not null comment 'id',
-    status                tinyint      not null comment '1- 0-',
-    relevance_id          bigint       not null,
-    relevance_type        varchar(32)  not null,
-    resource_type         varchar(32)  not null,
-    resource_storage_type varchar(32)  not null comment ': FILE_SYS / ALICLOUD_OSS / AMAZON_S3 ',
-    resource_url          varchar(256) not null,
-    extend_info           text         null comment 'jsonObject'
+    gmt_create            bigint        not null,
+    workflow_id           bigint        not null comment 'id',
+    status                tinyint       not null comment '1- 0-',
+    relevance_id          bigint        not null,
+    relevance_type        varchar(32)   not null,
+    resource_type         varchar(32)   not null,
+    resource_storage_type varchar(32)   not null comment ': FILE_SYS / ALICLOUD_OSS / AMAZON_S3 ',
+    resource_url          varchar(256)  not null,
+    extend_info           varchar(4096) null comment 'jsonObject'
 );
 
 create table fic_role
@@ -101,5 +101,6 @@ create table fic_workflow_task
     workflow_id bigint        not null comment 'workflow_id',
     status      tinyint       not null comment '1-RUNNING 2-SUCCESS 0-FAIL',
     task_type   varchar(64)   not null comment 'SCRIPT_GENERATION, STORYBOARD_IMG_GENERATION, STORYBOARD_VIDEO_GENERATION,FULL_VIDEO_GENERATION, USER_RETRY_SINGLE_STORYBOARD_IMG_GENERATION, USER_RETRY_SINGLE_STORYBOARD_VIDEO_GENERATION, USER_RETRY_FULL_VIDEO_GENERATION',
-    params      varchar(1024) null comment '重要任务参数（json格式，everything is string）'
+    params      varchar(4096) null comment '重要任务参数（json格式，everything is string）'
 );
+

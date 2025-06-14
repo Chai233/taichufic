@@ -56,7 +56,7 @@ public class FicRoleRepository {
         example.createCriteria()
                 .andWorkflowIdEqualTo(workflowId)
                 .andStatusEqualTo(CommonStatusEnum.VALID.getValue());
-        List<FicRole> roleDOs = roleMapper.selectByExample(example);
+        List<FicRole> roleDOs = roleMapper.selectByExampleWithBLOBs(example);
         return StreamUtil.toStream(roleDOs)
                 .map(FicRoleConvertor.INSTANCE::toDomain)
                 .collect(Collectors.toList());
