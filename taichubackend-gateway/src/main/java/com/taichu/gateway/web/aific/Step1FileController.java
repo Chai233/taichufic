@@ -2,6 +2,7 @@ package com.taichu.gateway.web.aific;
 
 import com.alibaba.cola.dto.SingleResponse;
 import com.taichu.application.service.FileAppService;
+import com.taichu.gateway.web.user.util.AuthUtil;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
@@ -28,8 +29,8 @@ public class Step1FileController {
     @ApiOperation(value = "上传文件", notes = "上传多个文件")
     public SingleResponse<?> uploadFiles(@ApiParam(required = true) @RequestParam("files") List<MultipartFile> files,
                                          @ApiParam(required = true) @RequestParam Long workflowId) {
-        // 批量上传文件
-        Long userId = null; // TODO 上下文获取userId
+        // 从认证信息中获取用户ID
+        Long userId = AuthUtil.getCurrentUserId();
         return fileAppService.uploadFiles(files, workflowId, userId);
     }
 }
