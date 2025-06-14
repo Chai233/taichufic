@@ -105,7 +105,10 @@ public class StoryboardVideoAlgoTaskProcessor extends AbstractAlgoTaskProcessor 
                 .map(roleBO -> {
                     StoryboardVideoRequest.RoleDTO roleDTO = new StoryboardVideoRequest.RoleDTO();
                     roleDTO.setRole(roleBO.getRoleName());
-                    // TODO@chai 设置角色图
+
+                    Long defaultImageResourceId = roleBO.getDefaultImageResourceId();
+                    FicResourceBO ficResourceBO = ficResourceRepository.findById(defaultImageResourceId);
+                    roleDTO.setImage(ficResourceBO.getOriginName());
                     return roleDTO;
                 })
                 .collect(Collectors.toList());

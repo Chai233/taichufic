@@ -26,6 +26,6 @@ public class StoryboardVideoRequest {
     public static class RoleDTO {
         // 角色名称
         String role;
-        byte[] image;
+        String image;
     }
 } 

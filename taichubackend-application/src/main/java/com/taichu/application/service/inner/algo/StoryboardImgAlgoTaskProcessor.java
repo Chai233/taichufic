@@ -110,7 +110,6 @@ public class StoryboardImgAlgoTaskProcessor extends AbstractAlgoTaskProcessor {
 
                     Long defaultImageResourceId = roleBO.getDefaultImageResourceId();
                     FicResourceBO ficResourceBO = ficResourceRepository.findById(defaultImageResourceId);
-                    ficResourceBO.getOriginName();
                     roleDTO.setImage(ficResourceBO.getOriginName());
                     return roleDTO;
                 })

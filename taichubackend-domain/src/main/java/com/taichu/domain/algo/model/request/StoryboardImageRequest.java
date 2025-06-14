@@ -17,6 +17,6 @@ public class StoryboardImageRequest {
     @Data
     public static class RoleDTO {
         private String role;        // 角色名
-        private String image;       // 角色名称
+        private String image;       // 角色图文件名
     }
 } 
