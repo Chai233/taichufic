@@ -3,6 +3,7 @@ package com.taichu.gateway.web.aific;
 import com.alibaba.cola.dto.MultiResponse;
 import com.alibaba.cola.dto.SingleResponse;
 import com.taichu.application.service.StoryboardVideoAppService;
+import com.taichu.application.service.user.util.AuthUtil;
 import com.taichu.sdk.model.request.GenerateVideoRequest;
 import com.taichu.sdk.model.request.SingleStoryboardVideoRegenRequest;
 import com.taichu.sdk.model.StoryboardWorkflowTaskStatusDTO;
@@ -41,8 +42,8 @@ public class Step4VideoController {
     @PostMapping("/generate")
     @ApiOperation(value = "提交分镜视频生成任务。返回taskId", notes = "")
     public SingleResponse<Long> generateVideo(@RequestBody GenerateVideoRequest request) {
-        // TODO@chai 获取userId
-        return storyboardVideoAppService.submitGenVideoTask(request, null);
+        Long userId = AuthUtil.getCurrentUserId();
+        return storyboardVideoAppService.submitGenVideoTask(request, userId);
     }
 
     @GetMapping("/task/status")
@@ -72,8 +73,8 @@ public class Step4VideoController {
     @PostMapping("/regenerate")
     @ApiOperation(value = "分镜视频重新生成修改", notes = "修改单个分镜视频。返回修改任务id")
     public SingleResponse<Long> regenerateSingleVideo(@RequestBody SingleStoryboardVideoRegenRequest request) {
-        // TODO@chai 获取userId
-        return storyboardVideoAppService.regenerateSingleVideo(request, null);
+        Long userId = AuthUtil.getCurrentUserId();
+        return storyboardVideoAppService.regenerateSingleVideo(request, userId);
     }
 
     @GetMapping("/download")

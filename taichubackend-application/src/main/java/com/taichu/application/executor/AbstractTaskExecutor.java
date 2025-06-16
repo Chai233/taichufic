@@ -9,6 +9,7 @@ import com.taichu.domain.model.FicWorkflowTaskBO;
 import com.taichu.infra.repo.FicWorkflowRepository;
 import com.taichu.infra.repo.FicWorkflowTaskRepository;
 import org.slf4j.Logger;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import java.util.List;
 import java.util.Map;
@@ -17,7 +18,6 @@ import java.util.concurrent.ExecutorService;
 public abstract class AbstractTaskExecutor {
     protected final FicWorkflowRepository workflowRepository;
     protected final FicWorkflowTaskRepository ficWorkflowTaskRepository;
-    private final ExecutorService executorService = ThreadPoolManager.getInstance().getExecutorService();
 
     public AbstractTaskExecutor(FicWorkflowRepository workflowRepository, FicWorkflowTaskRepository ficWorkflowTaskRepository) {
         this.workflowRepository = workflowRepository;
@@ -43,7 +43,7 @@ public abstract class AbstractTaskExecutor {
             ficWorkflowTaskBO.setId(workflowTaskId);
 
             // 3. 提交后台任务到线程池
-            executorService.submit(() -> startBackgroundProcessing(ficWorkflowTaskBO));
+            getExecutorService().submit(() -> startBackgroundProcessing(ficWorkflowTaskBO));
 
             // 4. 返回任务id给前端
             return SingleResponse.of(workflowTaskId);
@@ -59,6 +59,10 @@ public abstract class AbstractTaskExecutor {
 
             return SingleResponse.buildFailure("SCRIPT_001", "提交剧本生成任务失败: " + e.getMessage());
         }
+    }
+
+    private ExecutorService getExecutorService() {
+        return ThreadPoolManager.getInstance().getExecutorService();
     }
 
     protected abstract Logger getLog();

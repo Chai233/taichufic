@@ -20,12 +20,12 @@ import java.util.Optional;
 
 @Slf4j
 @Component
-public class StoryboardImgTaskExecutor extends AbstractTaskExecutor {
+public class StoryboardTextAndImgTaskExecutor extends AbstractTaskExecutor {
 
     private final AlgoTaskInnerService algoTaskInnerService;
 
     @Autowired
-    public StoryboardImgTaskExecutor(FicWorkflowRepository workflowRepository, FicWorkflowTaskRepository ficWorkflowTaskRepository, AlgoTaskInnerService algoTaskInnerService) {
+    public StoryboardTextAndImgTaskExecutor(FicWorkflowRepository workflowRepository, FicWorkflowTaskRepository ficWorkflowTaskRepository, AlgoTaskInnerService algoTaskInnerService) {
         super(workflowRepository, ficWorkflowTaskRepository);
         this.algoTaskInnerService = algoTaskInnerService;
     }
@@ -37,12 +37,8 @@ public class StoryboardImgTaskExecutor extends AbstractTaskExecutor {
 
     @Override
     protected void doStartBackgroundProcessing(FicWorkflowTaskBO task) {
-        try {
-            algoTaskInnerService.runAlgoTask(task, AlgoTaskTypeEnum.STORYBOARD_IMG_GENERATION);
-        } catch (Exception e) {
-            // 发生异常，
-            log.error("Background processing failed for workflow: " + task.getWorkflowId(), e);
-        }
+        algoTaskInnerService.runAlgoTask(task, AlgoTaskTypeEnum.STORYBOARD_TEXT_GENERATION);
+        algoTaskInnerService.runAlgoTask(task, AlgoTaskTypeEnum.STORYBOARD_IMG_GENERATION);
     }
 
     @Override

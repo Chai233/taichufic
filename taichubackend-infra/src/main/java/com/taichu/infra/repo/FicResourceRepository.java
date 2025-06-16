@@ -58,7 +58,7 @@ public class FicResourceRepository {
                 .andWorkflowIdEqualTo(workflowId)
                 .andResourceTypeEqualTo(resourceType.name())
                 .andStatusEqualTo(CommonStatusEnum.VALID.getValue());
-        List<FicResource> resources = resourceMapper.selectByExampleWithBLOBs(example);
+        List<FicResource> resources = resourceMapper.selectByExample(example);
         return resources.stream()
                 .map(FicResourceConvertor.INSTANCE::toDomain)
                 .collect(Collectors.toList());

@@ -1,7 +1,8 @@
-package com.taichu.gateway.web.user.util;
+package com.taichu.application.service.user.util;
 
-import com.taichu.gateway.web.user.cache.AuthCache;
-import com.taichu.gateway.web.user.dto.AuthDTO;
+import com.taichu.application.service.user.cache.AuthCache;
+import com.taichu.application.service.user.dto.AuthDTO;
+import com.taichu.common.common.exception.BusinessException;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
 
@@ -23,12 +24,12 @@ public class AuthUtil {
     public static Long getCurrentUserId() {
         String authId = getAuthId();
         if (authId == null) {
-            throw new RuntimeException("未登录");
+            throw new BusinessException("401", "未登录");
         }
         
         AuthDTO authDTO = authCache.getAuth(authId);
         if (authDTO == null) {
-            throw new RuntimeException("登录已过期");
+            throw new BusinessException("401", "登录已过期");
         }
         
         return authDTO.getUserId();

@@ -1,8 +1,8 @@
 package com.taichu.gateway.web.user;
 
 import com.alibaba.cola.dto.SingleResponse;
-import com.taichu.application.service.UserAppService;
-import com.taichu.gateway.web.user.dto.AuthDTO;
+import com.taichu.application.service.user.UserAppService;
+import com.taichu.application.service.user.dto.AuthDTO;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;

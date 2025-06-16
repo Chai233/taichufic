@@ -31,7 +31,6 @@ public class ScriptTaskExecutor extends AbstractTaskExecutor {
     protected void doStartBackgroundProcessing(FicWorkflowTaskBO task) {
         algoTaskInnerService.runAlgoTask(task, AlgoTaskTypeEnum.SCRIPT_GENERATION);
         algoTaskInnerService.runAlgoTask(task, AlgoTaskTypeEnum.ROLE_IMG_GENERATION);
-        algoTaskInnerService.runAlgoTask(task, AlgoTaskTypeEnum.STORYBOARD_TEXT_GENERATION);
     }
 
     @Override

@@ -1,4 +1,4 @@
-package com.taichu.gateway.web.user.dto;
+package com.taichu.application.service.user.dto;
 
 import lombok.Data;
 

@@ -8,6 +8,8 @@ import com.taichu.infra.persistance.mapper.FicAlgoTaskMapper;
 import com.taichu.infra.persistance.model.FicAlgoTask;
 import com.taichu.infra.persistance.model.FicAlgoTaskExample;
 
+import lombok.extern.slf4j.Slf4j;
+
 import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
@@ -19,6 +21,7 @@ import java.util.stream.Collectors;
  * 任务仓储类
  */
 @Repository
+@Slf4j
 public class FicAlgoTaskRepository {
 
     @Autowired
@@ -71,7 +74,7 @@ public class FicAlgoTaskRepository {
         example.createCriteria().andWorkflowTaskIdEqualTo(workflowTaskId);
         List<FicAlgoTask> taskDOs = taskMapper.selectByExample(example);
         if (CollectionUtils.isEmpty(taskDOs)) {
-            // TODO@chai log
+            log.info("findByWorkflowTaskId - 工作流任务ID: {}, 未找到算法任务", workflowTaskId);
             return null;
         }
         return taskDOs.stream().map(FicAlgoTaskConvertor.INSTANCE::toDomain).collect(Collectors.toList());
@@ -85,7 +88,7 @@ public class FicAlgoTaskRepository {
         ;
         List<FicAlgoTask> taskDOs = taskMapper.selectByExample(example);
         if (CollectionUtils.isEmpty(taskDOs)) {
-            // TODO@chai log
+            log.info("findByWorkflowTaskIdAndTaskType - 工作流任务ID: {}, 算法任务类型: {}, 未找到算法任务", workflowTaskId, taskType);
             return null;
         }
         return taskDOs.stream().map(FicAlgoTaskConvertor.INSTANCE::toDomain).collect(Collectors.toList());

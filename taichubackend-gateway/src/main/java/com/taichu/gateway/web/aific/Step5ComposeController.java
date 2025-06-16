@@ -3,6 +3,7 @@ package com.taichu.gateway.web.aific;
 import com.alibaba.cola.dto.MultiResponse;
 import com.alibaba.cola.dto.SingleResponse;
 import com.taichu.application.service.ComposeVideoAppService;
+import com.taichu.application.service.user.util.AuthUtil;
 import com.taichu.sdk.model.FullVideoListItemDTO;
 import com.taichu.sdk.model.WorkflowTaskStatusDTO;
 import com.taichu.sdk.model.request.ComposeVideoRequest;
@@ -33,14 +34,14 @@ public class Step5ComposeController {
     @PostMapping("/generate")
     @ApiOperation(value = "提交视频合成任务", notes = "")
     public SingleResponse<Long> generateComposeVideo(@RequestBody ComposeVideoRequest request) {
-        // TODO@chai 获取userId
-        return composeVideoAppService.submitComposeVideoTask(request, null);
+        Long userId = AuthUtil.getCurrentUserId();
+        return composeVideoAppService.submitComposeVideoTask(request, userId);
     }
 
     @PostMapping("/userReGenerate")
     public SingleResponse<Long> reGenerateComposeVideo(@RequestBody ComposeVideoRequest request) {
-        // TODO@chai
-        return null;
+        Long userId = AuthUtil.getCurrentUserId();
+        return composeVideoAppService.submitReComposeVideoTask(request, userId);
     }
 
     @GetMapping("/task/status")

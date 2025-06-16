@@ -1,8 +1,9 @@
-package com.taichu.application.service.impl;
+package com.taichu.application.service.user;
 
-import com.taichu.application.service.UserAppService;
-import com.taichu.gateway.web.user.cache.AuthCache;
-import com.taichu.gateway.web.user.dto.AuthDTO;
+import com.taichu.application.annotation.EntranceLog;
+import com.taichu.application.service.user.cache.AuthCache;
+import com.taichu.application.service.user.dto.AuthDTO;
+import com.taichu.common.common.exception.GlobalExceptionHandle;
 import com.taichu.infra.persistance.model.FicUser;
 import com.taichu.infra.repository.FicUserRepository;
 import org.springframework.stereotype.Service;
@@ -10,17 +11,18 @@ import org.springframework.stereotype.Service;
 import java.util.UUID;
 
 @Service
-public class UserAppServiceImpl implements UserAppService {
+public class UserAppService {
     
     private final AuthCache authCache;
     private final FicUserRepository ficUserRepository;
     
-    public UserAppServiceImpl(AuthCache authCache, FicUserRepository ficUserRepository) {
+    public UserAppService(AuthCache authCache, FicUserRepository ficUserRepository) {
         this.authCache = authCache;
         this.ficUserRepository = ficUserRepository;
     }
-    
-    @Override
+
+    @EntranceLog(bizCode = "USER_LOGIN")
+    @GlobalExceptionHandle(biz = "USER_LOGIN")
     public AuthDTO login(String phone, String verifyCode) {
         // TODO: 验证短信验证码
         // 这里应该调用短信服务验证验证码

@@ -9,6 +9,8 @@ public enum TaskTypeEnum {
      */
     SCRIPT_AND_ROLE_GENERATION,
 
+    USER_RETRY_SCRIPT_AND_ROLE_GENERATION,
+
     /**
      * 分镜片段 & 分镜图生成
      */

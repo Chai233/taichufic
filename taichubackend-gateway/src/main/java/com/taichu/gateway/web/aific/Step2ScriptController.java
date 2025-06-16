@@ -2,7 +2,11 @@ package com.taichu.gateway.web.aific;
 
 import com.alibaba.cola.dto.MultiResponse;
 import com.alibaba.cola.dto.SingleResponse;
-import com.taichu.application.service.ScriptAndStoryboardTextAppService;
+import com.taichu.application.service.RoleAppService;
+import com.taichu.application.service.ScriptAndRoleAppService;
+import com.taichu.application.service.user.util.AuthUtil;
+import com.taichu.sdk.model.RoleVO;
+import com.taichu.sdk.model.UpdateRoleImageRequest;
 import com.taichu.sdk.model.request.GenerateScriptRequest;
 import com.taichu.sdk.model.ScriptVO;
 import com.taichu.sdk.model.WorkflowTaskStatusDTO;
@@ -31,22 +35,21 @@ import java.util.zip.ZipOutputStream;
 public class Step2ScriptController {
 
     @Autowired
-    private ScriptAndStoryboardTextAppService scriptAppService;
+    private ScriptAndRoleAppService scriptAppService;
+    private RoleAppService roleAppService;
 
     @PostMapping("/generate")
     @ApiOperation(value = "提交剧本生成任务", notes = "")
     public SingleResponse<Long> generateScript(@RequestBody GenerateScriptRequest request) {
-        // 提交剧本生成任务
-        // TODO@chai 获取当前登录用户
-        return scriptAppService.submitGenScriptTask(request, null);
+        Long userId = AuthUtil.getCurrentUserId();
+        return scriptAppService.submitGenScriptTask(request, userId);
     }
 
     @PostMapping("/userReGenerate")
     @ApiOperation(value = "提交剧本生成任务", notes = "")
     public SingleResponse<Long> reGenerateScript(@RequestBody GenerateScriptRequest request) {
-        // 重新生成
-        // TODO@chai
-        return null;
+        Long userId = AuthUtil.getCurrentUserId();
+        return scriptAppService.submitReGenScriptTask(request, userId);
     }
 
     @GetMapping("/task/status")
@@ -64,15 +67,13 @@ public class Step2ScriptController {
     @GetMapping("/getRoles")
     @ApiOperation(value = "获取角色", notes = "")
     public MultiResponse<RoleVO> getRoles(@RequestParam Long workflowId) {
-        // TODO
-        return null;
+        return roleAppService.getRoles(workflowId);
     }
 
     @PostMapping("/updateSelectedImage")
     @ApiOperation(value = "更改默认头像", notes = "")
     public MultiResponse<RoleVO> updateSelectedRoleImage(@RequestParam UpdateRoleImageRequest request) {
-        // TODO
-        return null;
+        return roleAppService.updateSelectedRoleImage(request);
     }
 
     @GetMapping("/downloadScript")

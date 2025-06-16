@@ -2,8 +2,11 @@ package com.taichu.application.service;
 
 import com.alibaba.cola.dto.MultiResponse;
 import com.alibaba.cola.dto.SingleResponse;
+import com.taichu.application.annotation.EntranceLog;
 import com.taichu.application.executor.ComposeVideoTaskExecutor;
+import com.taichu.application.executor.RetryComposeVideoTaskExecutor;
 import com.taichu.application.helper.WorkflowValidationHelper;
+import com.taichu.common.common.exception.GlobalExceptionHandle;
 import com.taichu.common.common.util.StreamUtil;
 import com.taichu.domain.algo.gateway.FileGateway;
 import com.taichu.domain.enums.*;
@@ -29,24 +32,28 @@ import java.util.stream.Collectors;
 @Component
 public class ComposeVideoAppService {
 
-    @Autowired
-    private WorkflowValidationHelper workflowValidationHelper;
+    private final WorkflowValidationHelper workflowValidationHelper;
+    private final FicWorkflowTaskRepository ficWorkflowTaskRepository;
+    private final FicResourceRepository ficResourceRepository;
+    private final FileGateway fileGateway;
+    private final ComposeVideoTaskExecutor composeVideoTaskExecutor;
+    private final RetryComposeVideoTaskExecutor retryComposeVideoTaskExecutor;
 
-    @Autowired
-    private FicWorkflowTaskRepository ficWorkflowTaskRepository;
-    
-    @Autowired
-    private FicResourceRepository ficResourceRepository;
+    public ComposeVideoAppService(WorkflowValidationHelper workflowValidationHelper, FicWorkflowTaskRepository ficWorkflowTaskRepository, FicResourceRepository ficResourceRepository, FileGateway fileGateway, ComposeVideoTaskExecutor composeVideoTaskExecutor, RetryComposeVideoTaskExecutor retryComposeVideoTaskExecutor) {
+        this.workflowValidationHelper = workflowValidationHelper;
+        this.ficWorkflowTaskRepository = ficWorkflowTaskRepository;
+        this.ficResourceRepository = ficResourceRepository;
+        this.fileGateway = fileGateway;
+        this.composeVideoTaskExecutor = composeVideoTaskExecutor;
+        this.retryComposeVideoTaskExecutor = retryComposeVideoTaskExecutor;
+    }
 
-    @Autowired
-    private FileGateway fileGateway;
-
-    @Autowired
-    private ComposeVideoTaskExecutor composeVideoTaskExecutor;
 
     /**
      * 提交视频合成任务
      */
+    @EntranceLog(bizCode = "提交视频合成任务")
+    @GlobalExceptionHandle(biz = "提交视频合成任务")
     public SingleResponse<Long> submitComposeVideoTask(ComposeVideoRequest request, Long userId) {
         // 1. 校验工作流状态
         SingleResponse<?> validateResponse = workflowValidationHelper.validateWorkflow(
@@ -60,8 +67,30 @@ public class ComposeVideoAppService {
     }
 
     /**
+     * 用户重新提交视频合成任务
+     * @param request
+     * @param userId
+     * @return
+     */
+    @EntranceLog(bizCode = "用户重新提交视频合成任务")
+    @GlobalExceptionHandle(biz = "用户重新提交视频合成任务")
+    public SingleResponse<Long> submitReComposeVideoTask(ComposeVideoRequest request, Long userId) {
+        // 1. 校验工作流状态
+        SingleResponse<?> validateResponse = workflowValidationHelper.validateWorkflow(
+                request.getWorkflowId(), userId, WorkflowStatusEnum.STORYBOARD_VIDEO_GEN_DONE);
+        if (!validateResponse.isSuccess()) {
+            return SingleResponse.buildFailure(validateResponse.getErrCode(), validateResponse.getErrMessage());
+        }
+
+        // 2. 提交任务
+        return retryComposeVideoTaskExecutor.submitTask(request.getWorkflowId(), request);
+    }
+
+    /**
      * 查询任务状态
      */
+    @EntranceLog(bizCode = "查询合成视频任务状态")
+    @GlobalExceptionHandle(biz = "查询合成视频任务状态")
     public SingleResponse<WorkflowTaskStatusDTO> getComposeTaskStatus(Long taskId) {
         FicWorkflowTaskBO ficWorkflowTaskBO = ficWorkflowTaskRepository.findById(taskId);
         if (ficWorkflowTaskBO == null) {
@@ -81,6 +110,8 @@ public class ComposeVideoAppService {
     /**
      * 获取合成视频信息
      */
+    @EntranceLog(bizCode = "获取合成视频信息")
+    @GlobalExceptionHandle(biz = "获取合成视频信息")
     public MultiResponse<FullVideoListItemDTO> getComposeVideo(Long workflowId) {
         List<FicResourceBO> ficResourceBOList = ficResourceRepository.findByWorkflowIdAndResourceType(
                 workflowId, ResourceTypeEnum.FULL_VIDEO);

@@ -1,10 +1,13 @@
 package com.taichu.application.service;
 
 import com.alibaba.cola.dto.SingleResponse;
+import com.taichu.application.annotation.EntranceLog;
+import com.taichu.common.common.exception.GlobalExceptionHandle;
 import com.taichu.domain.enums.WorkflowStatusEnum;
 import com.taichu.infra.persistance.model.FicWorkflow;
 import com.taichu.infra.persistance.model.FicWorkflowExample;
 import com.taichu.infra.repo.FicWorkflowRepository;
+import com.taichu.sdk.model.WorkflowDTO;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -30,6 +33,8 @@ public class WorkflowAppService {
      * @param userId 用户ID
      * @return 新创建的工作流ID
      */
+    @EntranceLog(bizCode = "工作流创建")
+    @GlobalExceptionHandle(biz = "工作流创建")
     public SingleResponse<Long> createWorkflow(Long userId) {
         try {
             // 1. 查询用户的所有工作流
@@ -68,4 +73,11 @@ public class WorkflowAppService {
             return SingleResponse.buildFailure("WORKFLOW_002", "创建工作流失败: " + e.getMessage());
         }
     }
-} 
+
+    @EntranceLog(bizCode = "获取活跃工作流")
+    @GlobalExceptionHandle(biz = "获取活跃工作流")
+    public SingleResponse<WorkflowDTO> getValidWorkflow(Long userId) {
+        // TODO
+        return null;
+    }
+}

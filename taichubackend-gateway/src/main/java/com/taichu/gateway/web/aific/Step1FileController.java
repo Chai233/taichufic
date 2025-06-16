@@ -2,7 +2,7 @@ package com.taichu.gateway.web.aific;
 
 import com.alibaba.cola.dto.SingleResponse;
 import com.taichu.application.service.FileAppService;
-import com.taichu.gateway.web.user.util.AuthUtil;
+import com.taichu.application.service.user.util.AuthUtil;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;

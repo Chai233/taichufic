@@ -1,7 +1,7 @@
-package com.taichu.gateway.config;
+package com.taichu.application.config;
 
-import com.taichu.gateway.web.user.cache.AuthCache;
-import com.taichu.gateway.web.user.util.AuthUtil;
+import com.taichu.application.service.user.cache.AuthCache;
+import com.taichu.application.service.user.util.AuthUtil;
 import org.springframework.context.annotation.Configuration;
 
 import javax.annotation.PostConstruct;

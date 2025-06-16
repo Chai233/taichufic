@@ -118,9 +118,9 @@ public class StoryboardVideoAlgoTaskProcessor extends AbstractAlgoTaskProcessor 
                 .collect(Collectors.toList());
 
         // 构建请求参数并调用算法服务
-        String voiceType = workflowTask.getParams().get("voice_type");
+        String voiceType = workflowTask.getParams().get(WorkflowTaskConstant.VIDEO_VOICE_TYPE);
         voiceType = StringUtils.isEmptyOrWhitespaceOnly(voiceType) ? VoiceTypeEnum.DEFAULT_MAN_SOUND.getValue() : voiceType;
-        String videoStyle = workflowTask.getParams().get("video_style");
+        String videoStyle = workflowTask.getParams().get(WorkflowTaskConstant.VIDEO_STYLE);
         videoStyle = StringUtils.isEmptyOrWhitespaceOnly(videoStyle) ? ImageVideoStyleEnum.CYBER_PUNK.getValue() : videoStyle;
 
         StoryboardVideoRequest request = new StoryboardVideoRequest();

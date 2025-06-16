@@ -1,4 +1,4 @@
-package com.taichu.gateway.web.aific;
+package com.taichu.sdk.model;
 
 import lombok.Data;
 

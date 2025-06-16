@@ -2,9 +2,11 @@ package com.taichu.application.service;
 
 import com.alibaba.cola.dto.MultiResponse;
 import com.alibaba.cola.dto.SingleResponse;
-import com.taichu.application.executor.StoryboardImgTaskExecutor;
+import com.taichu.application.annotation.EntranceLog;
+import com.taichu.application.executor.StoryboardTextAndImgTaskExecutor;
 import com.taichu.application.executor.SingleStoryboardImgTaskExecutor;
 import com.taichu.application.helper.WorkflowValidationHelper;
+import com.taichu.common.common.exception.GlobalExceptionHandle;
 import com.taichu.common.common.util.StreamUtil;
 import com.taichu.domain.algo.gateway.FileGateway;
 import com.taichu.domain.enums.*;
@@ -37,7 +39,7 @@ public class StoryboardImgAppService {
     private WorkflowValidationHelper workflowValidationHelper;
 
     @Autowired
-    private StoryboardImgTaskExecutor storyboardTaskExecutor;
+    private StoryboardTextAndImgTaskExecutor storyboardTaskExecutor;
 
     @Autowired
     private SingleStoryboardImgTaskExecutor singleStoryboardImgTaskExecutor;
@@ -81,6 +83,8 @@ public class StoryboardImgAppService {
      * @param userId
      * @return
      */
+    @EntranceLog(bizCode = "生成分镜")
+    @GlobalExceptionHandle(biz = "生成分镜")
     public SingleResponse<Long> submitGenStoryboardTask(GenerateStoryboardImgRequest request, Long userId) {
         // 1. 校验工作流状态
         SingleResponse<?> validateResponse = workflowValidationHelper.validateWorkflow(
@@ -98,6 +102,8 @@ public class StoryboardImgAppService {
      * @param taskId
      * @return
      */
+    @EntranceLog(bizCode = "查询分镜生成进度")
+    @GlobalExceptionHandle(biz = "查询分镜生成进度")
     public SingleResponse<StoryboardWorkflowTaskStatusDTO> getStoryboardTaskStatus(Long taskId) {
         FicWorkflowTaskBO ficWorkflowTaskBO = ficWorkflowTaskRepository.findById(taskId);
         if (ficWorkflowTaskBO == null) {
@@ -162,6 +168,8 @@ public class StoryboardImgAppService {
      * @param storyboardId
      * @return
      */
+    @EntranceLog(bizCode = "获取单个分镜信息")
+    @GlobalExceptionHandle(biz = "获取单个分镜信息")
     public SingleResponse<StoryboardImgListItemDTO> getSingleStoryboardImg(Long workflowId, Long storyboardId) {
         FicStoryboardBO ficStoryboardBO = ficStoryboardRepository.findById(storyboardId);
         if (ficStoryboardBO == null) {
@@ -186,6 +194,8 @@ public class StoryboardImgAppService {
      * @param workflowId 工作流ID
      * @return 分镜信息列表
      */
+    @EntranceLog(bizCode = "获取全部分镜信息")
+    @GlobalExceptionHandle(biz = "获取全部分镜信息")
     public MultiResponse<StoryboardImgListItemDTO> getAllStoryboardImg(Long workflowId) {
         // 1. 获取工作流下的所有分镜
         List<FicStoryboardBO> ficStoryboardBOList = ficStoryboardRepository.findByWorkflowId(workflowId);
@@ -211,6 +221,8 @@ public class StoryboardImgAppService {
         return MultiResponse.of(storyboardImgList);
     }
 
+    @EntranceLog(bizCode = "单张分镜图重新生成")
+    @GlobalExceptionHandle(biz = "单张分镜图重新生成")
     public SingleResponse<Long> regenerateSingleStoryboard(Long userId, GenerateStoryboardImgRequest request) {
         // 1. 根据 storyboardId 查询分镜信息
         FicStoryboardBO ficStoryboardBO = ficStoryboardRepository.findById(request.getStoryboardId());

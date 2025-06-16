@@ -25,6 +25,6 @@ spring:
 aliyun:
   oss:
     endpoint: oss-cn-hangzhou.aliyuncs.com  # OSS 访问域名
-    accessKeyId: your-access-key-id         # 访问密钥 ID
-    accessKeySecret: your-access-key-secret # 访问密钥密码
-    bucketName: your-bucket-name            # OSS 存储空间名称 
+    accessKeyId: your-access-key-id         # 访问密钥ID，在环境变量中
+    accessKeySecret: your-access-key-secret # 访问密钥密码，在环境变量中
+    bucketName: taich-fic-backend-file-storage            # OSS 存储空间名称

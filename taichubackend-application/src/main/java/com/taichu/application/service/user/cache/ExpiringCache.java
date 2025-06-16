@@ -1,4 +1,4 @@
-package com.taichu.gateway.web.user.cache;
+package com.taichu.application.service.user.cache;
 
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;

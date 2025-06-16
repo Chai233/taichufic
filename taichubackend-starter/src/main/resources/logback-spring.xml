@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <configuration>
-    <property name="LOG_PATH" value="${LOG_PATH:-/home/${USER}/logs/taichu-fic}"/>
+    <property name="LOG_PATH" value="${LOG_PATH:-${user.home}/logs/taichu-fic}"/>
     <property name="LOG_PATTERN" value="%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n"/>
 
     <!-- 控制台输出 -->
@@ -16,6 +16,21 @@
         <file>${LOG_PATH}/application.log</file>
         <rollingPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy">
             <fileNamePattern>${LOG_PATH}/application.%d{yyyy-MM-dd}.%i.log</fileNamePattern>
+            <maxFileSize>100MB</maxFileSize>
+            <maxHistory>30</maxHistory>
+            <totalSizeCap>3GB</totalSizeCap>
+        </rollingPolicy>
+        <encoder>
+            <pattern>${LOG_PATTERN}</pattern>
+            <charset>UTF-8</charset>
+        </encoder>
+    </appender>
+
+    <!-- 入口日志输出 -->
+    <appender name="ENTRANCE_FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <file>${LOG_PATH}/entrance.log</file>
+        <rollingPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy">
+            <fileNamePattern>${LOG_PATH}/entrance.%d{yyyy-MM-dd}.%i.log</fileNamePattern>
             <maxFileSize>100MB</maxFileSize>
             <maxHistory>30</maxHistory>
             <totalSizeCap>3GB</totalSizeCap>
@@ -50,6 +65,11 @@
 
     <!-- 应用日志 -->
     <logger name="com.taichu" level="DEBUG"/>
+
+    <!-- 入口日志 -->
+    <logger name="com.taichu.application.aspect.LogEntranceAspect" level="INFO" additivity="false">
+        <appender-ref ref="ENTRANCE_FILE"/>
+    </logger>
 
     <!-- Spring框架日志 -->
     <logger name="org.springframework" level="INFO"/>

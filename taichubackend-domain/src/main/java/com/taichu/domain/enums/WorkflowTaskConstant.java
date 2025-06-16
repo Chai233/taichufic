@@ -45,4 +45,6 @@ public interface WorkflowTaskConstant {
     String VIDEO_BGM_TYPE = "bgm_type";
 
     String VIDEO_VOICE_TYPE = "voice_type";
+
+    String VIDEO_STYLE = "video_style";
 }

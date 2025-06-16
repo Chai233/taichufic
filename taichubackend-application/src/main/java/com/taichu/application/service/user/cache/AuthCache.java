@@ -1,6 +1,6 @@
-package com.taichu.gateway.web.user.cache;
+package com.taichu.application.service.user.cache;
 
-import com.taichu.gateway.web.user.dto.AuthDTO;
+import com.taichu.application.service.user.dto.AuthDTO;
 import org.springframework.stereotype.Component;
 
 @Component
