@@ -1,0 +1,43 @@
+spring:
+  application:
+    name: taichu-backend
+  datasource:
+    url: jdbc:mysql://localhost:3306/demo_db_taichu?useSSL=false&serverTimezone=UTC
+    username: demo
+    password: demo123
+    driver-class-name: com.mysql.cj.jdbc.Driver
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+    database-platform: org.hibernate.dialect.MySQL8Dialect
+  flyway:
+    enabled: true
+    locations: classpath:db/migration
+    url: jdbc:mysql://localhost:3306/demo_db_taichu?useSSL=false&serverTimezone=UTC
+    user: demo
+    password: demo123
+
+mybatis:
+  config-location: classpath:mybatis-config.xml
+  mapper-locations: classpath:mapper/*.xml
+
+file:
+  storage:
+    base-path: ./data/files
+    max-size: 20MB
+    allowed-types: text/plain,application/pdf
+    allow-overwrite: false
+    naming-strategy: original
+
+algo:
+  service:
+    base-url: http://localhost:8081  # 本地算法服务地址
+
+# 阿里云 OSS 配置
+aliyun:
+  oss:
+    endpoint: oss-cn-hangzhou.aliyuncs.com
+    accessKeyId: ${ALIYUN_ACCESS_KEY_ID}
+    accessKeySecret: ${ALIYUN_ACCESS_KEY_SECRET}
+    bucketName: taich-fic-backend-file-storage 

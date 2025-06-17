@@ -8,8 +8,6 @@ import com.taichu.sdk.model.request.GenerateVideoRequest;
 import com.taichu.sdk.model.request.SingleStoryboardVideoRegenRequest;
 import com.taichu.sdk.model.StoryboardWorkflowTaskStatusDTO;
 import com.taichu.sdk.model.VideoListItemDTO;
-import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.Resource;
@@ -26,10 +24,12 @@ import java.io.InputStream;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
+/**
+ * 分镜视频相关接口控制器
+ */
 @Slf4j
 @RestController
 @RequestMapping("/api/v1/video")
-@Api(tags = "Page 4 - 分镜视频接口")
 public class Step4VideoController {
 
     private final StoryboardVideoAppService storyboardVideoAppService;
@@ -39,46 +39,70 @@ public class Step4VideoController {
         this.storyboardVideoAppService = storyboardVideoAppService;
     }
 
+    /**
+     * 提交分镜视频生成任务
+     *
+     * @param request 生成请求参数
+     * @return 任务ID
+     */
     @PostMapping("/generate")
-    @ApiOperation(value = "提交分镜视频生成任务。返回taskId", notes = "")
     public SingleResponse<Long> generateVideo(@RequestBody GenerateVideoRequest request) {
         Long userId = AuthUtil.getCurrentUserId();
         return storyboardVideoAppService.submitGenVideoTask(request, userId);
     }
 
+    /**
+     * 获取任务进度
+     *
+     * @param taskId 任务ID
+     * @return 任务状态
+     */
     @GetMapping("/task/status")
-    @ApiOperation(value = "获取任务进度", notes = "")
     public SingleResponse<StoryboardWorkflowTaskStatusDTO> getVideoTaskStatus(@RequestParam("taskId") Long taskId) {
         return storyboardVideoAppService.getVideoTaskStatus(taskId);
     }
 
+    /**
+     * 获取全部视频信息
+     *
+     * @param workflowId 工作流ID
+     * @return 视频列表
+     */
     @GetMapping("/getAll")
-    @ApiOperation(value = "获取全部视频信息", notes = "")
     public MultiResponse<VideoListItemDTO> getAllVideo(@RequestParam Long workflowId) {
         return storyboardVideoAppService.getAllVideo(workflowId);
     }
 
+    /**
+     * 获取单个视频信息
+     *
+     * @param storyboardId 分镜ID
+     * @return 视频信息
+     */
     @GetMapping("/getSingle")
-    @ApiOperation(value = "获取单个视频信息", notes = "")
     public SingleResponse<VideoListItemDTO> getSingleVideo(@RequestParam Long storyboardId) {
         return storyboardVideoAppService.getSingleVideo(storyboardId);
     }
 
-//    @GetMapping("/getResource")
-//    @ApiOperation(value = "获取视频资源", notes = "")
-//    public ResponseEntity<Resource> getVideo(@RequestParam Long resourceId) {
-//        return ResponseEntity.ok().build();
-//    }
-
+    /**
+     * 分镜视频重新生成修改
+     *
+     * @param request 重新生成请求参数
+     * @return 任务ID
+     */
     @PostMapping("/regenerate")
-    @ApiOperation(value = "分镜视频重新生成修改", notes = "修改单个分镜视频。返回修改任务id")
     public SingleResponse<Long> regenerateSingleVideo(@RequestBody SingleStoryboardVideoRegenRequest request) {
         Long userId = AuthUtil.getCurrentUserId();
         return storyboardVideoAppService.regenerateSingleVideo(request, userId);
     }
 
+    /**
+     * 下载分镜视频压缩包
+     *
+     * @param workflowId 工作流ID
+     * @return 视频压缩包
+     */
     @GetMapping("/download")
-    @ApiOperation(value = "下载分镜视频", notes = "下载所有分镜视频压缩包")
     public ResponseEntity<Resource> downloadVideoZip(@RequestParam Long workflowId) {
         // 1. 获取所有视频信息
         MultiResponse<VideoListItemDTO> videoListResponse = storyboardVideoAppService.getAllVideo(workflowId);

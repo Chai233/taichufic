@@ -7,8 +7,6 @@ import com.taichu.application.service.user.util.AuthUtil;
 import com.taichu.sdk.model.request.GenerateStoryboardImgRequest;
 import com.taichu.sdk.model.StoryboardImgListItemDTO;
 import com.taichu.sdk.model.StoryboardWorkflowTaskStatusDTO;
-import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.core.io.Resource;
 import org.springframework.http.HttpHeaders;
@@ -24,10 +22,12 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 import java.io.InputStream;
 
+/**
+ * 分镜图相关接口控制器
+ */
 @Slf4j
 @RestController
 @RequestMapping("/api/v1/storyboard")
-@Api(tags = "Page 3 - 分镜图页面")
 public class Step3StoryboardImgController {
 
     private final StoryboardImgAppService storyboardImgAppService;
@@ -37,46 +37,70 @@ public class Step3StoryboardImgController {
     }
 
     /**
+     * 提交分镜图生成任务
      *
-     * @param request 请求参数
-     * @return taskId
+     * @param request 生成请求参数
+     * @return 任务ID
      */
     @PostMapping("/generate")
-    @ApiOperation(value = "提交分镜图生成任务。返回taskId", notes = "")
     public SingleResponse<Long> generateStoryboard(@RequestBody GenerateStoryboardImgRequest request) {
         Long userId = AuthUtil.getCurrentUserId();
         return storyboardImgAppService.submitGenStoryboardTask(request, userId);
     }
 
+    /**
+     * 获取任务进度
+     *
+     * @param taskId 任务ID
+     * @return 任务状态
+     */
     @GetMapping("/task/status")
-    @ApiOperation(value = "获取任务进度", notes = "")
     public SingleResponse<StoryboardWorkflowTaskStatusDTO> getStoryboardTaskStatus(@RequestParam("taskId") Long taskId) {
-        // 查询任务结果
         return storyboardImgAppService.getStoryboardTaskStatus(taskId);
     }
 
+    /**
+     * 获取全部分镜信息
+     *
+     * @param workflowId 工作流ID
+     * @return 分镜列表
+     */
     @GetMapping("/getAll")
-    @ApiOperation(value = "获取全部分镜信息", notes = "")
     public MultiResponse<StoryboardImgListItemDTO> getAllStoryboardImg(@RequestParam Long workflowId) {
         return storyboardImgAppService.getAllStoryboardImg(workflowId);
     }
 
+    /**
+     * 获取单个分镜信息
+     *
+     * @param workflowId 工作流ID
+     * @param storyboardId 分镜ID
+     * @return 分镜信息
+     */
     @GetMapping("/getSingle")
-    @ApiOperation(value = "获取单个分镜信息", notes = "")
     public SingleResponse<StoryboardImgListItemDTO> getSingleStoryboardImg(@RequestParam Long workflowId, @RequestParam Long storyboardId) {
-        // 获取分镜列表
         return storyboardImgAppService.getSingleStoryboardImg(workflowId, storyboardId);
     }
 
+    /**
+     * 分镜图重新生成
+     *
+     * @param request 生成请求参数
+     * @return 任务ID
+     */
     @PostMapping("/regenerate")
-    @ApiOperation(value = "分镜图重新生成", notes = "修改单张分镜。返回修改任务id")
     public SingleResponse<Long> regenerateSingleStoryboard(@RequestBody GenerateStoryboardImgRequest request) {
         Long userId = AuthUtil.getCurrentUserId();
         return storyboardImgAppService.regenerateSingleStoryboard(userId, request);
     }
 
+    /**
+     * 下载分镜图压缩包
+     *
+     * @param workflowId 工作流ID
+     * @return 分镜图压缩包
+     */
     @GetMapping("/download")
-    @ApiOperation(value = "下载分镜", notes = "下载所有分镜压缩包")
     public ResponseEntity<Resource> downloadStoryboardZip(@RequestParam Long workflowId) {
         // 1. 获取所有分镜信息
         MultiResponse<StoryboardImgListItemDTO> storyboardListResponse = storyboardImgAppService.getAllStoryboardImg(workflowId);

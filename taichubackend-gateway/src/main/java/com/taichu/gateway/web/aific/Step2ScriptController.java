@@ -10,8 +10,6 @@ import com.taichu.sdk.model.UpdateRoleImageRequest;
 import com.taichu.sdk.model.request.GenerateScriptRequest;
 import com.taichu.sdk.model.ScriptVO;
 import com.taichu.sdk.model.WorkflowTaskStatusDTO;
-import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.FileSystemResource;
@@ -28,56 +26,93 @@ import java.io.IOException;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
+/**
+ * 剧本相关接口控制器
+ */
 @Slf4j
 @RestController
 @RequestMapping("/api/v1/script")
-@Api(tags = "Page 2 - 剧本接口")
 public class Step2ScriptController {
 
     @Autowired
     private ScriptAndRoleAppService scriptAppService;
     private RoleAppService roleAppService;
 
+    /**
+     * 提交剧本生成任务
+     *
+     * @param request 生成请求参数
+     * @return 任务ID
+     */
     @PostMapping("/generate")
-    @ApiOperation(value = "提交剧本生成任务", notes = "")
     public SingleResponse<Long> generateScript(@RequestBody GenerateScriptRequest request) {
         Long userId = AuthUtil.getCurrentUserId();
         return scriptAppService.submitGenScriptTask(request, userId);
     }
 
+    /**
+     * 重新提交剧本生成任务
+     *
+     * @param request 生成请求参数
+     * @return 任务ID
+     */
     @PostMapping("/userReGenerate")
-    @ApiOperation(value = "提交剧本生成任务", notes = "")
     public SingleResponse<Long> reGenerateScript(@RequestBody GenerateScriptRequest request) {
         Long userId = AuthUtil.getCurrentUserId();
         return scriptAppService.submitReGenScriptTask(request, userId);
     }
 
+    /**
+     * 查询任务状态
+     *
+     * @param workflowId 工作流ID
+     * @return 任务状态
+     */
     @GetMapping("/task/status")
-    @ApiOperation(value = "查询任务状态", notes = "")
     public SingleResponse<WorkflowTaskStatusDTO> getScriptTaskStatus(@RequestParam("workflow_id") Long workflowId) {
         return scriptAppService.getScriptTaskStatus(workflowId);
     }
 
+    /**
+     * 获取剧本内容
+     *
+     * @param workflowId 工作流ID
+     * @return 剧本列表
+     */
     @GetMapping("/getScript")
-    @ApiOperation(value = "获取剧本", notes = "")
     public MultiResponse<ScriptVO> getScript(@RequestParam Long workflowId) {
         return scriptAppService.getScript(workflowId);
     }
 
+    /**
+     * 获取角色列表
+     *
+     * @param workflowId 工作流ID
+     * @return 角色列表
+     */
     @GetMapping("/getRoles")
-    @ApiOperation(value = "获取角色", notes = "")
     public MultiResponse<RoleVO> getRoles(@RequestParam Long workflowId) {
         return roleAppService.getRoles(workflowId);
     }
 
+    /**
+     * 更新角色默认头像
+     *
+     * @param request 更新请求
+     * @return 更新后的角色列表
+     */
     @PostMapping("/updateSelectedImage")
-    @ApiOperation(value = "更改默认头像", notes = "")
     public MultiResponse<RoleVO> updateSelectedRoleImage(@RequestParam UpdateRoleImageRequest request) {
         return roleAppService.updateSelectedRoleImage(request);
     }
 
+    /**
+     * 下载剧本文件
+     *
+     * @param workflowId 工作流ID
+     * @return 剧本压缩包
+     */
     @GetMapping("/downloadScript")
-    @ApiOperation(value = "下载剧本", notes = "")
     public ResponseEntity<Resource> downloadScript(@RequestParam Long workflowId) {
         // 1. 获取所有剧本信息
         MultiResponse<ScriptVO> scriptListResponse = scriptAppService.getScript(workflowId);

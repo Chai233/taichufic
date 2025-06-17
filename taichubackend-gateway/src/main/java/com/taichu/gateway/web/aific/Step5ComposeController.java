@@ -7,8 +7,6 @@ import com.taichu.application.service.user.util.AuthUtil;
 import com.taichu.sdk.model.FullVideoListItemDTO;
 import com.taichu.sdk.model.WorkflowTaskStatusDTO;
 import com.taichu.sdk.model.request.ComposeVideoRequest;
-import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.core.io.Resource;
 import org.springframework.http.HttpHeaders;
@@ -19,10 +17,12 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.Optional;
 
+/**
+ * 视频合成相关接口控制器
+ */
 @Slf4j
 @RestController
 @RequestMapping("/api/compose")
-@Api(tags = "Page 5- 视频合成接口")
 public class Step5ComposeController {
 
     private final ComposeVideoAppService composeVideoAppService;
@@ -31,27 +31,48 @@ public class Step5ComposeController {
         this.composeVideoAppService = composeVideoAppService;
     }
 
+    /**
+     * 提交视频合成任务
+     *
+     * @param request 合成请求参数
+     * @return 任务ID
+     */
     @PostMapping("/generate")
-    @ApiOperation(value = "提交视频合成任务", notes = "")
     public SingleResponse<Long> generateComposeVideo(@RequestBody ComposeVideoRequest request) {
         Long userId = AuthUtil.getCurrentUserId();
         return composeVideoAppService.submitComposeVideoTask(request, userId);
     }
 
+    /**
+     * 重新提交视频合成任务
+     *
+     * @param request 合成请求参数
+     * @return 任务ID
+     */
     @PostMapping("/userReGenerate")
     public SingleResponse<Long> reGenerateComposeVideo(@RequestBody ComposeVideoRequest request) {
         Long userId = AuthUtil.getCurrentUserId();
         return composeVideoAppService.submitReComposeVideoTask(request, userId);
     }
 
+    /**
+     * 获取任务进度
+     *
+     * @param taskId 任务ID
+     * @return 任务状态
+     */
     @GetMapping("/task/status")
-    @ApiOperation(value = "获取任务进度", notes = "")
     public SingleResponse<WorkflowTaskStatusDTO> getComposeTaskStatus(@RequestParam("taskId") Long taskId) {
         return composeVideoAppService.getComposeTaskStatus(taskId);
     }
 
+    /**
+     * 下载合成视频
+     *
+     * @param workflowId 工作流ID
+     * @return 视频文件
+     */
     @GetMapping("/download")
-    @ApiOperation(value = "下载视频", notes = "")
     public ResponseEntity<Resource> downloadComposeVideo(@RequestParam Long workflowId) {
         if (workflowId == null) {
             log.error("workflowId is null");
@@ -76,8 +97,13 @@ public class Step5ComposeController {
                 .body(resource);
     }
 
+    /**
+     * 获取视频信息
+     *
+     * @param workflowId 工作流ID
+     * @return 视频信息列表
+     */
     @GetMapping("/getAll")
-    @ApiOperation(value = "获取视频信息", notes = "")
     public MultiResponse<FullVideoListItemDTO> getComposeVideo(@RequestParam Long workflowId) {
         return composeVideoAppService.getComposeVideo(workflowId);
     }
