@@ -46,7 +46,7 @@
                 <artifactId>spring-boot-maven-plugin</artifactId>
                 <version>2.3.1.RELEASE</version>
                 <configuration>
-                    <mainClass>com.taichu.TaichuBackendApplication</mainClass>
+                    <mainClass>com.taichu.App</mainClass>
                 </configuration>
                 <executions>
                     <execution>
