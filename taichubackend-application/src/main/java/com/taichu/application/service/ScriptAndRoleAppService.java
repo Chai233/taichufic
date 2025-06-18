@@ -15,6 +15,7 @@ import com.taichu.domain.model.FicScriptBO;
 import com.taichu.domain.model.FicWorkflowTaskBO;
 import com.taichu.infra.repo.FicScriptRepository;
 import com.taichu.infra.repo.FicWorkflowTaskRepository;
+import com.taichu.infra.repo.FicWorkflowMetaRepository;
 import com.taichu.sdk.model.request.GenerateScriptRequest;
 import com.taichu.sdk.model.ScriptVO;
 import com.taichu.sdk.model.WorkflowTaskStatusDTO;
@@ -37,14 +38,16 @@ public class ScriptAndRoleAppService {
     private final FicWorkflowTaskRepository ficWorkflowTaskRepository;
     private final FicScriptRepository ficScriptRepository;
     private final FileGateway fileGateway;
+    private final FicWorkflowMetaRepository ficWorkflowMetaRepository;
 
-    public ScriptAndRoleAppService(WorkflowValidationHelper workflowValidationHelper, ScriptTaskExecutor scriptTaskExecutor, RetryScriptTaskExecutor retryScriptTaskExecutor, FicWorkflowTaskRepository ficWorkflowTaskRepository, FicScriptRepository ficScriptRepository, FileGateway fileGateway) {
+    public ScriptAndRoleAppService(WorkflowValidationHelper workflowValidationHelper, ScriptTaskExecutor scriptTaskExecutor, RetryScriptTaskExecutor retryScriptTaskExecutor, FicWorkflowTaskRepository ficWorkflowTaskRepository, FicScriptRepository ficScriptRepository, FileGateway fileGateway, FicWorkflowMetaRepository ficWorkflowMetaRepository) {
         this.workflowValidationHelper = workflowValidationHelper;
         this.scriptTaskExecutor = scriptTaskExecutor;
         this.retryScriptTaskExecutor = retryScriptTaskExecutor;
         this.ficWorkflowTaskRepository = ficWorkflowTaskRepository;
         this.ficScriptRepository = ficScriptRepository;
         this.fileGateway = fileGateway;
+        this.ficWorkflowMetaRepository = ficWorkflowMetaRepository;
     }
 
 
@@ -84,9 +87,13 @@ public class ScriptAndRoleAppService {
             userId,
             WorkflowStatusEnum.UPLOAD_FILE_DONE
         );
+
         if (!validateResponse.isSuccess()) {
             return SingleResponse.buildFailure(validateResponse.getErrCode(), validateResponse.getErrMessage());
         }
+
+        // 1.5. 更新styleType
+        ficWorkflowMetaRepository.updateStyleType(request.getWorkflowId(), request.getTag());
 
         // 2. 提交任务
         return scriptTaskExecutor.submitTask(request.getWorkflowId(), request);

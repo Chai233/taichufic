@@ -7,6 +7,8 @@ import com.taichu.domain.enums.WorkflowStatusEnum;
 import com.taichu.infra.persistance.model.FicWorkflow;
 import com.taichu.infra.persistance.model.FicWorkflowExample;
 import com.taichu.infra.repo.FicWorkflowRepository;
+import com.taichu.infra.repo.FicWorkflowMetaRepository;
+import com.taichu.domain.model.FicWorkflowMetaBO;
 import com.taichu.sdk.model.WorkflowDTO;
 import lombok.extern.slf4j.Slf4j;
 
@@ -25,6 +27,9 @@ public class WorkflowAppService {
 
     @Autowired
     private FicWorkflowRepository workflowRepository;
+
+    @Autowired
+    private FicWorkflowMetaRepository ficWorkflowMetaRepository;
 
     /**
      * 创建工作流
@@ -69,6 +74,12 @@ public class WorkflowAppService {
             newWorkflow.setStatus(WorkflowStatusEnum.INIT_WAIT_FOR_FILE.getCode());
             
             long workflowId = workflowRepository.insert(newWorkflow);
+
+            // 新增：创建workflowMeta记录
+            FicWorkflowMetaBO metaBO = new FicWorkflowMetaBO();
+            metaBO.setWorkflowId(workflowId);
+            ficWorkflowMetaRepository.insert(metaBO);
+
             return SingleResponse.of(workflowId);
         } catch (Exception e) {
             log.error("Failed to create workflow for user: " + userId, e);
