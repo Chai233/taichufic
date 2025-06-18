@@ -1,13 +1,13 @@
 package com.taichu.application.util;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import javax.annotation.PreDestroy;
+import com.taichu.common.common.util.RequestContext;
+import lombok.extern.slf4j.Slf4j;
+
 import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicInteger;
 
+@Slf4j
 public class ThreadPoolManager {
-    private static final Logger log = LoggerFactory.getLogger(ThreadPoolManager.class);
     private static final int MAXIMUM_POOL_SIZE = 16;
     private static final int CORE_POOL_SIZE = 2;
     private static volatile ThreadPoolManager INSTANCE;
@@ -59,12 +59,40 @@ public class ThreadPoolManager {
         return INSTANCE;
     }
 
-    public ExecutorService getExecutorService() {
+    private ExecutorService getExecutorService() {
         if (executorService == null) {
             log.error("ThreadPoolManager not initialized. Please call init() first.");
             throw new IllegalStateException("ThreadPoolManager not initialized. Please call init() first.");
         }
         return executorService;
+    }
+
+    public void execute(Runnable task) {
+        String requestId = RequestContext.getRequestId();
+        executorService.execute(() -> {
+            try {
+                if (requestId != null) {
+                    RequestContext.setRequestId(requestId);
+                }
+                task.run();
+            } finally {
+                RequestContext.clear();
+            }
+        });
+    }
+
+    public <T> Future<T> submit(Callable<T> task) {
+        String requestId = RequestContext.getRequestId();
+        return executorService.submit(() -> {
+            try {
+                if (requestId != null) {
+                    RequestContext.setRequestId(requestId);
+                }
+                return task.call();
+            } finally {
+                RequestContext.clear();
+            }
+        });
     }
 
     public static void shutdown() {

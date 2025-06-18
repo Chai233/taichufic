@@ -9,11 +9,10 @@ import com.taichu.domain.model.FicWorkflowTaskBO;
 import com.taichu.infra.repo.FicWorkflowRepository;
 import com.taichu.infra.repo.FicWorkflowTaskRepository;
 import org.slf4j.Logger;
-import org.springframework.beans.factory.annotation.Autowired;
 
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Callable;
 
 public abstract class AbstractTaskExecutor {
     protected final FicWorkflowRepository workflowRepository;
@@ -43,7 +42,10 @@ public abstract class AbstractTaskExecutor {
             ficWorkflowTaskBO.setId(workflowTaskId);
 
             // 3. 提交后台任务到线程池
-            getExecutorService().submit(() -> startBackgroundProcessing(ficWorkflowTaskBO));
+            submit(() -> {
+                startBackgroundProcessing(ficWorkflowTaskBO);
+                return null;
+            });
 
             // 4. 返回任务id给前端
             return SingleResponse.of(workflowTaskId);
@@ -61,8 +63,8 @@ public abstract class AbstractTaskExecutor {
         }
     }
 
-    private ExecutorService getExecutorService() {
-        return ThreadPoolManager.getInstance().getExecutorService();
+    private <T> void submit(Callable<T> task) {
+        ThreadPoolManager.getInstance().submit(task);
     }
 
     protected abstract Logger getLog();
