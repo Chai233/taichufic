@@ -16,14 +16,14 @@ import java.lang.reflect.Method;
 @Slf4j
 @Aspect
 @Component
-public class GlobalExceptionHandler {
+public class AppServiceGlobalExceptionHandleAspect {
 
-    @Around("@annotation(com.taichu.common.common.exception.GlobalExceptionHandle)")
+    @Around("@annotation(com.taichu.common.common.exception.AppServiceExceptionHandle)")
     public Object handleException(ProceedingJoinPoint joinPoint) throws Throwable {
         // 获取注解信息
         MethodSignature signature = (MethodSignature) joinPoint.getSignature();
         Method method = signature.getMethod();
-        GlobalExceptionHandle annotation = method.getAnnotation(GlobalExceptionHandle.class);
+        AppServiceExceptionHandle annotation = method.getAnnotation(AppServiceExceptionHandle.class);
         String biz = annotation.biz();
         
         try {

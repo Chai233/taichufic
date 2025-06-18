@@ -6,7 +6,7 @@ import com.taichu.application.annotation.EntranceLog;
 import com.taichu.application.executor.SingleStoryboardVideoTaskExecutor;
 import com.taichu.application.executor.StoryboardVideoTaskExecutor;
 import com.taichu.application.helper.WorkflowValidationHelper;
-import com.taichu.common.common.exception.GlobalExceptionHandle;
+import com.taichu.common.common.exception.AppServiceExceptionHandle;
 import com.taichu.common.common.util.StreamUtil;
 import com.taichu.domain.algo.gateway.FileGateway;
 import com.taichu.domain.enums.*;
@@ -24,7 +24,6 @@ import com.taichu.sdk.model.request.GenerateVideoRequest;
 import com.taichu.sdk.model.request.SingleStoryboardVideoRegenRequest;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.core.io.ByteArrayResource;
 import org.springframework.core.io.InputStreamResource;
 import org.springframework.core.io.Resource;
 import org.springframework.stereotype.Component;
@@ -65,7 +64,7 @@ public class StoryboardVideoAppService {
      * 提交视频生成任务
      */
     @EntranceLog(bizCode = "生成分镜视频")
-    @GlobalExceptionHandle(biz = "生成分镜视频")
+    @AppServiceExceptionHandle(biz = "生成分镜视频")
     public SingleResponse<Long> submitGenVideoTask(GenerateVideoRequest request, Long userId) {
         // 1. 校验工作流状态
         SingleResponse<?> validateResponse = workflowValidationHelper.validateWorkflow(
@@ -82,7 +81,7 @@ public class StoryboardVideoAppService {
      * 查询任务状态
      */
     @EntranceLog(bizCode = "查询分镜视频任务进度")
-    @GlobalExceptionHandle(biz = "查询分镜视频任务进度")
+    @AppServiceExceptionHandle(biz = "查询分镜视频任务进度")
     public SingleResponse<StoryboardWorkflowTaskStatusDTO> getVideoTaskStatus(Long taskId) {
         FicWorkflowTaskBO ficWorkflowTaskBO = ficWorkflowTaskRepository.findById(taskId);
         if (ficWorkflowTaskBO == null) {
@@ -128,7 +127,7 @@ public class StoryboardVideoAppService {
      * 获取单个视频信息
      */
     @EntranceLog(bizCode = "获取单个视频信息")
-    @GlobalExceptionHandle(biz = "获取单个视频信息")
+    @AppServiceExceptionHandle(biz = "获取单个视频信息")
     public SingleResponse<VideoListItemDTO> getSingleVideo(Long storyboardId) {
         FicStoryboardBO ficStoryboardBO = ficStoryboardRepository.findById(storyboardId);
         if (ficStoryboardBO == null) {
@@ -154,7 +153,7 @@ public class StoryboardVideoAppService {
      * 获取所有视频信息
      */
     @EntranceLog(bizCode = "获取所有视频信息")
-    @GlobalExceptionHandle(biz = "获取所有视频信息")
+    @AppServiceExceptionHandle(biz = "获取所有视频信息")
     public MultiResponse<VideoListItemDTO> getAllVideo(Long workflowId) {
         List<FicStoryboardBO> ficStoryboardBOList = ficStoryboardRepository.findByWorkflowId(workflowId);
         if (ficStoryboardBOList.isEmpty()) {
@@ -182,7 +181,7 @@ public class StoryboardVideoAppService {
      * 重新生成单个视频
      */
     @EntranceLog(bizCode = "重新生成单个视频")
-    @GlobalExceptionHandle(biz = "重新生成单个视频")
+    @AppServiceExceptionHandle(biz = "重新生成单个视频")
     public SingleResponse<Long> regenerateSingleVideo(SingleStoryboardVideoRegenRequest request, Long userId) {
         // 1. 校验工作流状态
         SingleResponse<?> validateResponse = workflowValidationHelper.validateWorkflow(

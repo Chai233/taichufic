@@ -1,9 +1,10 @@
 package com.taichu.application.service.user;
 
+import com.alibaba.cola.dto.SingleResponse;
 import com.taichu.application.annotation.EntranceLog;
 import com.taichu.application.service.user.cache.AuthCache;
 import com.taichu.application.service.user.dto.AuthDTO;
-import com.taichu.common.common.exception.GlobalExceptionHandle;
+import com.taichu.common.common.exception.AppServiceExceptionHandle;
 import com.taichu.infra.persistance.model.FicUser;
 import com.taichu.infra.repository.FicUserRepository;
 import org.springframework.stereotype.Service;
@@ -22,8 +23,8 @@ public class UserAppService {
     }
 
     @EntranceLog(bizCode = "USER_LOGIN")
-    @GlobalExceptionHandle(biz = "USER_LOGIN")
-    public AuthDTO login(String phone, String verifyCode) {
+    @AppServiceExceptionHandle(biz = "USER_LOGIN")
+    public SingleResponse<AuthDTO> login(String phone, String verifyCode) {
         // TODO: 验证短信验证码
         // 这里应该调用短信服务验证验证码
         if (verifyCode.length() != 6) {
@@ -49,6 +50,6 @@ public class UserAppService {
         // 保存认证信息
         authCache.saveAuth(authId, authDTO);
         
-        return authDTO;
+        return SingleResponse.of(authDTO);
     }
 } 

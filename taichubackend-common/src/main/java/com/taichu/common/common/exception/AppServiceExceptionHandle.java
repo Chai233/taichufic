@@ -5,7 +5,7 @@ import java.lang.annotation.*;
 @Target({ElementType.METHOD})
 @Retention(RetentionPolicy.RUNTIME)
 @Documented
-public @interface GlobalExceptionHandle {
+public @interface AppServiceExceptionHandle {
     /**
      * 业务模块名称
      */

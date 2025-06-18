@@ -2,7 +2,7 @@ package com.taichu.application.service;
 
 import com.alibaba.cola.dto.MultiResponse;
 import com.taichu.application.annotation.EntranceLog;
-import com.taichu.common.common.exception.GlobalExceptionHandle;
+import com.taichu.common.common.exception.AppServiceExceptionHandle;
 import com.taichu.domain.enums.ResourceTypeEnum;
 import com.taichu.domain.model.FicResourceBO;
 import com.taichu.domain.model.FicRoleBO;
@@ -31,7 +31,7 @@ public class RoleAppService {
     private FicResourceRepository ficResourceRepository;
 
     @EntranceLog(bizCode = "查询角色")
-    @GlobalExceptionHandle(biz = "查询角色")
+    @AppServiceExceptionHandle(biz = "查询角色")
     public MultiResponse<RoleVO> getRoles(Long workflowId) {
         List<RoleFullBO> roleFullBOList = getRolesFullBOList(workflowId);
         List<RoleVO> roleVOS = convertRoleBOList(roleFullBOList);
@@ -123,7 +123,7 @@ public class RoleAppService {
     }
 
     @EntranceLog(bizCode = "更换角色默认图片")
-    @GlobalExceptionHandle(biz = "更换角色默认图片")
+    @AppServiceExceptionHandle(biz = "更换角色默认图片")
     public MultiResponse<RoleVO> updateSelectedRoleImage(UpdateRoleImageRequest request) {
         // 1. 获取角色信息
         FicRoleBO role = ficRoleRepository.findById(request.getRoleId());

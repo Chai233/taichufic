@@ -6,7 +6,7 @@ import com.taichu.application.annotation.EntranceLog;
 import com.taichu.application.executor.RetryScriptTaskExecutor;
 import com.taichu.application.executor.ScriptTaskExecutor;
 import com.taichu.application.helper.WorkflowValidationHelper;
-import com.taichu.common.common.exception.GlobalExceptionHandle;
+import com.taichu.common.common.exception.AppServiceExceptionHandle;
 import com.taichu.domain.algo.gateway.FileGateway;
 import com.taichu.domain.enums.TaskStatusEnum;
 import com.taichu.domain.enums.TaskTypeEnum;
@@ -79,7 +79,7 @@ public class ScriptAndRoleAppService {
      * @return
      */
     @EntranceLog(bizCode = "剧本生成")
-    @GlobalExceptionHandle(biz = "剧本生成")
+    @AppServiceExceptionHandle(biz = "剧本生成")
     public SingleResponse<Long> submitGenScriptTask(GenerateScriptRequest request, Long userId) {
         // 1. 校验工作流状态
         SingleResponse<?> validateResponse = workflowValidationHelper.validateWorkflow(
@@ -105,7 +105,7 @@ public class ScriptAndRoleAppService {
      * @return
      */
     @EntranceLog(bizCode = "查询剧本生成状态")
-    @GlobalExceptionHandle(biz = "查询剧本生成状态")
+    @AppServiceExceptionHandle(biz = "查询剧本生成状态")
     public SingleResponse<WorkflowTaskStatusDTO> getScriptTaskStatus(Long workflowId) {
         // 1. 查询任务
         FicWorkflowTaskBO task = ficWorkflowTaskRepository.findByWorkflowIdAndTaskType(workflowId, TaskTypeEnum.SCRIPT_AND_ROLE_GENERATION.name());
@@ -127,7 +127,7 @@ public class ScriptAndRoleAppService {
      * @return
      */
     @EntranceLog(bizCode = "查询剧本")
-    @GlobalExceptionHandle(biz = "查询剧本")
+    @AppServiceExceptionHandle(biz = "查询剧本")
     public MultiResponse<ScriptVO> getScript(Long workflowId) {
         // 1. 获取剧本片段列表
         List<FicScriptBO> scriptBOs = ficScriptRepository.findByWorkflowId(workflowId);
@@ -155,7 +155,7 @@ public class ScriptAndRoleAppService {
      * @return
      */
     @EntranceLog(bizCode = "剧本重新生成")
-    @GlobalExceptionHandle(biz = "剧本重新生成")
+    @AppServiceExceptionHandle(biz = "剧本重新生成")
     public SingleResponse<Long> submitReGenScriptTask(GenerateScriptRequest request, Long userId) {
         // 1. 校验工作流状态
         SingleResponse<?> validateResponse = workflowValidationHelper.validateWorkflow(

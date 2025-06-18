@@ -30,8 +30,7 @@ public class UserController {
     public SingleResponse<AuthDTO> login(
             @RequestParam String phone,
             @RequestParam String verifyCode) {
-        AuthDTO authDTO = userAppService.login(phone, verifyCode);
-        return SingleResponse.of(authDTO);
+        return userAppService.login(phone, verifyCode);
     }
 
     /**

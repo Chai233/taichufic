@@ -3,7 +3,7 @@ package com.taichu.application.service;
 import com.alibaba.cola.dto.SingleResponse;
 import com.taichu.application.annotation.EntranceLog;
 import com.taichu.application.helper.WorkflowValidationHelper;
-import com.taichu.common.common.exception.GlobalExceptionHandle;
+import com.taichu.common.common.exception.AppServiceExceptionHandle;
 import com.taichu.domain.algo.gateway.FileGateway;
 import com.taichu.domain.enums.CommonStatusEnum;
 import com.taichu.domain.enums.ResourceStorageTypeEnum;
@@ -32,7 +32,7 @@ public class FileAppService {
     private FicResourceRepository ficResourceRepository;
 
     @EntranceLog(bizCode = "UPLOAD_FILES")
-    @GlobalExceptionHandle(biz = "UPLOAD_FILES")
+    @AppServiceExceptionHandle(biz = "UPLOAD_FILES")
     public SingleResponse<?> uploadFiles(List<MultipartFile> files, Long workflowId, Long userId) {
         try {
             // 校验工作流

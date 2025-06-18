@@ -6,7 +6,7 @@ import com.taichu.application.annotation.EntranceLog;
 import com.taichu.application.executor.ComposeVideoTaskExecutor;
 import com.taichu.application.executor.RetryComposeVideoTaskExecutor;
 import com.taichu.application.helper.WorkflowValidationHelper;
-import com.taichu.common.common.exception.GlobalExceptionHandle;
+import com.taichu.common.common.exception.AppServiceExceptionHandle;
 import com.taichu.common.common.util.StreamUtil;
 import com.taichu.domain.algo.gateway.FileGateway;
 import com.taichu.domain.enums.*;
@@ -18,7 +18,6 @@ import com.taichu.sdk.model.FullVideoListItemDTO;
 import com.taichu.sdk.model.WorkflowTaskStatusDTO;
 import com.taichu.sdk.model.request.ComposeVideoRequest;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.InputStreamResource;
 import org.springframework.core.io.Resource;
 import org.springframework.stereotype.Component;
@@ -53,7 +52,7 @@ public class ComposeVideoAppService {
      * 提交视频合成任务
      */
     @EntranceLog(bizCode = "提交视频合成任务")
-    @GlobalExceptionHandle(biz = "提交视频合成任务")
+    @AppServiceExceptionHandle(biz = "提交视频合成任务")
     public SingleResponse<Long> submitComposeVideoTask(ComposeVideoRequest request, Long userId) {
         // 1. 校验工作流状态
         SingleResponse<?> validateResponse = workflowValidationHelper.validateWorkflow(
@@ -73,7 +72,7 @@ public class ComposeVideoAppService {
      * @return
      */
     @EntranceLog(bizCode = "用户重新提交视频合成任务")
-    @GlobalExceptionHandle(biz = "用户重新提交视频合成任务")
+    @AppServiceExceptionHandle(biz = "用户重新提交视频合成任务")
     public SingleResponse<Long> submitReComposeVideoTask(ComposeVideoRequest request, Long userId) {
         // 1. 校验工作流状态
         SingleResponse<?> validateResponse = workflowValidationHelper.validateWorkflow(
@@ -90,7 +89,7 @@ public class ComposeVideoAppService {
      * 查询任务状态
      */
     @EntranceLog(bizCode = "查询合成视频任务状态")
-    @GlobalExceptionHandle(biz = "查询合成视频任务状态")
+    @AppServiceExceptionHandle(biz = "查询合成视频任务状态")
     public SingleResponse<WorkflowTaskStatusDTO> getComposeTaskStatus(Long taskId) {
         FicWorkflowTaskBO ficWorkflowTaskBO = ficWorkflowTaskRepository.findById(taskId);
         if (ficWorkflowTaskBO == null) {
@@ -111,7 +110,7 @@ public class ComposeVideoAppService {
      * 获取合成视频信息
      */
     @EntranceLog(bizCode = "获取合成视频信息")
-    @GlobalExceptionHandle(biz = "获取合成视频信息")
+    @AppServiceExceptionHandle(biz = "获取合成视频信息")
     public MultiResponse<FullVideoListItemDTO> getComposeVideo(Long workflowId) {
         List<FicResourceBO> ficResourceBOList = ficResourceRepository.findByWorkflowIdAndResourceType(
                 workflowId, ResourceTypeEnum.FULL_VIDEO);

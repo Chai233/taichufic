@@ -2,7 +2,7 @@ package com.taichu.application.service;
 
 import com.alibaba.cola.dto.SingleResponse;
 import com.taichu.application.annotation.EntranceLog;
-import com.taichu.common.common.exception.GlobalExceptionHandle;
+import com.taichu.common.common.exception.AppServiceExceptionHandle;
 import com.taichu.domain.enums.WorkflowStatusEnum;
 import com.taichu.infra.persistance.model.FicWorkflow;
 import com.taichu.infra.persistance.model.FicWorkflowExample;
@@ -41,7 +41,7 @@ public class WorkflowAppService {
      * @return 新创建的工作流ID
      */
     @EntranceLog(bizCode = "工作流创建")
-    @GlobalExceptionHandle(biz = "工作流创建")
+    @AppServiceExceptionHandle(biz = "工作流创建")
     public SingleResponse<Long> createWorkflow(Long userId) {
         try {
             // 1. 查询用户的所有工作流
@@ -88,7 +88,7 @@ public class WorkflowAppService {
     }
 
     @EntranceLog(bizCode = "获取活跃工作流")
-    @GlobalExceptionHandle(biz = "获取活跃工作流")
+    @AppServiceExceptionHandle(biz = "获取活跃工作流")
     public SingleResponse<WorkflowDTO> getValidWorkflow(Long userId) {
         if (userId == null) {
             return SingleResponse.buildFailure("WORKFLOW_003", "用户ID不能为空");
