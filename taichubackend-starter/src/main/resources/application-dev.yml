@@ -2,7 +2,7 @@ spring:
   application:
     name: taichu-backend
   datasource:
-    url: jdbc:mysql://localhost:3306/demo_db_taichu?useSSL=false&serverTimezone=UTC
+    url: jdbc:mysql://localhost:3306/demo_db_taichu?useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true
     username: demo
     password: demo123
     driver-class-name: com.mysql.cj.jdbc.Driver
@@ -14,7 +14,7 @@ spring:
   flyway:
     enabled: true
     locations: classpath:db/migration
-    url: jdbc:mysql://localhost:3306/demo_db_taichu?useSSL=false&serverTimezone=UTC
+    url: jdbc:mysql://localhost:3306/demo_db_taichu?useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true
     user: demo
     password: demo123
 
