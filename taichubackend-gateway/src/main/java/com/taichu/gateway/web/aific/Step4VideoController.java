@@ -31,7 +31,6 @@ import com.taichu.common.common.exception.ControllerExceptionHandle;
 @Slf4j
 @RestController
 @RequestMapping("/api/v1/video")
-@ControllerExceptionHandle(biz = "Step4Video")
 public class Step4VideoController {
 
     private final StoryboardVideoAppService storyboardVideoAppService;

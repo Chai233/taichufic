@@ -29,7 +29,6 @@ import com.taichu.common.common.exception.ControllerExceptionHandle;
 @Slf4j
 @RestController
 @RequestMapping("/api/v1/storyboard")
-@ControllerExceptionHandle(biz = "Step3StoryboardImg")
 public class Step3StoryboardImgController {
 
     private final StoryboardImgAppService storyboardImgAppService;
@@ -45,6 +44,7 @@ public class Step3StoryboardImgController {
      * @return 任务ID
      */
     @PostMapping("/generate")
+    @ControllerExceptionHandle(biz = "Step3StoryboardImgGenerate")
     public SingleResponse<Long> generateStoryboard(@RequestBody GenerateStoryboardImgRequest request) {
         Long userId = AuthUtil.getCurrentUserId();
         return storyboardImgAppService.submitGenStoryboardTask(request, userId);
@@ -91,6 +91,7 @@ public class Step3StoryboardImgController {
      * @return 任务ID
      */
     @PostMapping("/regenerate")
+    @ControllerExceptionHandle(biz = "Step3StoryboardImgReGenerate")
     public SingleResponse<Long> regenerateSingleStoryboard(@RequestBody GenerateStoryboardImgRequest request) {
         Long userId = AuthUtil.getCurrentUserId();
         return storyboardImgAppService.regenerateSingleStoryboard(userId, request);
