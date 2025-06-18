@@ -9,6 +9,8 @@ import com.taichu.infra.persistance.model.FicWorkflowExample;
 import com.taichu.infra.repo.FicWorkflowRepository;
 import com.taichu.sdk.model.WorkflowDTO;
 import lombok.extern.slf4j.Slf4j;
+
+import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -77,7 +79,21 @@ public class WorkflowAppService {
     @EntranceLog(bizCode = "获取活跃工作流")
     @GlobalExceptionHandle(biz = "获取活跃工作流")
     public SingleResponse<WorkflowDTO> getValidWorkflow(Long userId) {
-        // TODO
-        return null;
+        if (userId == null) {
+            return SingleResponse.buildFailure("WORKFLOW_003", "用户ID不能为空");
+        }
+        FicWorkflowExample example = new FicWorkflowExample();
+        example.createCriteria().andUserIdEqualTo(userId)
+                .andStatusNotEqualTo(WorkflowStatusEnum.CLOSE.getCode());
+        ;
+        List<FicWorkflow> ficWorkflowList = workflowRepository.findByExample(example);
+        if (CollectionUtils.isEmpty(ficWorkflowList)) {
+            return SingleResponse.buildFailure("WORKFLOW_004", "没有生效中的的工作流");
+        }
+        FicWorkflow ficWorkflow = ficWorkflowList.get(0);
+        WorkflowDTO workflowDTO = new WorkflowDTO();
+        workflowDTO.setWorkflowId(ficWorkflow.getId());
+        workflowDTO.setStatus(WorkflowStatusEnum.fromCode(ficWorkflow.getStatus()).name());
+        return SingleResponse.of(workflowDTO);
     }
 }
