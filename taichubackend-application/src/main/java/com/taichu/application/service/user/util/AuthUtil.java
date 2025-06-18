@@ -24,12 +24,12 @@ public class AuthUtil {
     public static Long getCurrentUserId() {
         String authId = getAuthId();
         if (authId == null) {
-            throw new BusinessException("401", "未登录");
+            throw new BusinessException("1001", "未登录");
         }
         
         AuthDTO authDTO = authCache.getAuth(authId);
         if (authDTO == null) {
-            throw new BusinessException("401", "登录已过期");
+            throw new BusinessException("1002", "登录已过期");
         }
         
         return authDTO.getUserId();

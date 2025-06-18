@@ -14,6 +14,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import com.taichu.common.common.exception.ControllerExceptionHandle;
 
 import java.util.Optional;
 
@@ -38,6 +39,7 @@ public class Step5ComposeController {
      * @return 任务ID
      */
     @PostMapping("/generate")
+    @ControllerExceptionHandle(biz = "Step5Compose")
     public SingleResponse<Long> generateComposeVideo(@RequestBody ComposeVideoRequest request) {
         Long userId = AuthUtil.getCurrentUserId();
         return composeVideoAppService.submitComposeVideoTask(request, userId);
@@ -50,6 +52,7 @@ public class Step5ComposeController {
      * @return 任务ID
      */
     @PostMapping("/userReGenerate")
+    @ControllerExceptionHandle(biz = "Step5Compose")
     public SingleResponse<Long> reGenerateComposeVideo(@RequestBody ComposeVideoRequest request) {
         Long userId = AuthUtil.getCurrentUserId();
         return composeVideoAppService.submitReComposeVideoTask(request, userId);

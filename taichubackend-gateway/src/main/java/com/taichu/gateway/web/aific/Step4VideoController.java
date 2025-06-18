@@ -23,6 +23,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
+import com.taichu.common.common.exception.ControllerExceptionHandle;
 
 /**
  * 分镜视频相关接口控制器
@@ -30,6 +31,7 @@ import java.util.zip.ZipOutputStream;
 @Slf4j
 @RestController
 @RequestMapping("/api/v1/video")
+@ControllerExceptionHandle(biz = "Step4Video")
 public class Step4VideoController {
 
     private final StoryboardVideoAppService storyboardVideoAppService;
@@ -46,6 +48,7 @@ public class Step4VideoController {
      * @return 任务ID
      */
     @PostMapping("/generate")
+    @ControllerExceptionHandle(biz = "Step4Video")
     public SingleResponse<Long> generateVideo(@RequestBody GenerateVideoRequest request) {
         Long userId = AuthUtil.getCurrentUserId();
         return storyboardVideoAppService.submitGenVideoTask(request, userId);
@@ -58,6 +61,7 @@ public class Step4VideoController {
      * @return 任务状态
      */
     @GetMapping("/task/status")
+    @ControllerExceptionHandle(biz = "Step4Video")
     public SingleResponse<StoryboardWorkflowTaskStatusDTO> getVideoTaskStatus(@RequestParam("taskId") Long taskId) {
         return storyboardVideoAppService.getVideoTaskStatus(taskId);
     }
@@ -91,6 +95,7 @@ public class Step4VideoController {
      * @return 任务ID
      */
     @PostMapping("/regenerate")
+    @ControllerExceptionHandle(biz = "Step4Video")
     public SingleResponse<Long> regenerateSingleVideo(@RequestBody SingleStoryboardVideoRegenRequest request) {
         Long userId = AuthUtil.getCurrentUserId();
         return storyboardVideoAppService.regenerateSingleVideo(request, userId);

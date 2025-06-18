@@ -3,6 +3,7 @@ package com.taichu.gateway.web.aific;
 import com.alibaba.cola.dto.SingleResponse;
 import com.taichu.application.service.FileAppService;
 import com.taichu.application.service.user.util.AuthUtil;
+import com.taichu.common.common.exception.ControllerExceptionHandle;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -33,6 +34,7 @@ public class Step1FileController {
      * @return 上传结果
      */
     @PostMapping("/upload")
+    @ControllerExceptionHandle(biz = "Step1File")
     public SingleResponse<?> uploadFiles(@RequestParam("files") List<MultipartFile> files,
                                          @RequestParam Long workflowId) {
         // 从认证信息中获取用户ID

@@ -21,6 +21,7 @@ import java.io.IOException;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 import java.io.InputStream;
+import com.taichu.common.common.exception.ControllerExceptionHandle;
 
 /**
  * 分镜图相关接口控制器
@@ -28,6 +29,7 @@ import java.io.InputStream;
 @Slf4j
 @RestController
 @RequestMapping("/api/v1/storyboard")
+@ControllerExceptionHandle(biz = "Step3StoryboardImg")
 public class Step3StoryboardImgController {
 
     private final StoryboardImgAppService storyboardImgAppService;

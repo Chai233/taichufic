@@ -19,6 +19,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import com.taichu.common.common.exception.ControllerExceptionHandle;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -45,6 +46,7 @@ public class Step2ScriptController {
      * @return 任务ID
      */
     @PostMapping("/generate")
+    @ControllerExceptionHandle(biz = "Step2Script")
     public SingleResponse<Long> generateScript(@RequestBody GenerateScriptRequest request) {
         Long userId = AuthUtil.getCurrentUserId();
         return scriptAppService.submitGenScriptTask(request, userId);
@@ -57,6 +59,7 @@ public class Step2ScriptController {
      * @return 任务ID
      */
     @PostMapping("/userReGenerate")
+    @ControllerExceptionHandle(biz = "Step2Script")
     public SingleResponse<Long> reGenerateScript(@RequestBody GenerateScriptRequest request) {
         Long userId = AuthUtil.getCurrentUserId();
         return scriptAppService.submitReGenScriptTask(request, userId);
@@ -69,6 +72,7 @@ public class Step2ScriptController {
      * @return 任务状态
      */
     @GetMapping("/task/status")
+    @ControllerExceptionHandle(biz = "Step2Script")
     public SingleResponse<WorkflowTaskStatusDTO> getScriptTaskStatus(@RequestParam("workflow_id") Long workflowId) {
         return scriptAppService.getScriptTaskStatus(workflowId);
     }
@@ -80,6 +84,7 @@ public class Step2ScriptController {
      * @return 剧本列表
      */
     @GetMapping("/getScript")
+    @ControllerExceptionHandle(biz = "Step2Script")
     public MultiResponse<ScriptVO> getScript(@RequestParam Long workflowId) {
         return scriptAppService.getScript(workflowId);
     }
@@ -91,6 +96,7 @@ public class Step2ScriptController {
      * @return 角色列表
      */
     @GetMapping("/getRoles")
+    @ControllerExceptionHandle(biz = "Step2Script")
     public MultiResponse<RoleVO> getRoles(@RequestParam Long workflowId) {
         return roleAppService.getRoles(workflowId);
     }
@@ -102,6 +108,7 @@ public class Step2ScriptController {
      * @return 更新后的角色列表
      */
     @PostMapping("/updateSelectedImage")
+    @ControllerExceptionHandle(biz = "Step2Script")
     public MultiResponse<RoleVO> updateSelectedRoleImage(@RequestParam UpdateRoleImageRequest request) {
         return roleAppService.updateSelectedRoleImage(request);
     }
@@ -113,6 +120,7 @@ public class Step2ScriptController {
      * @return 剧本压缩包
      */
     @GetMapping("/downloadScript")
+    @ControllerExceptionHandle(biz = "Step2Script")
     public ResponseEntity<Resource> downloadScript(@RequestParam Long workflowId) {
         // 1. 获取所有剧本信息
         MultiResponse<ScriptVO> scriptListResponse = scriptAppService.getScript(workflowId);

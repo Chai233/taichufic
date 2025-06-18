@@ -4,6 +4,7 @@ import com.alibaba.cola.dto.SingleResponse;
 import com.taichu.application.service.WorkflowAppService;
 import com.taichu.application.service.user.util.AuthUtil;
 import com.taichu.sdk.model.WorkflowDTO;
+import com.taichu.common.common.exception.ControllerExceptionHandle;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
@@ -24,6 +25,7 @@ public class WorkflowController {
      * @return 工作流ID
      */
     @PostMapping("/create")
+    @ControllerExceptionHandle(biz = "Workflow")
     public SingleResponse<Long> createWorkflow() {
         Long userId = AuthUtil.getCurrentUserId();
         return workflowAppService.createWorkflow(userId);
@@ -35,6 +37,7 @@ public class WorkflowController {
      * @return 工作流信息
      */
     @GetMapping("get-active-workflow")
+    @ControllerExceptionHandle(biz = "Workflow")
     public SingleResponse<WorkflowDTO> getWorkflow() {
         Long userId = AuthUtil.getCurrentUserId();
         return workflowAppService.getValidWorkflow(userId);
