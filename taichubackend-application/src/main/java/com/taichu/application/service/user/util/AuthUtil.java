@@ -3,11 +3,13 @@ package com.taichu.application.service.user.util;
 import com.taichu.application.service.user.cache.AuthCache;
 import com.taichu.application.service.user.dto.AuthDTO;
 import com.taichu.common.common.exception.BusinessException;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
 
 import javax.servlet.http.HttpServletRequest;
 
+@Slf4j
 public class AuthUtil {
     private static final String AUTH_HEADER = "X-Auth-Id";
     private static AuthCache authCache;
@@ -31,7 +33,8 @@ public class AuthUtil {
         if (authDTO == null) {
             throw new BusinessException("1002", "登录已过期");
         }
-        
+
+        log.debug("getCurrentUserId:{}", authDTO.getUserId());
         return authDTO.getUserId();
     }
 

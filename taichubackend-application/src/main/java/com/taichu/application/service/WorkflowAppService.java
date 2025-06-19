@@ -55,7 +55,7 @@ public class WorkflowAppService {
                 // 如果不是关闭状态且不是最后一个状态（FULL_VIDEO_GEN_DONE），则返回错误
                 if (!WorkflowStatusEnum.CLOSE.getCode().equals(status) 
                     && !WorkflowStatusEnum.FULL_VIDEO_GEN_DONE.getCode().equals(status)) {
-                    return SingleResponse.buildFailure("WORKFLOW_001", 
+                    return SingleResponse.buildFailure("WORKFLOW_008",
                         "存在未完成的工作流，请先完成或关闭现有工作流");
                 }
             }

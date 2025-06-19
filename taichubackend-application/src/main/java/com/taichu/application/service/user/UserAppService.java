@@ -7,11 +7,13 @@ import com.taichu.application.service.user.dto.AuthDTO;
 import com.taichu.common.common.exception.AppServiceExceptionHandle;
 import com.taichu.infra.persistance.model.FicUser;
 import com.taichu.infra.repository.FicUserRepository;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.util.UUID;
 
 @Service
+@Slf4j
 public class UserAppService {
     
     private final AuthCache authCache;
@@ -49,7 +51,8 @@ public class UserAppService {
         
         // 保存认证信息
         authCache.saveAuth(authId, authDTO);
-        
+
+        log.debug("authDTO={}", authDTO);
         return SingleResponse.of(authDTO);
     }
 } 
