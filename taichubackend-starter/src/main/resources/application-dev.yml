@@ -40,7 +40,7 @@ file:
 
 algo:
   service:
-    base-url: http://localhost:8081  # 本地算法服务地址
+    base-url: http://192.168.100.106:65056  # 算法服务地址
 
 # 阿里云 OSS 配置
 aliyun:
