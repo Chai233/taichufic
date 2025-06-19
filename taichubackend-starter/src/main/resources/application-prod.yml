@@ -17,6 +17,14 @@ spring:
     url: jdbc:mysql://mysql_demo:3306/demo_db_taichu?useSSL=false&serverTimezone=UTC
     user: demo
     password: demo123
+  servlet:
+    multipart:
+      enabled: true
+      max-file-size: 20MB
+      max-request-size: 20MB
+      file-size-threshold: 2KB
+      location: /tmp
+      resolve-lazily: false
 
 mybatis:
   config-location: classpath:mybatis-config.xml
