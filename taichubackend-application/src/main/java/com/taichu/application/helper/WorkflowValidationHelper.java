@@ -44,7 +44,6 @@ public class WorkflowValidationHelper {
         SingleWorkflowQuery query = SingleWorkflowQuery.builder()
                 .workflowId(workflowId)
                 .userId(userId)
-                .status(expectedStatus.getCode())
                 .build();
         
         Optional<FicWorkflow> workflowOpt = workflowRepository.findSingleWorkflow(query);
@@ -55,13 +54,13 @@ public class WorkflowValidationHelper {
         }
         
         // 3. 校验用户权限
-        if (workflowOpt.get().getUserId().equals(userId)) {
+        if (!workflowOpt.get().getUserId().equals(userId)) {
             return SingleResponse.buildFailure("WORKFLOW_001", "用户不是该工作流的创建人");
         }
         
         // 4. 校验工作流状态
         if (!workflowOpt.get().getStatus().equals(expectedStatus.getCode())) {
-            return SingleResponse.buildFailure("WORKFLOW_004", "工作流状态不是" + expectedStatus.getDescription());
+            return SingleResponse.buildFailure("WORKFLOW_004", "工作流状态不是【" + expectedStatus.getDescription() + "】");
         }
         
         // 5. 校验是否有任务正在执行中

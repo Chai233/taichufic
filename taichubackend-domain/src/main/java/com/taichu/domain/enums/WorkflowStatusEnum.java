@@ -17,28 +17,28 @@ public enum WorkflowStatusEnum {
     /**
      * 剧本生成
      */
-    SCRIPT_GEN_INIT((byte) 2, "脚本生成"),
+    SCRIPT_GEN_INIT((byte) 2, "剧本生成初始化"),
 
-    SCRIPT_GEN_DONE((byte) 3, "脚本生成"),
+    SCRIPT_GEN_DONE((byte) 3, "剧本生成完成"),
     
     /**
      * 分镜图片生成
      */
     STORYBOARD_IMG_GEN_INIT((byte) 4, "分镜图片生成"),
 
-    STORYBOARD_IMG_GEN_DONE((byte) 5, "分镜图片生成"),
+    STORYBOARD_IMG_GEN_DONE((byte) 5, "分镜图片完成"),
     
     /**
      * 分镜视频生成
      */
-    STORYBOARD_VIDEO_GEN_INIT((byte) 6, "分镜视频生成中"),
+    STORYBOARD_VIDEO_GEN_INIT((byte) 6, "分镜视频生成"),
 
     STORYBOARD_VIDEO_GEN_DONE((byte) 7, "分镜视频生成完成"),
     
     /**
      * 完整视频生成
      */
-    FULL_VIDEO_GEN_INIT((byte) 8, "完整视频生成中"),
+    FULL_VIDEO_GEN_INIT((byte) 8, "完整视频生成"),
 
     FULL_VIDEO_GEN_DONE((byte) 9, "完整视频生成完成"),
     
