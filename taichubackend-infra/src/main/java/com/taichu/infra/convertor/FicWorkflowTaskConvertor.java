@@ -44,7 +44,7 @@ public interface FicWorkflowTaskConvertor {
      * @return JSON字符串
      */
     @Named("mapToJson")
-    default String mapToJson(Map<String, String> params) {
+    static String mapToJson(Map<String, String> params) {
         if (params == null) {
             return "{}";
         }
@@ -61,7 +61,7 @@ public interface FicWorkflowTaskConvertor {
      * @return Map参数
      */
     @Named("jsonToMap")
-    default Map<String, String> jsonToMap(String params) {
+    static Map<String, String> jsonToMap(String params) {
         if (params == null || params.isEmpty()) {
             return new HashMap<>();
         }
