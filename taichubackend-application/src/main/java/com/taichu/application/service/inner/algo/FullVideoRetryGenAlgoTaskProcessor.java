@@ -16,6 +16,7 @@ public class FullVideoRetryGenAlgoTaskProcessor extends FullVideoGenAlgoTaskProc
     @Autowired
     public FullVideoRetryGenAlgoTaskProcessor(AlgoGateway algoGateway, FicWorkflowTaskRepository ficWorkflowTaskRepository, FicWorkflowRepository ficWorkflowRepository, FicStoryboardRepository ficStoryboardRepository, FileGateway fileGateway, FicResourceRepository ficResourceRepository) {
         super(algoGateway, ficWorkflowTaskRepository, ficWorkflowRepository, ficStoryboardRepository, fileGateway, ficResourceRepository);
+        log.info("[FullVideoRetryGenAlgoTaskProcessor] 初始化完整视频重试生成处理器");
     }
 
     @Override
@@ -25,6 +26,7 @@ public class FullVideoRetryGenAlgoTaskProcessor extends FullVideoGenAlgoTaskProc
 
     @Override
     public AlgoTaskTypeEnum getAlgoTaskType() {
+        log.debug("[FullVideoRetryGenAlgoTaskProcessor.getAlgoTaskType] 获取任务类型: {}", AlgoTaskTypeEnum.USER_RETRY_FULL_VIDEO_GENERATION);
         return AlgoTaskTypeEnum.USER_RETRY_FULL_VIDEO_GENERATION;
     }
 

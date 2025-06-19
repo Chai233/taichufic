@@ -50,34 +50,30 @@ public class StoryboardVideoAlgoTaskProcessor extends AbstractAlgoTaskProcessor 
     @Override
     public List<AlgoTaskBO> generateTasks(FicWorkflowTaskBO workflowTask) {
         Long workflowId = workflowTask.getWorkflowId();
-
-        // 1. 查询分镜
+        log.info("[StoryboardVideoAlgoTaskProcessor.generateTasks] 开始生成分镜视频任务, workflowId: {}", workflowId);
         List<FicStoryboardBO> ficStoryboardBOList = ficStoryboardRepository.findByWorkflowId(workflowId);
+        log.info("[StoryboardVideoAlgoTaskProcessor.generateTasks] 查询到分镜: {}", ficStoryboardBOList);
         if (ficStoryboardBOList.isEmpty()) {
+            log.warn("[StoryboardVideoAlgoTaskProcessor.generateTasks] 分镜为空, workflowId: {}", workflowId);
             return List.of();
         }
-
         List<AlgoTaskBO> algoResponseList = new ArrayList<>(ficStoryboardBOList.size());
         for (FicStoryboardBO ficStoryboardBO : ficStoryboardBOList) {
-            // 调用算法服务
+            log.info("[StoryboardVideoAlgoTaskProcessor.generateTasks] 处理分镜, storyboardId: {}", ficStoryboardBO.getId());
             String operationName = "Call algorithm service for workflow: " + workflowId;
             AlgoResponse response = callAlgoServiceWithRetry(operationName, () -> callAlgoGenStoryboardVideo(workflowTask, ficStoryboardBO.getId()));
-
-            // 检查算法服务响应
+            log.info("[StoryboardVideoAlgoTaskProcessor.generateTasks] 算法服务响应: {}", response);
             if (response == null) {
-                log.error("Algorithm service failed to create storyboard_video task for workflow: {}, after {} retries",
-                        workflowId, getMaxRetry());
+                log.error("[StoryboardVideoAlgoTaskProcessor.generateTasks] Algorithm service failed to create storyboard_video task for workflow: {}, after {} retries", workflowId, getMaxRetry());
                 return Collections.emptyList();
             }
-
-            // 添加到返回列表
             AlgoTaskBO algoTaskBO = new AlgoTaskBO();
             algoTaskBO.setAlgoTaskId(response.getTaskId());
             algoTaskBO.setRelevantId(ficStoryboardBO.getId());
             algoTaskBO.setRelevantIdType(RelevanceType.STORYBOARD_ID);
             algoResponseList.add(algoTaskBO);
+            log.info("[StoryboardVideoAlgoTaskProcessor.generateTasks] 添加任务: {}", algoTaskBO);
         }
-
         return algoResponseList;
     }
 
@@ -135,50 +131,34 @@ public class StoryboardVideoAlgoTaskProcessor extends AbstractAlgoTaskProcessor 
 
     @Override
     public void singleTaskSuccessPostProcess(FicAlgoTaskBO algoTask) {
-        /*
-         * 下载图片，上传OSS
-         */
+        log.info("[StoryboardVideoAlgoTaskProcessor.singleTaskSuccessPostProcess] 开始处理分镜视频, algoTaskId: {}", algoTask.getAlgoTaskId());
         MultipartFile storyboardVideoResult = algoGateway.getStoryboardVideoResult(Objects.toString(algoTask.getAlgoTaskId()));
         if (storyboardVideoResult == null) {
-            log.error("获取分镜视频结果失败, algoTaskId: {}", algoTask.getAlgoTaskId());
+            log.error("[StoryboardVideoAlgoTaskProcessor.singleTaskSuccessPostProcess] 获取分镜视频结果失败, algoTaskId: {}", algoTask.getAlgoTaskId());
             return;
         }
-
         try {
-            // 获取工作流ID
             FicWorkflowTaskBO workflowTask = ficWorkflowTaskRepository.findById(algoTask.getWorkflowTaskId());
             if (workflowTask == null) {
-                log.error("工作流任务不存在, workflowTaskId: {}", algoTask.getWorkflowTaskId());
+                log.error("[StoryboardVideoAlgoTaskProcessor.singleTaskSuccessPostProcess] 工作流任务不存在, workflowTaskId: {}", algoTask.getWorkflowTaskId());
                 return;
             }
             Long workflowId = workflowTask.getWorkflowId();
-
-            // 构建文件名
-            String fileName = String.format("storyboard_video_%s_%s_%s",
-                    workflowId,
-                    algoTask.getAlgoTaskId(),
-                    storyboardVideoResult.getName());
-
-            // 上传到 OSS
+            String fileName = String.format("storyboard_video_%s_%s_%s", workflowId, algoTask.getAlgoTaskId(), storyboardVideoResult.getName());
+            log.info("[StoryboardVideoAlgoTaskProcessor.singleTaskSuccessPostProcess] 上传文件名: {}", fileName);
             Resp<String> uploadResp = fileGateway.saveFile(fileName, storyboardVideoResult);
             if (!uploadResp.isSuccess()) {
-                log.error("上传分镜视频到OSS失败, algoTaskId: {}, error: {}",
-                        algoTask.getAlgoTaskId(), uploadResp.getMessage());
+                log.error("[StoryboardVideoAlgoTaskProcessor.singleTaskSuccessPostProcess] 上传分镜视频到OSS失败, algoTaskId: {}, error: {}", algoTask.getAlgoTaskId(), uploadResp.getMessage());
                 return;
             }
-
-            // 删除旧的资源
             List<FicResourceBO> oldFullVideoResources = ficResourceRepository.findByWorkflowIdAndResourceType(workflowId, ResourceTypeEnum.STORYBOARD_VIDEO);
             for (FicResourceBO resource : oldFullVideoResources) {
-                if (Objects.equals(resource.getRelevanceId(), algoTask.getRelevantId())
-                        && Objects.equals(resource.getResourceType(), algoTask.getRelevantIdType())
-                ) {
+                if (Objects.equals(resource.getRelevanceId(), algoTask.getRelevantId()) && Objects.equals(resource.getResourceType(), algoTask.getRelevantIdType())) {
                     ficResourceRepository.offlineResourceById(resource.getId());
+                    log.info("[StoryboardVideoAlgoTaskProcessor.singleTaskSuccessPostProcess] 下线旧资源, resourceId: {}", resource.getId());
                     break;
                 }
             }
-
-            // 保存资源信息
             FicResourceBO ficResourceBO = new FicResourceBO();
             ficResourceBO.setWorkflowId(workflowId);
             ficResourceBO.setResourceType(ResourceTypeEnum.STORYBOARD_VIDEO.name());
@@ -189,14 +169,10 @@ public class StoryboardVideoAlgoTaskProcessor extends AbstractAlgoTaskProcessor 
             ficResourceBO.setStatus(CommonStatusEnum.VALID.getValue());
             ficResourceBO.setGmtCreate(System.currentTimeMillis());
             ficResourceBO.setOriginName(storyboardVideoResult.getOriginalFilename());
-
-            // 保存到数据库
             ficResourceRepository.insert(ficResourceBO);
-
-            log.info("分镜视频处理完成, algoTaskId: {}, resourceId: {}",
-                    algoTask.getAlgoTaskId(), ficResourceBO.getId());
+            log.info("[StoryboardVideoAlgoTaskProcessor.singleTaskSuccessPostProcess] 分镜视频处理完成, algoTaskId: {}, resourceId: {}", algoTask.getAlgoTaskId(), ficResourceBO.getId());
         } catch (Exception e) {
-            log.error("处理视频图片失败, algoTaskId: {}", algoTask.getAlgoTaskId(), e);
+            log.error("[StoryboardVideoAlgoTaskProcessor.singleTaskSuccessPostProcess] 处理分镜视频失败, algoTaskId: {}", algoTask.getAlgoTaskId(), e);
         }
     }
 

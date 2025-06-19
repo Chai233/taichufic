@@ -28,46 +28,42 @@ public class SingleStoryboardImgAlgoTaskProcessor extends StoryboardImgAlgoTaskP
     public SingleStoryboardImgAlgoTaskProcessor(FicStoryboardRepository ficStoryboardRepository, AlgoGateway algoGateway, FicRoleRepository ficRoleRepository, FileGateway fileGateway, FicResourceRepository ficResourceRepository, FicWorkflowTaskRepository ficWorkflowTaskRepository, FicWorkflowRepository ficWorkflowRepository) {
         super(ficStoryboardRepository, algoGateway, ficRoleRepository, fileGateway, ficResourceRepository, ficWorkflowTaskRepository, ficWorkflowRepository);
         this.ficStoryboardRepository = ficStoryboardRepository;
+        log.info("[SingleStoryboardImgAlgoTaskProcessor] 初始化单分镜图片处理器");
     }
 
     @Override
     public AlgoTaskTypeEnum getAlgoTaskType() {
+        log.debug("[SingleStoryboardImgAlgoTaskProcessor.getAlgoTaskType] 获取任务类型: {}", AlgoTaskTypeEnum.USER_RETRY_SINGLE_STORYBOARD_IMG_GENERATION);
         return AlgoTaskTypeEnum.USER_RETRY_SINGLE_STORYBOARD_IMG_GENERATION;
     }
 
     @Override
     public List<AlgoTaskBO> generateTasks(FicWorkflowTaskBO workflowTask) {
+        log.info("[SingleStoryboardImgAlgoTaskProcessor.generateTasks] 开始生成单分镜图片任务, workflowTaskId: {}", workflowTask.getId());
         Long storyboardId = getStoryboardId(workflowTask);
         if (storyboardId == null) {
-            log.error("分镜ID为空, workflowTaskId: {}", workflowTask.getId());
+            log.error("[SingleStoryboardImgAlgoTaskProcessor.generateTasks] 分镜ID为空, workflowTaskId: {}", workflowTask.getId());
             return Collections.emptyList();
         }
-
         Long workflowId = workflowTask.getWorkflowId();
-
-        // 1. 查询分镜
+        log.info("[SingleStoryboardImgAlgoTaskProcessor.generateTasks] 处理分镜, storyboardId: {}, workflowId: {}", storyboardId, workflowId);
         FicStoryboardBO ficStoryboardBO = ficStoryboardRepository.findById(storyboardId);
         if (ficStoryboardBO == null) {
+            log.error("[SingleStoryboardImgAlgoTaskProcessor.generateTasks] 分镜不存在, storyboardId: {}", storyboardId);
             return List.of();
         }
-
-        // 调用算法服务
         String operationName = "Call algorithm service for workflow: " + workflowId;
         AlgoResponse response = callAlgoServiceWithRetry(operationName, () -> callAlgoServiceGenStoryboardImg(workflowTask, workflowId, ficStoryboardBO.getId()));
-
-        // 检查算法服务响应
+        log.info("[SingleStoryboardImgAlgoTaskProcessor.generateTasks] 算法服务响应: {}", response);
         if (response == null) {
-            log.error("Algorithm service failed to create storyboard_video task for workflow: {}, after {} retries",
-                    workflowId, getMaxRetry());
+            log.error("[SingleStoryboardImgAlgoTaskProcessor.generateTasks] Algorithm service failed to create storyboard_video task for workflow: {}, after {} retries", workflowId, getMaxRetry());
             return Collections.emptyList();
         }
-
-        // 添加到返回列表
         AlgoTaskBO algoTaskBO = new AlgoTaskBO();
         algoTaskBO.setAlgoTaskId(response.getTaskId());
         algoTaskBO.setRelevantId(storyboardId);
         algoTaskBO.setRelevantIdType(RelevanceType.STORYBOARD_ID);
-
+        log.info("[SingleStoryboardImgAlgoTaskProcessor.generateTasks] 生成的任务: {}", algoTaskBO);
         return Collections.singletonList(algoTaskBO);
     }
 

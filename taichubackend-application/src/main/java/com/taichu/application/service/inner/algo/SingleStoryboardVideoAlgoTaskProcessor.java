@@ -32,43 +32,39 @@ public class SingleStoryboardVideoAlgoTaskProcessor extends StoryboardVideoAlgoT
 
     @Override
     public List<AlgoTaskBO> generateTasks(FicWorkflowTaskBO workflowTask) {
+        log.info("[SingleStoryboardVideoAlgoTaskProcessor.generateTasks] 开始生成单分镜视频任务, workflowTaskId: {}", workflowTask.getId());
         Long storyboardId = getStoryboardId(workflowTask);
         if (storyboardId == null) {
-            log.error("分镜ID为空, workflowTaskId: {}", workflowTask.getId());
+            log.error("[SingleStoryboardVideoAlgoTaskProcessor.generateTasks] 分镜ID为空, workflowTaskId: {}", workflowTask.getId());
             return Collections.emptyList();
         }
-
         Long workflowId = workflowTask.getWorkflowId();
-
-        // 1. 查询分镜
+        log.info("[SingleStoryboardVideoAlgoTaskProcessor.generateTasks] 处理分镜, storyboardId: {}, workflowId: {}", storyboardId, workflowId);
         FicStoryboardBO ficStoryboardBO = ficStoryboardRepository.findById(storyboardId);
         if (ficStoryboardBO == null) {
+            log.error("[SingleStoryboardVideoAlgoTaskProcessor.generateTasks] 分镜不存在, storyboardId: {}", storyboardId);
             return List.of();
         }
-
-        // 调用算法服务
         String operationName = "Call algorithm service for workflow: " + workflowId;
         AlgoResponse response = callAlgoServiceWithRetry(operationName, () -> callAlgoGenStoryboardVideo(workflowTask, ficStoryboardBO.getId()));
-
-        // 检查算法服务响应
+        log.info("[SingleStoryboardVideoAlgoTaskProcessor.generateTasks] 算法服务响应: {}", response);
         if (response == null) {
-            log.error("Algorithm service failed to create storyboard_video task for workflow: {}, after {} retries",
-                    workflowId, getMaxRetry());
+            log.error("[SingleStoryboardVideoAlgoTaskProcessor.generateTasks] Algorithm service failed to create storyboard_video task for workflow: {}, after {} retries", workflowId, getMaxRetry());
             return Collections.emptyList();
         }
-
-        // 添加到返回列表
         AlgoTaskBO algoTaskBO = new AlgoTaskBO();
         algoTaskBO.setAlgoTaskId(response.getTaskId());
         algoTaskBO.setRelevantId(storyboardId);
         algoTaskBO.setRelevantIdType(RelevanceType.STORYBOARD_ID);
-
+        log.info("[SingleStoryboardVideoAlgoTaskProcessor.generateTasks] 生成的任务: {}", algoTaskBO);
         return Collections.singletonList(algoTaskBO);
     }
 
     static Long getStoryboardId(FicWorkflowTaskBO workflowTask) {
         String storyboardId = workflowTask.getParams().get(WorkflowTaskConstant.STORYBOARD_ID);
+        log.debug("[SingleStoryboardVideoAlgoTaskProcessor.getStoryboardId] 从参数中获取分镜ID: {}", storyboardId);
         if (!StringUtils.isNumeric(storyboardId)) {
+            log.warn("[SingleStoryboardVideoAlgoTaskProcessor.getStoryboardId] 分镜ID不是数字: {}", storyboardId);
             return null;
         }
         return Long.parseLong(storyboardId);

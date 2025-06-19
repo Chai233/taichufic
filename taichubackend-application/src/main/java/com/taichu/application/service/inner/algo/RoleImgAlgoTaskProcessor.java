@@ -50,34 +50,33 @@ public class RoleImgAlgoTaskProcessor extends AbstractAlgoTaskProcessor {
     @Override
     public List<AlgoTaskBO> generateTasks(FicWorkflowTaskBO workflowTask) {
         Long workflowId = workflowTask.getWorkflowId();
-
+        log.info("[RoleImgAlgoTaskProcessor.generateTasks] 开始生成角色图片任务, workflowId: {}", workflowId);
         // 1. 查询角色
         List<FicRoleBO>  ficRoleBOList = ficRoleRepository.findByWorkflowId(workflowId);
+        log.info("[RoleImgAlgoTaskProcessor.generateTasks] 查询到角色: {}", ficRoleBOList);
         if (ficRoleBOList.isEmpty()) {
+            log.warn("[RoleImgAlgoTaskProcessor.generateTasks] 角色为空, workflowId: {}", workflowId);
             return List.of();
         }
-
         List<AlgoTaskBO> resultList = new ArrayList<>(ficRoleBOList.size());
         for (FicRoleBO ficRoleBO : ficRoleBOList) {
+            log.info("[RoleImgAlgoTaskProcessor.generateTasks] 处理角色, roleId: {}", ficRoleBO.getId());
             // 调用算法服务
             String operationName = "Call algorithm service for workflow: " + workflowId;
             AlgoResponse response = callAlgoServiceWithRetry(operationName, () -> callAlgoServiceGenStoryboardImg(workflowTask, ficRoleBO));
-
+            log.info("[RoleImgAlgoTaskProcessor.generateTasks] 算法服务响应: {}", response);
             // 检查算法服务响应
             if (response == null) {
-                log.error("Algorithm service failed to create script task for workflow: {}, after {} retries",
-                        workflowId, getMaxRetry());
+                log.error("[RoleImgAlgoTaskProcessor.generateTasks] Algorithm service failed to create script task for workflow: {}, after {} retries", workflowId, getMaxRetry());
                 return Collections.emptyList();
             }
-
-            // 添加到返回列表
             AlgoTaskBO algoTaskBO = new AlgoTaskBO();
             algoTaskBO.setAlgoTaskId(response.getTaskId());
             algoTaskBO.setRelevantId(ficRoleBO.getId());
             algoTaskBO.setRelevantIdType(RelevanceType.ROLE_ID);
             resultList.add(algoTaskBO);
+            log.info("[RoleImgAlgoTaskProcessor.generateTasks] 添加任务: {}", algoTaskBO);
         }
-
         return resultList;
     }
 
@@ -112,46 +111,39 @@ public class RoleImgAlgoTaskProcessor extends AbstractAlgoTaskProcessor {
 
     @Override
     public void singleTaskSuccessPostProcess(FicAlgoTaskBO algoTask) {
-        /*
-         * 下载图片，解压缩，然后把每个图片都上传到OSS，然后更新对应角色的默认图片状态
-         */
+        log.info("[RoleImgAlgoTaskProcessor.singleTaskSuccessPostProcess] 开始处理角色图片, algoTaskId: {}", algoTask.getAlgoTaskId());
         MultipartFile roleImageZip = algoGateway.getRoleImageResult(Objects.toString(algoTask.getAlgoTaskId()));
         if (roleImageZip == null) {
-            log.error("获取角色图片结果失败, algoTaskId: {}", algoTask.getAlgoTaskId());
+            log.error("[RoleImgAlgoTaskProcessor.singleTaskSuccessPostProcess] 获取角色图片结果失败, algoTaskId: {}", algoTask.getAlgoTaskId());
             return;
         }
-
         try {
-            // 1. 解压图片
             List<MultipartFile> unzippedImages = unzipMultipartFile(roleImageZip);
+            log.info("[RoleImgAlgoTaskProcessor.singleTaskSuccessPostProcess] 解压图片数量: {}", unzippedImages.size());
             if (unzippedImages.isEmpty()) {
-                log.error("解压角色图片失败, algoTaskId: {}", algoTask.getAlgoTaskId());
+                log.error("[RoleImgAlgoTaskProcessor.singleTaskSuccessPostProcess] 解压角色图片失败, algoTaskId: {}", algoTask.getAlgoTaskId());
                 return;
             }
-
-            // 2. 上传图片到OSS
             List<String> ossObjNames = new ArrayList<>();
             for (MultipartFile image : unzippedImages) {
                 Resp<String> resp = fileGateway.saveFile(image.getOriginalFilename(), image);
                 if (resp != null && resp.isSuccess()) {
                     ossObjNames.add(resp.getData());
+                    log.info("[RoleImgAlgoTaskProcessor.singleTaskSuccessPostProcess] 上传图片成功: {}", resp.getData());
+                } else {
+                    log.error("[RoleImgAlgoTaskProcessor.singleTaskSuccessPostProcess] 上传图片失败: {}", image.getOriginalFilename());
                 }
             }
-
             if (ossObjNames.size() != unzippedImages.size()) {
-                log.error("上传角色图片到OSS失败, algoTaskId: {}", algoTask.getAlgoTaskId());
+                log.error("[RoleImgAlgoTaskProcessor.singleTaskSuccessPostProcess] 上传角色图片到OSS失败, algoTaskId: {}", algoTask.getAlgoTaskId());
                 return;
             }
-
-            // 3. 获取角色信息
             Long roleId = algoTask.getRelevantId();
             FicRoleBO role = ficRoleRepository.findById(roleId);
             if (role == null) {
-                log.error("未找到对应的角色信息, roleId: {}", roleId);
+                log.error("[RoleImgAlgoTaskProcessor.singleTaskSuccessPostProcess] 未找到对应的角色信息, roleId: {}", roleId);
                 return;
             }
-
-            // 4. 保存所有图片资源
             Long defaultImageResourceId = null;
             for (String ossObjName : ossObjNames) {
                 FicResourceBO resource = new FicResourceBO();
@@ -162,22 +154,19 @@ public class RoleImgAlgoTaskProcessor extends AbstractAlgoTaskProcessor {
                 resource.setWorkflowId(role.getWorkflowId());
                 resource.setStatus(CommonStatusEnum.VALID.getValue());
                 long resourceId = ficResourceRepository.insert(resource);
-                
-                // 第一个图片作为默认图片
+                log.info("[RoleImgAlgoTaskProcessor.singleTaskSuccessPostProcess] 保存图片资源, resourceId: {}", resourceId);
                 if (defaultImageResourceId == null) {
                     defaultImageResourceId = resourceId;
                 }
             }
-
-            // 5. 更新角色的默认图片
             if (defaultImageResourceId != null) {
                 role.setDefaultImageResourceId(defaultImageResourceId);
                 ficRoleRepository.update(role);
+                log.info("[RoleImgAlgoTaskProcessor.singleTaskSuccessPostProcess] 更新角色默认图片, roleId: {}, resourceId: {}", roleId, defaultImageResourceId);
             }
-
-            log.info("角色图片处理完成, roleId: {}, algoTaskId: {}", roleId, algoTask.getAlgoTaskId());
+            log.info("[RoleImgAlgoTaskProcessor.singleTaskSuccessPostProcess] 角色图片处理完成, roleId: {}, algoTaskId: {}", roleId, algoTask.getAlgoTaskId());
         } catch (Exception e) {
-            log.error("处理角色图片失败, algoTaskId: {}, error: {}", algoTask.getAlgoTaskId(), e.getMessage(), e);
+            log.error("[RoleImgAlgoTaskProcessor.singleTaskSuccessPostProcess] 处理角色图片失败, algoTaskId: {}, error: {}", algoTask.getAlgoTaskId(), e.getMessage(), e);
         }
     }
 

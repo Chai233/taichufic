@@ -67,83 +67,68 @@ public class FullVideoGenAlgoTaskProcessor extends AbstractAlgoTaskProcessor {
     @Override
     public List<AlgoTaskBO> generateTasks(FicWorkflowTaskBO workflowTask) {
         Long workflowId = workflowTask.getWorkflowId();
+        log.info("[FullVideoGenAlgoTaskProcessor.generateTasks] 开始生成完整视频任务, workflowId: {}", workflowId);
         try {
             List<FicStoryboardBO> storyboardBOS = ficStoryboardRepository.findByWorkflowId(workflowId);
+            log.info("[FullVideoGenAlgoTaskProcessor.generateTasks] 查询到分镜: {}", storyboardBOS);
             List<String> storyboardIds = StreamUtil.toStream(storyboardBOS)
                     .filter(Objects::nonNull)
                     .map(FicStoryboardBO::getId)
                     .map(Object::toString)
                     .collect(Collectors.toList());
-
+            log.info("[FullVideoGenAlgoTaskProcessor.generateTasks] 分镜ID列表: {}", storyboardIds);
             if (storyboardIds.isEmpty()) {
-                log.error("故事板ID列表为空, workflowId: {}", workflowId);
+                log.error("[FullVideoGenAlgoTaskProcessor.generateTasks] 故事板ID列表为空, workflowId: {}", workflowId);
                 return new ArrayList<>();
             }
-
-            // 构建剧本生成请求
             VideoMergeRequest request = new VideoMergeRequest();
             request.setWorkflow_id(String.valueOf(workflowId));
             request.setStoryboard_ids(storyboardIds);
-
-            Optional.ofNullable(workflowTask.getParams().get(WorkflowTaskConstant.VIDEO_VOICE_TYPE))
-                    .ifPresent(request::setVoice_type);
-            Optional.ofNullable(workflowTask.getParams().get(WorkflowTaskConstant.VIDEO_BGM_TYPE))
-                    .ifPresentOrElse(request::setBgm_type, () -> request.setBgm_type("摇滚质感"));
-
-            // 调用算法服务生成剧本
+            Optional.ofNullable(workflowTask.getParams().get(WorkflowTaskConstant.VIDEO_VOICE_TYPE)).ifPresent(request::setVoice_type);
+            Optional.ofNullable(workflowTask.getParams().get(WorkflowTaskConstant.VIDEO_BGM_TYPE)).ifPresentOrElse(request::setBgm_type, () -> request.setBgm_type("摇滚质感"));
+            log.info("[FullVideoGenAlgoTaskProcessor.generateTasks] 构建请求: {}", request);
             AlgoResponse response = algoGateway.createVideoMergeTask(request);
-            
-            // 返回响应列表
+            log.info("[FullVideoGenAlgoTaskProcessor.generateTasks] 算法服务响应: {}", response);
             AlgoTaskBO algoTaskBO = new AlgoTaskBO();
             algoTaskBO.setAlgoTaskId(response.getTaskId());
             algoTaskBO.setRelevantId(workflowId);
             algoTaskBO.setRelevantIdType(RelevanceType.WORKFLOW_ID);
+            log.info("[FullVideoGenAlgoTaskProcessor.generateTasks] 生成的任务: {}", algoTaskBO);
             return Collections.singletonList(algoTaskBO);
         } catch (Exception e) {
-            log.error("Failed to generate script task for workflow: " + workflowId, e);
+            log.error("[FullVideoGenAlgoTaskProcessor.generateTasks] Failed to generate script task for workflow: " + workflowId, e);
             return new ArrayList<>();
         }
     }
 
     @Override
     public void singleTaskSuccessPostProcess(FicAlgoTaskBO algoTask) {
+        log.info("[FullVideoGenAlgoTaskProcessor.singleTaskSuccessPostProcess] 开始处理完整视频, algoTaskId: {}", algoTask.getAlgoTaskId());
         try {
-            // 从算法服务获取生成的视频
             MultipartFile videoResult = algoGateway.getVideoMergeResult(Objects.toString(algoTask.getAlgoTaskId()));
+            log.info("[FullVideoGenAlgoTaskProcessor.singleTaskSuccessPostProcess] 获取到完整视频: {}", videoResult);
             if (videoResult == null) {
-                log.error("获取完整视频结果失败, algoTaskId: {}", algoTask.getAlgoTaskId());
+                log.error("[FullVideoGenAlgoTaskProcessor.singleTaskSuccessPostProcess] 获取完整视频结果失败, algoTaskId: {}", algoTask.getAlgoTaskId());
                 return;
             }
-
-            // 获取工作流ID
             FicWorkflowTaskBO workflowTask = ficWorkflowTaskRepository.findById(algoTask.getWorkflowTaskId());
             if (workflowTask == null) {
-                log.error("工作流任务不存在, workflowTaskId: {}", algoTask.getWorkflowTaskId());
+                log.error("[FullVideoGenAlgoTaskProcessor.singleTaskSuccessPostProcess] 工作流任务不存在, workflowTaskId: {}", algoTask.getWorkflowTaskId());
                 return;
             }
             Long workflowId = workflowTask.getWorkflowId();
-
-            // 构建文件名
-            String fileName = String.format("full_video_%s_%s_%s",
-                workflowId,
-                algoTask.getAlgoTaskId(),
-                videoResult.getName());
-
-            // 上传到 OSS
+            String fileName = String.format("full_video_%s_%s_%s", workflowId, algoTask.getAlgoTaskId(), videoResult.getName());
+            log.info("[FullVideoGenAlgoTaskProcessor.singleTaskSuccessPostProcess] 上传文件名: {}", fileName);
             Resp<String> uploadResp = fileGateway.saveFile(fileName, videoResult);
             if (!uploadResp.isSuccess()) {
-                log.error("上传完整视频到OSS失败, algoTaskId: {}, error: {}",
-                    algoTask.getAlgoTaskId(), uploadResp.getMessage());
+                log.error("[FullVideoGenAlgoTaskProcessor.singleTaskSuccessPostProcess] 上传完整视频到OSS失败, algoTaskId: {}, error: {}", algoTask.getAlgoTaskId(), uploadResp.getMessage());
                 return;
             }
-
-            // 删除旧的资源
             List<FicResourceBO> oldFullVideoResources = ficResourceRepository.findByWorkflowIdAndResourceType(workflowId, ResourceTypeEnum.FULL_VIDEO);
             for (FicResourceBO oldFullVideoResource : oldFullVideoResources) {
                 ficResourceRepository.offlineResourceById(oldFullVideoResource.getId());
+                log.info("[FullVideoGenAlgoTaskProcessor.singleTaskSuccessPostProcess] 下线旧资源, resourceId: {}", oldFullVideoResource.getId());
             }
-
-            // 保存资源信息
             FicResourceBO ficResourceBO = new FicResourceBO();
             ficResourceBO.setWorkflowId(workflowTask.getWorkflowId());
             ficResourceBO.setResourceType(ResourceTypeEnum.FULL_VIDEO.name());
@@ -154,14 +139,10 @@ public class FullVideoGenAlgoTaskProcessor extends AbstractAlgoTaskProcessor {
             ficResourceBO.setStatus(CommonStatusEnum.VALID.getValue());
             ficResourceBO.setGmtCreate(System.currentTimeMillis());
             ficResourceBO.setOriginName(videoResult.getOriginalFilename());
-
-            // 保存到数据库
             ficResourceRepository.insert(ficResourceBO);
-
-            log.info("完整视频处理完成, algoTaskId: {}, resourceId: {}",
-                algoTask.getAlgoTaskId(), ficResourceBO.getId());
+            log.info("[FullVideoGenAlgoTaskProcessor.singleTaskSuccessPostProcess] 完整视频处理完成, algoTaskId: {}, resourceId: {}", algoTask.getAlgoTaskId(), ficResourceBO.getId());
         } catch (Exception e) {
-            log.error("处理完整视频失败, algoTaskId: {}", algoTask.getAlgoTaskId(), e);
+            log.error("[FullVideoGenAlgoTaskProcessor.singleTaskSuccessPostProcess] 处理完整视频失败, algoTaskId: {}", algoTask.getAlgoTaskId(), e);
         }
     }
 
