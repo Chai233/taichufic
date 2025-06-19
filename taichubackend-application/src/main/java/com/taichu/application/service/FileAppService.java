@@ -8,9 +8,11 @@ import com.taichu.domain.algo.gateway.FileGateway;
 import com.taichu.domain.enums.*;
 import com.taichu.domain.model.FicResourceBO;
 import com.taichu.infra.repo.FicResourceRepository;
+import com.taichu.infra.repo.FicWorkflowRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
@@ -27,9 +29,12 @@ public class FileAppService {
 
     @Autowired
     private FicResourceRepository ficResourceRepository;
+    @Autowired
+    private FicWorkflowRepository ficWorkflowRepository;
 
     @EntranceLog(bizCode = "UPLOAD_FILES")
     @AppServiceExceptionHandle(biz = "UPLOAD_FILES")
+    @Transactional
     public SingleResponse<?> uploadFiles(List<MultipartFile> files, Long workflowId, Long userId) {
         try {
             // 校验工作流
@@ -61,6 +66,9 @@ public class FileAppService {
 
                 ficResourceRepository.insert(resource);
             }
+
+            // 更新workflow状态
+            ficWorkflowRepository.updateStatus(workflowId, WorkflowStatusEnum.UPLOAD_FILE_DONE.getCode());
 
             return SingleResponse.buildSuccess();
         } catch (Exception e) {

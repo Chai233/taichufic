@@ -48,4 +48,4 @@ aliyun:
     endpoint: oss-cn-hangzhou.aliyuncs.com
     accessKeyId: ${ALIYUN_ACCESS_KEY_ID}
     accessKeySecret: ${ALIYUN_ACCESS_KEY_SECRET}
-    bucketName: taich-fic-backend-file-storage 
+    bucketName: ${ALIYUN_OSS_BUCKET}
