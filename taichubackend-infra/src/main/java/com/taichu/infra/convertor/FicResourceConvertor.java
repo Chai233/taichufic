@@ -4,10 +4,6 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.taichu.domain.model.FicResourceBO;
 import com.taichu.infra.persistance.model.FicResource;
-import org.mapstruct.Mapper;
-import org.mapstruct.Mapping;
-import org.mapstruct.Named;
-import org.mapstruct.factory.Mappers;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -15,35 +11,42 @@ import java.util.Map;
 /**
  * 资源对象转换器
  */
-@Mapper
-public interface FicResourceConvertor {
-    
-    FicResourceConvertor INSTANCE = Mappers.getMapper(FicResourceConvertor.class);
-    ObjectMapper OBJECT_MAPPER = new ObjectMapper();
+public class FicResourceConvertor {
+    private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
 
-    /**
-     * 将业务对象转换为数据对象
-     * @param bo 业务对象
-     * @return 数据对象
-     */
-    @Mapping(target = "extendInfo", source = "originName", qualifiedByName = "originNameToExtendInfo")
-    FicResource toDataObject(FicResourceBO bo);
+    public static FicResource toDataObject(FicResourceBO bo) {
+        if (bo == null) return null;
+        FicResource data = new FicResource();
+        data.setId(bo.getId());
+        data.setGmtCreate(bo.getGmtCreate());
+        data.setWorkflowId(bo.getWorkflowId());
+        data.setStatus(bo.getStatus());
+        data.setRelevanceId(bo.getRelevanceId());
+        data.setRelevanceType(bo.getRelevanceType());
+        data.setResourceType(bo.getResourceType());
+        data.setResourceStorageType(bo.getResourceStorageType());
+        data.setResourceUrl(bo.getResourceUrl());
+        data.setExtendInfo(originNameToExtendInfo(bo.getOriginName()));
+        return data;
+    }
 
-    /**
-     * 将数据对象转换为业务对象
-     * @param dataObject 数据对象
-     * @return 业务对象
-     */
-    @Mapping(target = "originName", source = "extendInfo", qualifiedByName = "extendInfoToOriginName")
-    FicResourceBO toDomain(FicResource dataObject);
+    public static FicResourceBO toDomain(FicResource dataObject) {
+        if (dataObject == null) return null;
+        FicResourceBO bo = new FicResourceBO();
+        bo.setId(dataObject.getId());
+        bo.setGmtCreate(dataObject.getGmtCreate());
+        bo.setWorkflowId(dataObject.getWorkflowId());
+        bo.setStatus(dataObject.getStatus());
+        bo.setRelevanceId(dataObject.getRelevanceId());
+        bo.setRelevanceType(dataObject.getRelevanceType());
+        bo.setResourceType(dataObject.getResourceType());
+        bo.setResourceStorageType(dataObject.getResourceStorageType());
+        bo.setResourceUrl(dataObject.getResourceUrl());
+        bo.setOriginName(extendInfoToOriginName(dataObject.getExtendInfo()));
+        return bo;
+    }
 
-    /**
-     * 将原始文件名转换为扩展信息JSON
-     * @param originName 原始文件名
-     * @return JSON格式的扩展信息
-     */
-    @Named("originNameToExtendInfo")
-    default String originNameToExtendInfo(String originName) {
+    private static String originNameToExtendInfo(String originName) {
         if (originName == null) {
             return "{}";
         }
@@ -56,20 +59,14 @@ public interface FicResourceConvertor {
         }
     }
 
-    /**
-     * 从扩展信息JSON中提取原始文件名
-     * @param extendInfo JSON格式的扩展信息
-     * @return 原始文件名
-     */
-    @Named("extendInfoToOriginName")
-    default String extendInfoToOriginName(String extendInfo) {
+    private static String extendInfoToOriginName(String extendInfo) {
         if (extendInfo == null) {
             return null;
         }
         try {
-            Map<String, String> map = OBJECT_MAPPER.readValue(extendInfo, Map.class);
-            return map.get("originName");
-        } catch (JsonProcessingException e) {
+            Map map = OBJECT_MAPPER.readValue(extendInfo, Map.class);
+            return (String) map.get("originName");
+        } catch (Exception e) {
             return null;
         }
     }

@@ -30,7 +30,7 @@ public class FicRoleRepository {
      * @return 创建的角色ID
      */
     public long insert(FicRoleBO role) {
-        FicRole roleDO = FicRoleConvertor.INSTANCE.toDataObject(role);
+        FicRole roleDO = FicRoleConvertor.toDataObject(role);
         int res = roleMapper.insert(roleDO);
         return (long) res;
     }
@@ -43,7 +43,7 @@ public class FicRoleRepository {
      */
     public FicRoleBO findById(Long id) {
         FicRole role = roleMapper.selectByPrimaryKey(id);
-        return FicRoleConvertor.INSTANCE.toDomain(role);
+        return FicRoleConvertor.toDomain(role);
     }
 
     /**
@@ -58,7 +58,7 @@ public class FicRoleRepository {
                 .andStatusEqualTo(CommonStatusEnum.VALID.getValue());
         List<FicRole> roleDOs = roleMapper.selectByExampleWithBLOBs(example);
         return StreamUtil.toStream(roleDOs)
-                .map(FicRoleConvertor.INSTANCE::toDomain)
+                .map(FicRoleConvertor::toDomain)
                 .collect(Collectors.toList());
     }
 
@@ -84,7 +84,7 @@ public class FicRoleRepository {
      * @param role
      */
     public void update(FicRoleBO role) {
-        FicRole roleDO = FicRoleConvertor.INSTANCE.toDataObject(role);
+        FicRole roleDO = FicRoleConvertor.toDataObject(role);
         roleMapper.updateByPrimaryKeySelective(roleDO);
     }
 }

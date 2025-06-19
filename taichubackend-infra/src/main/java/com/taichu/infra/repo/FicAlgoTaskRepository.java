@@ -33,9 +33,9 @@ public class FicAlgoTaskRepository {
      * @return 保存后的任务
      */
     public FicAlgoTaskBO save(FicAlgoTaskBO task) {
-        FicAlgoTask taskDO = FicAlgoTaskConvertor.INSTANCE.toDataObject(task);
+        FicAlgoTask taskDO = FicAlgoTaskConvertor.toDataObject(task);
         taskMapper.insert(taskDO);
-        return FicAlgoTaskConvertor.INSTANCE.toDomain(taskDO);
+        return FicAlgoTaskConvertor.toDomain(taskDO);
     }
 
     /**
@@ -61,7 +61,7 @@ public class FicAlgoTaskRepository {
      */
     public FicAlgoTaskBO findById(Long id) {
         FicAlgoTask taskDO = taskMapper.selectByPrimaryKey(id);
-        return taskDO == null ? null : FicAlgoTaskConvertor.INSTANCE.toDomain(taskDO);
+        return taskDO == null ? null : FicAlgoTaskConvertor.toDomain(taskDO);
     }
 
     /**
@@ -77,7 +77,7 @@ public class FicAlgoTaskRepository {
             log.info("findByWorkflowTaskId - 工作流任务ID: {}, 未找到算法任务", workflowTaskId);
             return null;
         }
-        return taskDOs.stream().map(FicAlgoTaskConvertor.INSTANCE::toDomain).collect(Collectors.toList());
+        return taskDOs.stream().map(FicAlgoTaskConvertor::toDomain).collect(Collectors.toList());
     }
 
     public List<FicAlgoTaskBO> findByWorkflowTaskIdAndTaskType(Long workflowTaskId, AlgoTaskTypeEnum taskType) {
@@ -91,11 +91,11 @@ public class FicAlgoTaskRepository {
             log.info("findByWorkflowTaskIdAndTaskType - 工作流任务ID: {}, 算法任务类型: {}, 未找到算法任务", workflowTaskId, taskType);
             return null;
         }
-        return taskDOs.stream().map(FicAlgoTaskConvertor.INSTANCE::toDomain).collect(Collectors.toList());
+        return taskDOs.stream().map(FicAlgoTaskConvertor::toDomain).collect(Collectors.toList());
     }
 
     public void saveAll(List<FicAlgoTaskBO> algoTasks) {
-        List<FicAlgoTask> taskDOs = algoTasks.stream().map(FicAlgoTaskConvertor.INSTANCE::toDataObject).collect(Collectors.toList());
+        List<FicAlgoTask> taskDOs = algoTasks.stream().map(FicAlgoTaskConvertor::toDataObject).collect(Collectors.toList());
         for (FicAlgoTask ficAlgoTask : taskDOs) {
             taskMapper.insert(ficAlgoTask);
         }

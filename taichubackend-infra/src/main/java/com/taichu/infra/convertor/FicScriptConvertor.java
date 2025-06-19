@@ -2,29 +2,34 @@ package com.taichu.infra.convertor;
 
 import com.taichu.domain.model.FicScriptBO;
 import com.taichu.infra.persistance.model.FicScript;
-import org.mapstruct.Mapper;
-import org.mapstruct.factory.Mappers;
 
 /**
  * 剧本片段对象转换器
  */
-@Mapper
-public interface FicScriptConvertor {
-    FicScriptConvertor INSTANCE = Mappers.getMapper(FicScriptConvertor.class);
+public class FicScriptConvertor {
+    public static FicScript toDataObject(FicScriptBO bo) {
+        if (bo == null) return null;
+        FicScript data = new FicScript();
+        data.setId(bo.getId());
+        data.setWorkflowId(bo.getWorkflowId());
+        data.setGmtCreate(bo.getGmtCreate());
+        data.setStatus(bo.getStatus());
+        data.setOrderIndex(bo.getOrderIndex());
+        data.setContent(bo.getContent());
+        data.setExtendInfo(bo.getExtendInfo());
+        return data;
+    }
 
-    /**
-     * 将领域对象转换为数据对象
-     *
-     * @param scriptBO 领域对象
-     * @return 数据对象
-     */
-    FicScript toDataObject(FicScriptBO scriptBO);
-
-    /**
-     * 将数据对象转换为领域对象
-     *
-     * @param script 数据对象
-     * @return 领域对象
-     */
-    FicScriptBO toDomain(FicScript script);
+    public static FicScriptBO toDomain(FicScript dataObject) {
+        if (dataObject == null) return null;
+        FicScriptBO bo = new FicScriptBO();
+        bo.setId(dataObject.getId());
+        bo.setWorkflowId(dataObject.getWorkflowId());
+        bo.setGmtCreate(dataObject.getGmtCreate());
+        bo.setStatus(dataObject.getStatus());
+        bo.setOrderIndex(dataObject.getOrderIndex());
+        bo.setContent(dataObject.getContent());
+        bo.setExtendInfo(dataObject.getExtendInfo());
+        return bo;
+    }
 } 

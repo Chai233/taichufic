@@ -22,7 +22,7 @@ public class FicWorkflowMetaRepository {
         if (list.isEmpty()) {
             return null;
         }
-        return FicWorkflowMetaConvertor.INSTANCE.toDomain(list.get(0));
+        return FicWorkflowMetaConvertor.toDomain(list.get(0));
     }
 
     public void updateStyleType(Long workflowId, String styleType) {
@@ -38,7 +38,7 @@ public class FicWorkflowMetaRepository {
     }
 
     public long insert(FicWorkflowMetaBO metaBO) {
-        FicWorkflowMeta meta = FicWorkflowMetaConvertor.INSTANCE.toDataObject(metaBO);
+        FicWorkflowMeta meta = FicWorkflowMetaConvertor.toDataObject(metaBO);
         metaMapper.insertSelective(meta);
         return meta.getId();
     }

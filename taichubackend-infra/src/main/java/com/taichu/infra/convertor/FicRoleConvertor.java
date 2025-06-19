@@ -4,36 +4,42 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.taichu.domain.model.FicRoleBO;
 import com.taichu.infra.persistance.model.FicRole;
-import org.mapstruct.Mapper;
-import org.mapstruct.Mapping;
-import org.mapstruct.Named;
-import org.mapstruct.factory.Mappers;
 
 /**
  * 角色对象转换器
  */
-@Mapper
-public interface FicRoleConvertor {
-    FicRoleConvertor INSTANCE = Mappers.getMapper(FicRoleConvertor.class);
-    ObjectMapper OBJECT_MAPPER = new ObjectMapper();
+public class FicRoleConvertor {
+    private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
 
-    /**
-     * 将领域对象转换为数据对象
-     */
-    @Mapping(target = "extendInfo", source = "defaultImageResourceId", qualifiedByName = "toExtendInfo")
-    FicRole toDataObject(FicRoleBO bo);
+    public static FicRole toDataObject(FicRoleBO bo) {
+        if (bo == null) return null;
+        FicRole data = new FicRole();
+        data.setId(bo.getId());
+        data.setWorkflowId(bo.getWorkflowId());
+        data.setGmtCreate(bo.getGmtCreate());
+        data.setStatus(bo.getStatus());
+        data.setRoleName(bo.getRoleName());
+        data.setDescription(bo.getDescription());
+        data.setPrompt(bo.getPrompt());
+        data.setExtendInfo(toExtendInfo(bo.getDefaultImageResourceId()));
+        return data;
+    }
 
-    /**
-     * 将数据对象转换为领域对象
-     */
-    @Mapping(target = "defaultImageResourceId", source = "extendInfo", qualifiedByName = "fromExtendInfo")
-    FicRoleBO toDomain(FicRole role);
+    public static FicRoleBO toDomain(FicRole dataObject) {
+        if (dataObject == null) return null;
+        FicRoleBO bo = new FicRoleBO();
+        bo.setId(dataObject.getId());
+        bo.setWorkflowId(dataObject.getWorkflowId());
+        bo.setGmtCreate(dataObject.getGmtCreate());
+        bo.setStatus(dataObject.getStatus());
+        bo.setRoleName(dataObject.getRoleName());
+        bo.setDescription(dataObject.getDescription());
+        bo.setPrompt(dataObject.getPrompt());
+        bo.setDefaultImageResourceId(fromExtendInfo(dataObject.getExtendInfo()));
+        return bo;
+    }
 
-    /**
-     * 将 defaultImageResourceId 转换为 extendInfo JSON 字符串
-     */
-    @Named("toExtendInfo")
-    default String toExtendInfo(Long defaultImageResourceId) {
+    private static String toExtendInfo(Long defaultImageResourceId) {
         if (defaultImageResourceId == null) {
             return null;
         }
@@ -46,11 +52,7 @@ public interface FicRoleConvertor {
         }
     }
 
-    /**
-     * 从 extendInfo JSON 字符串中提取 defaultImageResourceId
-     */
-    @Named("fromExtendInfo")
-    default Long fromExtendInfo(String extendInfo) {
+    private static Long fromExtendInfo(String extendInfo) {
         if (extendInfo == null) {
             return null;
         }

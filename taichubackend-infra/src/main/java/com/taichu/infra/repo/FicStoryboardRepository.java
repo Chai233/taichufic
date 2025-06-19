@@ -30,7 +30,7 @@ public class FicStoryboardRepository {
      * @return 创建的分镜ID
      */
     public long insert(FicStoryboardBO storyboard) {
-        FicStoryboard storyboardDO = FicStoryboardConvertor.INSTANCE.toDataObject(storyboard);
+        FicStoryboard storyboardDO = FicStoryboardConvertor.toDataObject(storyboard);
         int res = storyboardMapper.insert(storyboardDO);
         return (long) res;
     }
@@ -43,7 +43,7 @@ public class FicStoryboardRepository {
      */
     public FicStoryboardBO findById(Long id) {
         FicStoryboard storyboard = storyboardMapper.selectByPrimaryKey(id);
-        return FicStoryboardConvertor.INSTANCE.toDomain(storyboard);
+        return FicStoryboardConvertor.toDomain(storyboard);
     }
 
     /**
@@ -55,6 +55,6 @@ public class FicStoryboardRepository {
         FicStoryboardExample example = new FicStoryboardExample();
         example.createCriteria().andWorkflowIdEqualTo(workflowId).andStatusEqualTo(CommonStatusEnum.VALID.getValue());
         List<FicStoryboard> storyboardDOs = storyboardMapper.selectByExampleWithBLOBs(example);
-        return StreamUtil.toStream(storyboardDOs).map(FicStoryboardConvertor.INSTANCE::toDomain).collect(Collectors.toList());
+        return StreamUtil.toStream(storyboardDOs).map(FicStoryboardConvertor::toDomain).collect(Collectors.toList());
     }
 }

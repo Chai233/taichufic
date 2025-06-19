@@ -20,21 +20,21 @@ public class FicWorkflowTaskRepository {
     private FicWorkflowTaskMapper ficWorkflowTaskMapper;
 
     public long createFicWorkflowTask(FicWorkflowTaskBO ficWorkflowTask) {
-        FicWorkflowTask taskDO = FicWorkflowTaskConvertor.INSTANCE.toDataObject(ficWorkflowTask);
+        FicWorkflowTask taskDO = FicWorkflowTaskConvertor.toDataObject(ficWorkflowTask);
         int res = ficWorkflowTaskMapper.insert(taskDO);
         return (long) res;
     }
 
     public FicWorkflowTaskBO findById(Long workflowTaskId) {
         FicWorkflowTask ficWorkflowTask = ficWorkflowTaskMapper.selectByPrimaryKey(workflowTaskId);
-        return FicWorkflowTaskConvertor.INSTANCE.toDomain(ficWorkflowTask);
+        return FicWorkflowTaskConvertor.toDomain(ficWorkflowTask);
     }
 
     public List<FicWorkflowTaskBO> findByWorkflowId(Long workflowId) {
         FicWorkflowTaskExample example = new FicWorkflowTaskExample();
         example.createCriteria().andWorkflowIdEqualTo(workflowId);
         List<FicWorkflowTask> taskDOs = ficWorkflowTaskMapper.selectByExample(example);
-        return taskDOs.stream().map(FicWorkflowTaskConvertor.INSTANCE::toDomain).collect(Collectors.toList());
+        return taskDOs.stream().map(FicWorkflowTaskConvertor::toDomain).collect(Collectors.toList());
     }
 
     public FicWorkflowTaskBO findByWorkflowIdAndTaskType(Long workflowId, String taskType) {
@@ -45,7 +45,7 @@ public class FicWorkflowTaskRepository {
             if (taskDOs.isEmpty()) {
                 return null;
             }
-            return FicWorkflowTaskConvertor.INSTANCE.toDomain(taskDOs.get(0));
+            return FicWorkflowTaskConvertor.toDomain(taskDOs.get(0));
         } catch (Exception e) {
             // log.error("查询工作流任务失败, workflowId={}, taskType={}", workflowId, taskType, e);
             return null;

@@ -29,7 +29,7 @@ public class FicScriptRepository {
      * @return 创建的剧本片段ID
      */
     public long insert(FicScriptBO script) {
-        FicScript scriptDO = FicScriptConvertor.INSTANCE.toDataObject(script);
+        FicScript scriptDO = FicScriptConvertor.toDataObject(script);
         int res = scriptMapper.insert(scriptDO);
         return (long) res;
     }
@@ -42,7 +42,7 @@ public class FicScriptRepository {
      */
     public FicScriptBO findById(Long id) {
         FicScript script = scriptMapper.selectByPrimaryKey(id);
-        return FicScriptConvertor.INSTANCE.toDomain(script);
+        return FicScriptConvertor.toDomain(script);
     }
 
     /**
@@ -57,7 +57,7 @@ public class FicScriptRepository {
                 .andStatusEqualTo(CommonStatusEnum.VALID.getValue());
         List<FicScript> scriptDOs = scriptMapper.selectByExampleWithBLOBs(example);
         return StreamUtil.toStream(scriptDOs)
-                .map(FicScriptConvertor.INSTANCE::toDomain)
+                .map(FicScriptConvertor::toDomain)
                 .collect(Collectors.toList());
     }
 
@@ -68,7 +68,7 @@ public class FicScriptRepository {
      * @return 是否更新成功
      */
     public boolean update(FicScriptBO script) {
-        FicScript scriptDO = FicScriptConvertor.INSTANCE.toDataObject(script);
+        FicScript scriptDO = FicScriptConvertor.toDataObject(script);
         int res = scriptMapper.updateByPrimaryKeySelective(scriptDO);
         return res == 1;
     }

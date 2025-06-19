@@ -29,7 +29,7 @@ public class FicResourceRepository {
      * @return 创建的资源ID
      */
     public long insert(FicResourceBO resource) {
-        FicResource resourceDO = FicResourceConvertor.INSTANCE.toDataObject(resource);
+        FicResource resourceDO = FicResourceConvertor.toDataObject(resource);
         int res = resourceMapper.insert(resourceDO);
         return (long) res;
     }
@@ -42,7 +42,7 @@ public class FicResourceRepository {
      */
     public FicResourceBO findById(Long id) {
         FicResource resource = resourceMapper.selectByPrimaryKey(id);
-        return FicResourceConvertor.INSTANCE.toDomain(resource);
+        return FicResourceConvertor.toDomain(resource);
     }
 
     /**
@@ -60,7 +60,7 @@ public class FicResourceRepository {
                 .andStatusEqualTo(CommonStatusEnum.VALID.getValue());
         List<FicResource> resources = resourceMapper.selectByExample(example);
         return resources.stream()
-                .map(FicResourceConvertor.INSTANCE::toDomain)
+                .map(FicResourceConvertor::toDomain)
                 .collect(Collectors.toList());
     }
 
