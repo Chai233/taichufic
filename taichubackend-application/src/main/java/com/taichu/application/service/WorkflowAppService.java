@@ -83,7 +83,7 @@ public class WorkflowAppService {
             return SingleResponse.of(workflowId);
         } catch (Exception e) {
             log.error("Failed to create workflow for user: " + userId, e);
-            return SingleResponse.buildFailure("WORKFLOW_002", "创建工作流失败: " + e.getMessage());
+            return SingleResponse.buildFailure("WORKFLOW_005", "创建工作流失败: " + e.getMessage());
         }
     }
 
