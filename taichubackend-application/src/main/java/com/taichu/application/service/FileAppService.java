@@ -5,10 +5,7 @@ import com.taichu.application.annotation.EntranceLog;
 import com.taichu.application.helper.WorkflowValidationHelper;
 import com.taichu.common.common.exception.AppServiceExceptionHandle;
 import com.taichu.domain.algo.gateway.FileGateway;
-import com.taichu.domain.enums.CommonStatusEnum;
-import com.taichu.domain.enums.ResourceStorageTypeEnum;
-import com.taichu.domain.enums.ResourceTypeEnum;
-import com.taichu.domain.enums.WorkflowStatusEnum;
+import com.taichu.domain.enums.*;
 import com.taichu.domain.model.FicResourceBO;
 import com.taichu.infra.repo.FicResourceRepository;
 import lombok.extern.slf4j.Slf4j;
@@ -58,6 +55,8 @@ public class FileAppService {
                 resource.setResourceStorageType(ResourceStorageTypeEnum.ALI_CLOUD_OSS.name());
                 resource.setResourceUrl(fileObjName);
                 resource.setOriginName(file.getOriginalFilename());
+                resource.setRelevanceId(workflowId);
+                resource.setRelevanceType(RelevanceType.WORKFLOW_ID.getValue());
                 resource.setGmtCreate(System.currentTimeMillis());
 
                 ficResourceRepository.insert(resource);
