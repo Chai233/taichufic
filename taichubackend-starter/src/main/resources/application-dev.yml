@@ -41,7 +41,7 @@ file:
 # 算法服务配置
 algo:
   service:
-    base-url: http://192.168.100.106:65056
+    base-url: http://192.168.100.106:7861
 
 # 阿里云 OSS 配置
 aliyun:
