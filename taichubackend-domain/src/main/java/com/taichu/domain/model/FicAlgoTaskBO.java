@@ -37,7 +37,7 @@ public class FicAlgoTaskBO {
     /**
      * 算法任务ID
      */
-    private Long algoTaskId;
+    private String algoTaskId;
 
     /**
      * @see RelevanceType

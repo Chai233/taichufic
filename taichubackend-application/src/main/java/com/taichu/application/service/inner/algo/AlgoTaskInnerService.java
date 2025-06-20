@@ -57,14 +57,14 @@ public class AlgoTaskInnerService implements InitializingBean {
             // 3. 保存算法任务记录
             List<FicAlgoTaskBO> algoTasks = algoTaskBOList.stream()
                     .map(algoTaskBO -> {
-                        FicAlgoTaskBO algoTask = new FicAlgoTaskBO();
-                        algoTask.setWorkflowTaskId(workflowTaskId);
-                        algoTask.setStatus(TaskStatusEnum.RUNNING.getCode());
-                        algoTask.setTaskType(algoTaskTypeEnum.name());
-                        algoTask.setAlgoTaskId(Longs.tryParse(algoTaskBO.getAlgoTaskId()));
-                        algoTask.setRelevantId(algoTaskBO.getRelevantId());
-                        algoTask.setRelevantIdType(algoTaskBO.getRelevantIdType().getValue());
-                        return algoTask;
+                        FicAlgoTaskBO ficAlgoTaskBO = new FicAlgoTaskBO();
+                        ficAlgoTaskBO.setWorkflowTaskId(workflowTaskId);
+                        ficAlgoTaskBO.setStatus(TaskStatusEnum.RUNNING.getCode());
+                        ficAlgoTaskBO.setTaskType(algoTaskTypeEnum.name());
+                        ficAlgoTaskBO.setAlgoTaskId(algoTaskBO.getAlgoTaskId());
+                        ficAlgoTaskBO.setRelevantId(algoTaskBO.getRelevantId());
+                        ficAlgoTaskBO.setRelevantIdType(algoTaskBO.getRelevantIdType().getValue());
+                        return ficAlgoTaskBO;
                     })
                     .collect(Collectors.toList());
             ficAlgoTaskRepository.saveAll(algoTasks);
