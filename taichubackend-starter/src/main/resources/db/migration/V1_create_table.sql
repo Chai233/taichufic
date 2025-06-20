@@ -6,7 +6,7 @@ create table fic_algo_task
     workflow_task_id bigint        not null comment 'workflow_task_id',
     status           tinyint       not null comment '1-RUNNING 2-SUCCESS 0-FAIL',
     task_type        varchar(64)   not null comment 'SCRIPT_GENERATION, STORYBOARD_GENERATION, STORYBOARD_IMG_GENERATION, STORYBOARD_VIDEO_GENERATION, FULL_VIDEO_GENERATION',
-    algo_task_id     bigint        null comment '算法task id',
+    algo_task_id     varchar(256)  null comment '算法task id',
     task_abstract    varchar(4096) null comment '任务参数摘要',
     relevant_id_type varchar(64)   null comment 'workflowId / 分镜id',
     relevant_id      bigint        null comment 'workflowId 或者 分镜id'
