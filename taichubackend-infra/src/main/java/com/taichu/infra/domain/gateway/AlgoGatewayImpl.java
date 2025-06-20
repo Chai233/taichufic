@@ -336,9 +336,8 @@ public class AlgoGatewayImpl implements AlgoGateway {
     @Override
     public String ping() {
         try {
-            // 我们假设算法服务有一个健康检查端点 /api/v1/health
-            // 这足以测试通过代理的网络连接。
-            String path = "/api/v1/health";
+            // 尝试访问一个更通用的接口来测试连接
+            String path = "/get_task/1";
             // 我们期望一个简单的字符串响应，比如 "OK" 或 "pong"。
             return algoHttpClient.get(path, String.class);
         } catch (Exception e) {

@@ -5,12 +5,15 @@ import com.taichu.domain.algo.model.AlgoResponse;
 import com.taichu.domain.algo.model.request.*;
 import com.taichu.domain.algo.model.response.*;
 import com.taichu.domain.model.AlgoTaskStatus;
+import com.taichu.domain.algo.model.common.UploadFile;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * 算法服务测试控制器
@@ -26,13 +29,39 @@ public class AlgoTestController {
     /**
      * 测试创建剧本生成任务
      * 
-     * @param request 剧本生成请求参数，包含上传文件、引导语和工作流ID
+     * @param files 上传的文件列表（支持form-data格式）
+     * @param prompt 引导语
+     * @param workflowId 工作流ID
      * @return 包含任务ID和状态的响应对象
      */
     @PostMapping("/createScriptTask")
-    public ResponseEntity<AlgoResponse> testCreateScriptTask(@RequestBody ScriptTaskRequest request) {
-        AlgoResponse response = algoGateway.createScriptTask(request);
-        return ResponseEntity.ok(response);
+    public ResponseEntity<AlgoResponse> testCreateScriptTask(
+            @RequestParam("files") MultipartFile[] files,
+            @RequestParam("prompt") String prompt,
+            @RequestParam("workflowId") String workflowId) {
+        
+        try {
+            // 将MultipartFile转换为UploadFile
+            List<UploadFile> uploadFiles = new ArrayList<>();
+            for (MultipartFile file : files) {
+                UploadFile uploadFile = new UploadFile();
+                uploadFile.setFileName(file.getOriginalFilename());
+                uploadFile.setFileContent(file.getBytes());
+                uploadFile.setContentType(file.getContentType());
+                uploadFiles.add(uploadFile);
+            }
+            
+            // 构建ScriptTaskRequest
+            ScriptTaskRequest request = new ScriptTaskRequest();
+            request.setFiles(uploadFiles);
+            request.setPrompt(prompt);
+            request.setWorkflowId(workflowId);
+            
+            AlgoResponse response = algoGateway.createScriptTask(request);
+            return ResponseEntity.ok(response);
+        } catch (IOException e) {
+            return ResponseEntity.badRequest().body(createErrorResponse("文件处理失败: " + e.getMessage()));
+        }
     }
 
     /**
