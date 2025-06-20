@@ -64,15 +64,15 @@ public class AlgoHttpClient {
      * @return 响应对象
      */
     public <R> R get(String path, Class<R> responseType) {
+        String url = baseUrl + path;
         try {
-            String url = baseUrl + path;
             return restTemplate.getForObject(url, responseType);
         } catch (HttpStatusCodeException e) {
-            log.error("HTTP GET 请求失败, path: {}, statusCode: {}, responseBody: {}", 
-                path, e.getStatusCode(), e.getResponseBodyAsString(), e);
+            log.error("HTTP GET 请求失败, path: {}, statusCode: {}, responseBody: {}",
+                    url, e.getStatusCode(), e.getResponseBodyAsString(), e);
             throw new AlgoHttpException("HTTP GET 请求失败: " + e.getResponseBodyAsString(), e.getStatusCode().value());
         } catch (RestClientException e) {
-            log.error("HTTP GET 请求失败, path: {}, error: {}", path, e.getMessage(), e);
+            log.error("HTTP GET 请求失败, path: {}, error: {}", url, e.getMessage(), e);
             throw new AlgoHttpException("HTTP GET 请求失败: " + e.getMessage());
         }
     }
