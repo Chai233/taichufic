@@ -204,6 +204,17 @@ public class AlgoTestController {
     }
 
     /**
+     * 测试与算法服务的连通性
+     *
+     * @return 字符串 "pong" 或错误信息，表示连接成功与否
+     */
+    @GetMapping("/ping")
+    public ResponseEntity<String> pingAlgoService() {
+        String response = algoGateway.ping();
+        return ResponseEntity.ok(response);
+    }
+
+    /**
      * 创建错误响应对象
      * 
      * @param errorMessage 错误信息

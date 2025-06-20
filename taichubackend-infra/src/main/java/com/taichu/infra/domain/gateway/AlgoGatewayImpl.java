@@ -287,6 +287,7 @@ public class AlgoGatewayImpl implements AlgoGateway {
         try {
             return algoHttpClient.get("/api/v1/task/status/" + taskId, AlgoTaskStatus.class);
         } catch (AlgoHttpException e) {
+            log.error("checkTaskStatus error", e);
             AlgoTaskStatus status = new AlgoTaskStatus();
             status.setCode((byte) -1);  // 使用-1表示查询失败
             return status;
@@ -329,6 +330,21 @@ public class AlgoGatewayImpl implements AlgoGateway {
         } catch (AlgoHttpException e) {
             log.error("获取角色图片失败, taskId: {}, error: {}", taskId, e.getMessage());
             return null;
+        }
+    }
+
+    @Override
+    public String ping() {
+        try {
+            // 我们假设算法服务有一个健康检查端点 /api/v1/health
+            // 这足以测试通过代理的网络连接。
+            String path = "/api/v1/health";
+            // 我们期望一个简单的字符串响应，比如 "OK" 或 "pong"。
+            return algoHttpClient.get(path, String.class);
+        } catch (Exception e) {
+            // 如果请求失败，返回异常信息，这有助于调试。
+            log.error("Ping to algo service failed", e);
+            return "Ping failed: " + e.getMessage();
         }
     }
 

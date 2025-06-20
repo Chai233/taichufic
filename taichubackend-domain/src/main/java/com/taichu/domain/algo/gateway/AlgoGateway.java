@@ -33,6 +33,15 @@ public interface AlgoGateway {
     // 任务状态查询
     AlgoTaskStatus checkTaskStatus(String taskId);
 
+    /**
+     * 测试与算法服务的连通性
+     *
+     * @return 来自算法服务的响应，如果连接成功，通常是确认信息；如果失败，则是错误信息。
+     * TODO 删掉
+     */
+    @Deprecated
+    String ping();
+
     AlgoResponse createRoleImageTask(RoleImageRequest request);
     MultipartFile getRoleImageResult(String taskId);
 } 

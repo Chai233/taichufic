@@ -38,9 +38,10 @@ file:
     allow-overwrite: false
     naming-strategy: original
 
+# 算法服务配置
 algo:
   service:
-    base-url: http://192.168.100.106:65056  # 算法服务地址
+    base-url: http://192.168.100.106:65056
 
 # 阿里云 OSS 配置
 aliyun:
@@ -49,3 +50,8 @@ aliyun:
     accessKeyId: ${ALIYUN_ACCESS_KEY_ID}
     accessKeySecret: ${ALIYUN_ACCESS_KEY_SECRET}
     bucketName: ${ALIYUN_OSS_BUCKET}
+
+logging:
+  level:
+    root: info
+    com.taichu: debug

@@ -1,17 +1,17 @@
 package com.taichu.infra.http;
 
-import lombok.RequiredArgsConstructor;
+import com.taichu.domain.algo.model.common.UploadFile;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.io.ByteArrayResource;
 import org.springframework.http.*;
 import org.springframework.stereotype.Component;
+import org.springframework.util.LinkedMultiValueMap;
+import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.HttpStatusCodeException;
 import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
-import org.springframework.core.io.ByteArrayResource;
-import org.springframework.util.LinkedMultiValueMap;
-import org.springframework.util.MultiValueMap;
-import com.taichu.domain.algo.model.common.UploadFile;
 
 /**
  * 算法服务 HTTP 客户端工具类
@@ -19,13 +19,17 @@ import com.taichu.domain.algo.model.common.UploadFile;
  */
 @Slf4j
 @Component
-@RequiredArgsConstructor
 public class AlgoHttpClient {
     
     private final RestTemplate restTemplate;
     
-    @Value("${algo.service.base-url}")
-    private String baseUrl;
+    private final String baseUrl;
+
+    public AlgoHttpClient(@Qualifier("algoRestTemplate") RestTemplate restTemplate,
+                          @Value("${algo.service.base-url}") String baseUrl) {
+        this.restTemplate = restTemplate;
+        this.baseUrl = baseUrl;
+    }
     
     /**
      * 发送 POST 请求
