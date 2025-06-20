@@ -36,7 +36,7 @@ public class AlgoGatewayImpl implements AlgoGateway {
     public AlgoResponse createScriptTask(ScriptTaskRequest request) {
         try {
             AlgoApiResponse<TaskIdData> apiResp = algoHttpClient.postMultipart(
-                "/api/v1/script/task",
+                AlgoPathEnum.GENERATE_SCRIPT.getPath(),
                 request.getPrompt(),
                 request.getWorkflowId(),
                 request.getFiles(),
@@ -62,7 +62,7 @@ public class AlgoGatewayImpl implements AlgoGateway {
     @Override
     public ScriptResult getScriptResult(String taskId) {
         try {
-            return algoHttpClient.get("/api/v1/script/result/" + taskId, ScriptResult.class);
+            return algoHttpClient.get(AlgoPathEnum.GET_SCRIPT.getPath(taskId), ScriptResult.class);
         } catch (AlgoHttpException e) {
             ScriptResult result = new ScriptResult();
             result.setTaskId(taskId);
@@ -82,7 +82,7 @@ public class AlgoGatewayImpl implements AlgoGateway {
     public AlgoResponse createStoryboardTextTask(StoryboardTextRequest request) {
         try {
             AlgoApiResponse<TaskIdData> apiResp = algoHttpClient.post(
-                "/api/v1/storyboard/text/task",
+                AlgoPathEnum.GENERATE_STORYBOARD.getPath(),
                 request,
                 AlgoApiResponse.class
             );
@@ -106,7 +106,9 @@ public class AlgoGatewayImpl implements AlgoGateway {
     @Override
     public StoryboardTextResult getStoryboardTextResult(String taskId) {
         try {
-            return algoHttpClient.get("/api/v1/storyboard/text/result/" + taskId, StoryboardTextResult.class);
+            // TODO 这里是同步的？？？
+            String path = "";
+            return algoHttpClient.get(path, StoryboardTextResult.class);
         } catch (AlgoHttpException e) {
             log.error("getStoryboardTextResult error", e);
             return new StoryboardTextResult();
@@ -124,7 +126,7 @@ public class AlgoGatewayImpl implements AlgoGateway {
     public AlgoResponse createStoryboardImageTask(StoryboardImageRequest request) {
         try {
             AlgoApiResponse<TaskIdData> apiResp = algoHttpClient.post(
-                "/api/v1/storyboard/image/task",
+                AlgoPathEnum.GENERATE_STORYBOARD_IMAGE.getPath(),
                 request,
                 AlgoApiResponse.class
             );
@@ -148,7 +150,8 @@ public class AlgoGatewayImpl implements AlgoGateway {
     @Override
     public MultipartFile getStoryboardImageResult(String taskId) {
         try {
-            FileResponse imageData = algoHttpClient.downloadFile("/get_storyboard_image/" + taskId);
+            String path = AlgoPathEnum.GET_STORYBOARD_IMAGE.getPath(taskId);
+            FileResponse imageData = algoHttpClient.downloadFile(path);
             
             if (!imageData.isSuccess()) {
                 log.error("获取分镜图片失败, taskId: {}, 服务器返回失败", taskId);
@@ -178,7 +181,7 @@ public class AlgoGatewayImpl implements AlgoGateway {
     public AlgoResponse createStoryboardVideoTask(StoryboardVideoRequest request) {
         try {
             AlgoApiResponse<TaskIdData> apiResp = algoHttpClient.post(
-                "/api/v1/storyboard/video/task",
+                AlgoPathEnum.GENERATE_STORYBOARD_VIDEO.getPath(),
                 request,
                 AlgoApiResponse.class
             );
@@ -202,7 +205,8 @@ public class AlgoGatewayImpl implements AlgoGateway {
     @Override
     public MultipartFile getStoryboardVideoResult(String taskId) {
         try {
-            FileResponse videoData = algoHttpClient.downloadFile("/get_storyboard_video/" + taskId);
+            String path = AlgoPathEnum.GET_STORYBOARD_VIDEO.getPath(taskId);
+            FileResponse videoData = algoHttpClient.downloadFile(path);
             
             if (!videoData.isSuccess()) {
                 log.error("获取分镜视频失败, taskId: {}, 服务器返回失败", taskId);
@@ -232,7 +236,7 @@ public class AlgoGatewayImpl implements AlgoGateway {
     public AlgoResponse createVideoMergeTask(VideoMergeRequest request) {
         try {
             AlgoApiResponse<TaskIdData> apiResp = algoHttpClient.post(
-                "/api/v1/video/merge/task",
+                AlgoPathEnum.MERGE_VIDEO.getPath(),
                 request,
                 AlgoApiResponse.class
             );
@@ -256,7 +260,8 @@ public class AlgoGatewayImpl implements AlgoGateway {
     @Override
     public MultipartFile getVideoMergeResult(String taskId) {
         try {
-            FileResponse videoData = algoHttpClient.downloadFile("/get_video_merge/" + taskId);
+            String path = AlgoPathEnum.GET_MERGED_VIDEO.getPath(taskId);
+            FileResponse videoData = algoHttpClient.downloadFile(path);
             
             if (!videoData.isSuccess()) {
                 log.error("获取合成视频失败, taskId: {}, 服务器返回失败", taskId);
@@ -285,7 +290,7 @@ public class AlgoGatewayImpl implements AlgoGateway {
     @Override
     public AlgoTaskStatus checkTaskStatus(String taskId) {
         try {
-            return algoHttpClient.get("/api/v1/task/status/" + taskId, AlgoTaskStatus.class);
+            return algoHttpClient.get(AlgoPathEnum.CHECK_TASK_STATUS.getPath(taskId), AlgoTaskStatus.class);
         } catch (AlgoHttpException e) {
             log.error("checkTaskStatus error", e);
             AlgoTaskStatus status = new AlgoTaskStatus();
@@ -298,7 +303,7 @@ public class AlgoGatewayImpl implements AlgoGateway {
     public AlgoResponse createRoleImageTask(RoleImageRequest request) {
         try {
             AlgoApiResponse<TaskIdData> apiResp = algoHttpClient.post(
-                "/generate_role_image",
+                AlgoPathEnum.GENERATE_ROLE_IMG.getPath(),
                 request,
                 AlgoApiResponse.class
             );
@@ -315,7 +320,8 @@ public class AlgoGatewayImpl implements AlgoGateway {
     @Override
     public MultipartFile getRoleImageResult(String taskId) {
         try {
-            FileResponse imageData = algoHttpClient.downloadFile("/get_role_image/" + taskId);
+            String path = AlgoPathEnum.GET_ROLE_IMG.getPath(taskId);
+            FileResponse imageData = algoHttpClient.downloadFile(path);
             
             if (!imageData.isSuccess()) {
                 log.error("获取角色图片失败, taskId: {}, 服务器返回失败", taskId);
