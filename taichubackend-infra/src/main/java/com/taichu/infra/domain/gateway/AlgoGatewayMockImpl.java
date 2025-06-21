@@ -17,12 +17,15 @@ import org.springframework.stereotype.Component;
 import org.springframework.util.StreamUtils;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Collections;
 import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipOutputStream;
 
 @Slf4j
 @Component
@@ -41,6 +44,38 @@ public class AlgoGatewayMockImpl implements AlgoGateway {
             return new ByteArrayMultipartFile(fileContent, "img.png", "image/png");
         } catch (IOException e) {
             log.error("Failed to load mock file", e);
+            return null;
+        }
+    }
+
+    private MultipartFile createMockRoleImagesZip() {
+        try {
+            ByteArrayOutputStream baos = new ByteArrayOutputStream();
+            ZipOutputStream zos = new ZipOutputStream(baos);
+            
+            // 加载mock图片文件
+            ClassPathResource resource = new ClassPathResource("test/img.png");
+            InputStream inputStream = resource.getInputStream();
+            byte[] imageContent = StreamUtils.copyToByteArray(inputStream);
+            
+            // 创建多个角色图片文件到zip中
+            String[] roleNames = {"角色1_正面.png", "角色1_侧面.png", "角色1_背面.png", 
+                                 "角色2_正面.png", "角色2_侧面.png", "角色2_背面.png"};
+            
+            for (String fileName : roleNames) {
+                ZipEntry entry = new ZipEntry(fileName);
+                zos.putNextEntry(entry);
+                zos.write(imageContent);
+                zos.closeEntry();
+            }
+            
+            zos.close();
+            byte[] zipContent = baos.toByteArray();
+            
+            return new ByteArrayMultipartFile(zipContent, "role_images.zip", "application/zip");
+            
+        } catch (IOException e) {
+            log.error("Failed to create mock role images zip", e);
             return null;
         }
     }
@@ -168,6 +203,6 @@ public class AlgoGatewayMockImpl implements AlgoGateway {
     @Override
     public MultipartFile getRoleImageResult(String taskId) {
         log.info("Mocking getRoleImageResult for taskId: {}", taskId);
-        return loadMockFile();
+        return createMockRoleImagesZip();
     }
 } 
