@@ -87,7 +87,9 @@ public class StoryboardVideoAppService {
         if (ficWorkflowTaskBO == null) {
             return SingleResponse.buildFailure("", "taskId不存在");
         }
-        if (!TaskTypeEnum.STORYBOARD_VIDEO_GENERATION.name().equals(ficWorkflowTaskBO.getTaskType())) {
+        if (!TaskTypeEnum.STORYBOARD_VIDEO_GENERATION.name().equals(ficWorkflowTaskBO.getTaskType())
+                && !TaskTypeEnum.USER_RETRY_SINGLE_STORYBOARD_VIDEO_GENERATION.name().equals(ficWorkflowTaskBO.getTaskType())
+        ) {
             return SingleResponse.buildFailure("", "不是视频生成任务");
         }
 
@@ -95,7 +97,9 @@ public class StoryboardVideoAppService {
         StoryboardWorkflowTaskStatusDTO taskStatusDTO = new StoryboardWorkflowTaskStatusDTO();
 
         if (TaskStatusEnum.FAILED.getCode().equals(ficWorkflowTaskBO.getStatus())) {
-            return SingleResponse.buildFailure("", "视频生成任务失败");
+            taskStatusDTO.setTaskId(taskId);
+            taskStatusDTO.setStatus(TaskStatusEnum.FAILED.name());
+            return SingleResponse.of(taskStatusDTO);
         } else if (TaskStatusEnum.COMPLETED.getCode().equals(ficWorkflowTaskBO.getStatus())) {
             List<Long> completedVideoIdList = StreamUtil.toStream(ficAlgoTaskBOList)
                     .filter(t -> TaskStatusEnum.COMPLETED.getCode().equals(t.getStatus()))

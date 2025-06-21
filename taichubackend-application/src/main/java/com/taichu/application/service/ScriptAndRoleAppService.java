@@ -25,6 +25,7 @@ import org.springframework.core.io.Resource;
 import org.springframework.stereotype.Component;
 
 import java.io.InputStream;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -108,7 +109,10 @@ public class ScriptAndRoleAppService {
     @AppServiceExceptionHandle(biz = "查询剧本生成状态")
     public SingleResponse<WorkflowTaskStatusDTO> getScriptTaskStatus(Long workflowId) {
         // 1. 查询任务
-        FicWorkflowTaskBO task = ficWorkflowTaskRepository.findLatestByWorkflowIdAndTaskType(workflowId, TaskTypeEnum.SCRIPT_AND_ROLE_GENERATION.name());
+        List<String> taskTypes = new ArrayList<>();
+        taskTypes.add(TaskTypeEnum.SCRIPT_AND_ROLE_GENERATION.name());
+        taskTypes.add(TaskTypeEnum.USER_RETRY_SCRIPT_AND_ROLE_GENERATION.name());
+        FicWorkflowTaskBO task = ficWorkflowTaskRepository.findLatestByWorkflowIdAndTaskType(workflowId, taskTypes);
         if (task == null) {
             return SingleResponse.buildFailure("TASK_NOT_FOUND", "任务不存在");
         }

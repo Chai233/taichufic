@@ -38,10 +38,10 @@ public class FicWorkflowTaskRepository {
         return taskDOs.stream().map(FicWorkflowTaskConvertor::toDomain).collect(Collectors.toList());
     }
 
-    public FicWorkflowTaskBO findLatestByWorkflowIdAndTaskType(Long workflowId, String taskType) {
+    public FicWorkflowTaskBO findLatestByWorkflowIdAndTaskType(Long workflowId, List<String> taskType) {
         try {
             FicWorkflowTaskExample example = new FicWorkflowTaskExample();
-            example.createCriteria().andWorkflowIdEqualTo(workflowId).andTaskTypeEqualTo(taskType);
+            example.createCriteria().andWorkflowIdEqualTo(workflowId).andTaskTypeIn(taskType);
             List<FicWorkflowTask> taskDOs = ficWorkflowTaskMapper.selectByExample(example);
             if (taskDOs.isEmpty()) {
                 return null;

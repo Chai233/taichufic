@@ -95,7 +95,9 @@ public class ComposeVideoAppService {
         if (ficWorkflowTaskBO == null) {
             return SingleResponse.buildFailure("", "taskId不存在");
         }
-        if (!TaskTypeEnum.FULL_VIDEO_GENERATION.name().equals(ficWorkflowTaskBO.getTaskType())) {
+        if (!TaskTypeEnum.FULL_VIDEO_GENERATION.name().equals(ficWorkflowTaskBO.getTaskType())
+                && !TaskTypeEnum.USER_RETRY_FULL_VIDEO_GENERATION.name().equals(ficWorkflowTaskBO.getTaskType())
+        ) {
             return SingleResponse.buildFailure("", "不是视频合成任务");
         }
 

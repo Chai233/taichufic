@@ -109,37 +109,107 @@ public class StoryboardImgAppService {
         if (ficWorkflowTaskBO == null) {
             return SingleResponse.buildFailure("", "taskId不存在");
         }
-        if (!TaskTypeEnum.STORYBOARD_TEXT_AND_IMG_GENERATION.name().equals(ficWorkflowTaskBO.getTaskType())) {
+        
+        // 检查任务类型
+        boolean isStoryboardTextAndImgGeneration = TaskTypeEnum.STORYBOARD_TEXT_AND_IMG_GENERATION.name().equals(ficWorkflowTaskBO.getTaskType());
+        boolean isUserRetrySingleStoryboardImgGeneration = TaskTypeEnum.USER_RETRY_SINGLE_STORYBOARD_IMG_GENERATION.name().equals(ficWorkflowTaskBO.getTaskType());
+        
+        if (!isStoryboardTextAndImgGeneration && !isUserRetrySingleStoryboardImgGeneration) {
             return SingleResponse.buildFailure("", "不是分镜图生成任务");
         }
 
         List<FicAlgoTaskBO> ficAlgoTaskBOList = ficAlgoTaskRepository.findByWorkflowTaskId(ficWorkflowTaskBO.getId());
         StoryboardWorkflowTaskStatusDTO storyboardTaskStatusDTO = new StoryboardWorkflowTaskStatusDTO();
+        storyboardTaskStatusDTO.setTaskId(taskId);
 
+        // 处理失败状态
         if (TaskStatusEnum.FAILED.getCode().equals(ficWorkflowTaskBO.getStatus())) {
-            return SingleResponse.buildFailure("", "分镜生成任务失败");
-        } else if (TaskStatusEnum.COMPLETED.getCode().equals(ficWorkflowTaskBO.getStatus())) {
-            List<Long> completedStoryboardIdList = StreamUtil.toStream(ficAlgoTaskBOList)
-                    .filter(t -> TaskStatusEnum.COMPLETED.getCode().equals(t.getStatus()))
-                    .map(FicAlgoTaskBO::getRelevantId).collect(Collectors.toList());
+            storyboardTaskStatusDTO.setStatus(TaskStatusEnum.FAILED.name());
+            return SingleResponse.of(storyboardTaskStatusDTO);
+        }
 
-            storyboardTaskStatusDTO.setTaskId(taskId);
+        // 处理完成状态
+        if (TaskStatusEnum.COMPLETED.getCode().equals(ficWorkflowTaskBO.getStatus())) {
+            List<Long> completedStoryboardIdList = getCompletedStoryboardIds(ficAlgoTaskBOList);
             storyboardTaskStatusDTO.setStatus(TaskStatusEnum.COMPLETED.name());
-            storyboardTaskStatusDTO.setCompleteCnt(ficAlgoTaskBOList.size());
-            storyboardTaskStatusDTO.setTotalCnt(ficAlgoTaskBOList.size());
+            storyboardTaskStatusDTO.setCompleteCnt(completedStoryboardIdList.size());
+            storyboardTaskStatusDTO.setTotalCnt(completedStoryboardIdList.size());
             storyboardTaskStatusDTO.setCompletedStoryboardIds(completedStoryboardIdList);
+            return SingleResponse.of(storyboardTaskStatusDTO);
+        }
+
+        // 处理运行中状态
+        storyboardTaskStatusDTO.setStatus(TaskStatusEnum.RUNNING.name());
+        
+        if (isUserRetrySingleStoryboardImgGeneration) {
+            // 用户重试单个分镜图片生成任务，只有图片生成部分
+            setRunningStatusForImgOnly(storyboardTaskStatusDTO, ficAlgoTaskBOList);
         } else {
-            List<Long> completedStoryboardIdList = StreamUtil.toStream(ficAlgoTaskBOList)
-                    .filter(t -> TaskStatusEnum.COMPLETED.getCode().equals(t.getStatus()))
-                    .map(FicAlgoTaskBO::getRelevantId).collect(Collectors.toList());
-            storyboardTaskStatusDTO.setTaskId(taskId);
-            storyboardTaskStatusDTO.setStatus(TaskStatusEnum.RUNNING.name());
-            storyboardTaskStatusDTO.setCompleteCnt((int)completedStoryboardIdList.size());
-            storyboardTaskStatusDTO.setTotalCnt(ficAlgoTaskBOList.size());
-            storyboardTaskStatusDTO.setCompletedStoryboardIds(completedStoryboardIdList);
+            // STORYBOARD_TEXT_AND_IMG_GENERATION 任务，需要检查文本生成任务
+            setRunningStatusForTextAndImg(storyboardTaskStatusDTO, ficAlgoTaskBOList);
         }
 
         return SingleResponse.of(storyboardTaskStatusDTO);
+    }
+
+    /**
+     * 获取已完成的分镜ID列表
+     */
+    private List<Long> getCompletedStoryboardIds(List<FicAlgoTaskBO> ficAlgoTaskBOList) {
+        return StreamUtil.toStream(ficAlgoTaskBOList)
+                .filter(t -> AlgoTaskTypeEnum.STORYBOARD_IMG_GENERATION.name().equals(t.getTaskType())
+                        && TaskStatusEnum.COMPLETED.getCode().equals(t.getStatus()))
+                .map(FicAlgoTaskBO::getRelevantId)
+                .collect(Collectors.toList());
+    }
+
+    /**
+     * 设置仅图片生成任务的运行状态
+     */
+    private void setRunningStatusForImgOnly(StoryboardWorkflowTaskStatusDTO storyboardTaskStatusDTO, List<FicAlgoTaskBO> ficAlgoTaskBOList) {
+        List<FicAlgoTaskBO> imgGenerationTasks = StreamUtil.toStream(ficAlgoTaskBOList)
+                .filter(t -> AlgoTaskTypeEnum.STORYBOARD_IMG_GENERATION.name().equals(t.getTaskType()))
+                .collect(Collectors.toList());
+
+        List<Long> completedStoryboardIdList = StreamUtil.toStream(imgGenerationTasks)
+                .filter(t -> TaskStatusEnum.COMPLETED.getCode().equals(t.getStatus()))
+                .map(FicAlgoTaskBO::getRelevantId)
+                .collect(Collectors.toList());
+
+        storyboardTaskStatusDTO.setCompleteCnt(completedStoryboardIdList.size());
+        storyboardTaskStatusDTO.setTotalCnt(imgGenerationTasks.size());
+        storyboardTaskStatusDTO.setCompletedStoryboardIds(completedStoryboardIdList);
+    }
+
+    /**
+     * 设置文本和图片生成任务的运行状态
+     */
+    private void setRunningStatusForTextAndImg(StoryboardWorkflowTaskStatusDTO storyboardTaskStatusDTO, List<FicAlgoTaskBO> ficAlgoTaskBOList) {
+        boolean textGenerationCompleted = StreamUtil.toStream(ficAlgoTaskBOList)
+                .anyMatch(t -> AlgoTaskTypeEnum.STORYBOARD_TEXT_GENERATION.name().equals(t.getTaskType())
+                        && TaskStatusEnum.COMPLETED.getCode().equals(t.getStatus()));
+
+        if (!textGenerationCompleted) {
+            // 文本生成未完成，进度为0
+            storyboardTaskStatusDTO.setCompleteCnt(0);
+            storyboardTaskStatusDTO.setTotalCnt(0);
+            storyboardTaskStatusDTO.setCompletedStoryboardIds(List.of());
+            return;
+        }
+
+        // 文本生成已完成，计算图片生成进度
+        List<FicAlgoTaskBO> imgGenerationTasks = StreamUtil.toStream(ficAlgoTaskBOList)
+                .filter(t -> AlgoTaskTypeEnum.STORYBOARD_IMG_GENERATION.name().equals(t.getTaskType()))
+                .collect(Collectors.toList());
+
+        List<Long> completedStoryboardIdList = StreamUtil.toStream(imgGenerationTasks)
+                .filter(t -> TaskStatusEnum.COMPLETED.getCode().equals(t.getStatus()))
+                .map(FicAlgoTaskBO::getRelevantId)
+                .collect(Collectors.toList());
+
+        storyboardTaskStatusDTO.setCompleteCnt(completedStoryboardIdList.size());
+        storyboardTaskStatusDTO.setTotalCnt(imgGenerationTasks.size());
+        storyboardTaskStatusDTO.setCompletedStoryboardIds(completedStoryboardIdList);
     }
 
     /**
