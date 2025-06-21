@@ -28,7 +28,7 @@ public interface AlgoTaskProcessor {
      * 单任务成功后置处理
      * @param algoTask
      */
-    void singleTaskSuccessPostProcess(FicAlgoTaskBO algoTask);
+    void singleTaskSuccessPostProcess(FicAlgoTaskBO algoTask) throws Exception;
 
     /**
      * 后置处理阶段：处理任务完成后的业务逻辑
