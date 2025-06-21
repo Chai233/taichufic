@@ -153,6 +153,7 @@ public class RoleImgAlgoTaskProcessor extends AbstractAlgoTaskProcessor {
             resource.setRelevanceType(RelevanceType.ROLE_ID.name());
             resource.setWorkflowId(role.getWorkflowId());
             resource.setStatus(CommonStatusEnum.VALID.getValue());
+            resource.setResourceStorageType(ResourceStorageTypeEnum.ALI_CLOUD_OSS.name());
             long resourceId = ficResourceRepository.insert(resource);
             log.info("[RoleImgAlgoTaskProcessor.singleTaskSuccessPostProcess] 保存图片资源, resourceId: {}", resourceId);
             if (defaultImageResourceId == null) {

@@ -92,7 +92,7 @@ public class AlgoGatewayMockImpl implements AlgoGateway {
 
     @Override
     public AlgoResponse createScriptTask(ScriptTaskRequest request) {
-        log.info("Mocking createScriptTask with request: {}", request);
+        log.info("Mocking createScriptTask");
         return createTask("mock-script");
     }
 

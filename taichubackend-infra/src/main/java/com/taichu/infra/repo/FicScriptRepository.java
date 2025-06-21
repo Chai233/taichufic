@@ -31,7 +31,7 @@ public class FicScriptRepository {
     public long insert(FicScriptBO script) {
         FicScript scriptDO = FicScriptConvertor.toDataObject(script);
         int res = scriptMapper.insert(scriptDO);
-        return (long) res;
+        return scriptDO.getId();
     }
 
     /**

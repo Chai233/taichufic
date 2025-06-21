@@ -83,21 +83,9 @@ public class AlgoTestController {
      * @return 包含任务ID和状态的响应对象
      */
     @PostMapping("/createStoryboardTextTask")
-    public ResponseEntity<AlgoResponse> testCreateStoryboardTextTask(@RequestBody StoryboardTextRequest request) {
-        AlgoResponse response = algoGateway.createStoryboardTextTask(request);
-        return ResponseEntity.ok(response);
-    }
-
-    /**
-     * 测试获取分镜文本生成结果
-     * 
-     * @param taskId 任务ID
-     * @return 包含分镜文本和角色信息的响应对象
-     */
-    @GetMapping("/getStoryboardTextResult/{taskId}")
-    public ResponseEntity<StoryboardTextResult> testGetStoryboardTextResult(@PathVariable String taskId) {
-        StoryboardTextResult result = algoGateway.getStoryboardTextResult(taskId);
-        return ResponseEntity.ok(result);
+    public ResponseEntity<StoryboardTextResult> testCreateStoryboardTextTask(@RequestBody StoryboardTextRequest request) {
+        StoryboardTextResult res = algoGateway.createStoryboardTextTask(request);
+        return ResponseEntity.ok(res);
     }
 
     /**

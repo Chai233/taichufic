@@ -32,7 +32,7 @@ public class FicRoleRepository {
     public long insert(FicRoleBO role) {
         FicRole roleDO = FicRoleConvertor.toDataObject(role);
         int res = roleMapper.insert(roleDO);
-        return (long) res;
+        return roleDO.getId();
     }
 
     /**

@@ -32,7 +32,7 @@ public class FicStoryboardRepository {
     public long insert(FicStoryboardBO storyboard) {
         FicStoryboard storyboardDO = FicStoryboardConvertor.toDataObject(storyboard);
         int res = storyboardMapper.insert(storyboardDO);
-        return (long) res;
+        return storyboardDO.getId();
     }
 
     /**

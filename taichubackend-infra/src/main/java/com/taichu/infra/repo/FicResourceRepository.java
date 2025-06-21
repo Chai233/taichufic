@@ -31,7 +31,7 @@ public class FicResourceRepository {
     public long insert(FicResourceBO resource) {
         FicResource resourceDO = FicResourceConvertor.toDataObject(resource);
         int res = resourceMapper.insert(resourceDO);
-        return (long) res;
+        return resourceDO.getId();
     }
 
     /**
