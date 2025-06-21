@@ -16,6 +16,8 @@ import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Component;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.util.List;
+
 /**
  * 算法服务网关实现类
  * 负责与算法服务进行HTTP通信，处理各种AI任务的创建和结果获取
@@ -84,7 +86,7 @@ public class AlgoGatewayImpl implements AlgoGateway {
     @Override
     public StoryboardTextResult createStoryboardTextTask(StoryboardTextRequest request) {
         try {
-            AlgoApiResponse<StoryboardTextResult> apiResp = algoHttpClient.post(
+            AlgoApiResponse<List<String>> apiResp = algoHttpClient.post(
                 AlgoPathEnum.GENERATE_STORYBOARD.getPath(),
                 request,
                 AlgoApiResponse.class
@@ -93,7 +95,9 @@ public class AlgoGatewayImpl implements AlgoGateway {
                 log.error("createStoryboardTextTask error, workflowId: {}, error: {}", request.getWorkflow_id(), apiResp.getMsg());
                 return null;
             }
-            return apiResp.getData();
+            StoryboardTextResult result = new StoryboardTextResult();
+            result.setData(apiResp.getData());
+            return result;
         } catch (AlgoHttpException e) {
             log.error("createStoryboardTextTask error, workflowId: {}", request.getWorkflow_id(), e);
             return null;
