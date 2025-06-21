@@ -2,18 +2,16 @@ package com.taichu.infra.domain.gateway;
 
 public enum AlgoPathEnum {
 
-    CHECK_TASK_STATUS("/get_task/", true),
+    CHECK_TASK_STATUS("/get_task_status/", true),
 
-    GENERATE_SCRIPT("/generate_script", false),
-    GET_SCRIPT("/get_script/", true),
+    GENERATE_SCRIPT("/generate_scripts", false),
+    GET_SCRIPT("/get_scripts/", true),
 
     GENERATE_ROLE_IMG("/generate_role_image", false),
     GET_ROLE_IMG("/get_role_image/", true),
 
+    // 分镜文本生成是同步接口
     GENERATE_STORYBOARD("/generate_storyboard", false),
-    // TODO 分镜文本生成居然是同步接口？
-//    GENERATE_STORYBOARD("/generate_storyboard", false),
-
 
     GENERATE_STORYBOARD_IMAGE("/generate_storyboard_image", false),
     GET_STORYBOARD_IMAGE("/get_storyboard_image/", true),
