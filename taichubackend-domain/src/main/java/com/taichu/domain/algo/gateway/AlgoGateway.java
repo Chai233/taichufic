@@ -15,9 +15,8 @@ public interface AlgoGateway {
     ScriptResult getScriptResult(String taskId);
     
     // 分镜文本相关
-    AlgoResponse createStoryboardTextTask(StoryboardTextRequest request);
-    StoryboardTextResult getStoryboardTextResult(String taskId);
-    
+    StoryboardTextResult createStoryboardTextTask(StoryboardTextRequest request);
+
     // 分镜图相关
     AlgoResponse createStoryboardImageTask(StoryboardImageRequest request);
     MultipartFile getStoryboardImageResult(String taskId);

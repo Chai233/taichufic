@@ -17,7 +17,7 @@ public interface AlgoTaskProcessor {
     /**
      * 生成阶段：创建所有算法任务
      */
-    List<AlgoTaskBO> generateTasks(FicWorkflowTaskBO workflowTask);
+    List<AlgoTaskBO> generateTasks(FicWorkflowTaskBO workflowTask) throws Exception;
 
     /**
      * 状态检查阶段：检查任务状态

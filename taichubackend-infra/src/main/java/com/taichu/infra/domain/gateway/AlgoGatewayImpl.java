@@ -81,39 +81,21 @@ public class AlgoGatewayImpl implements AlgoGateway {
      * @return 包含任务ID和任务状态的响应对象
      */
     @Override
-    public AlgoResponse createStoryboardTextTask(StoryboardTextRequest request) {
+    public StoryboardTextResult createStoryboardTextTask(StoryboardTextRequest request) {
         try {
-            AlgoApiResponse<TaskIdData> apiResp = algoHttpClient.post(
+            AlgoApiResponse<StoryboardTextResult> apiResp = algoHttpClient.post(
                 AlgoPathEnum.GENERATE_STORYBOARD.getPath(),
                 request,
                 AlgoApiResponse.class
             );
-            return convertApiResponse(apiResp, "ALGO_STORYBOARD_TEXT_CREATE_ERROR");
+            if (apiResp.getCode() != 200) {
+                log.error("createStoryboardTextTask error, workflowId: {}, error: {}", request.getWorkflow_id(), apiResp.getMsg());
+                return null;
+            }
+            return apiResp.getData();
         } catch (AlgoHttpException e) {
-            AlgoResponse response = new AlgoResponse();
-            response.setSuccess(false);
-            response.setErrorCode("ALGO_STORYBOARD_TEXT_CREATE_ERROR_" + e.getStatusCode());
-            response.setErrorMsg(e.getMessage());
-            return response;
-        }
-    }
-
-    /**
-     * 获取分镜文本生成任务的结果
-     * 根据任务ID查询算法服务，获取生成的分镜文本描述
-     *
-     * @param taskId 任务ID
-     * @return 包含分镜文本和角色信息的响应对象
-     */
-    @Override
-    public StoryboardTextResult getStoryboardTextResult(String taskId) {
-        try {
-            // TODO 这里是同步的？？？
-            String path = "";
-            return algoHttpClient.get(path, StoryboardTextResult.class);
-        } catch (AlgoHttpException e) {
-            log.error("getStoryboardTextResult error", e);
-            return new StoryboardTextResult();
+            log.error("createStoryboardTextTask error, workflowId: {}", request.getWorkflow_id(), e);
+            return null;
         }
     }
     

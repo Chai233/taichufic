@@ -111,14 +111,8 @@ public class AlgoGatewayMockImpl implements AlgoGateway {
     }
 
     @Override
-    public AlgoResponse createStoryboardTextTask(StoryboardTextRequest request) {
-        log.info("Mocking createStoryboardTextTask with request: {}", request);
-        return createTask("mock-storyboard-text");
-    }
-
-    @Override
-    public StoryboardTextResult getStoryboardTextResult(String taskId) {
-        log.info("Mocking getStoryboardTextResult for taskId: {}", taskId);
+    public StoryboardTextResult createStoryboardTextTask(StoryboardTextRequest request) {
+        log.info("Mocking getStoryboardTextResult for workflowId: {}", request.getWorkflow_id());
         StoryboardTextResult result = new StoryboardTextResult();
         result.setData(Collections.singletonList("这是一个mock的分镜文本。"));
         return result;
