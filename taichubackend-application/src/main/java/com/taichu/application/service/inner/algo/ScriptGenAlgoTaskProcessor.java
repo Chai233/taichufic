@@ -131,8 +131,14 @@ public class ScriptGenAlgoTaskProcessor extends AbstractAlgoTaskProcessor {
     public void singleTaskSuccessPostProcess(FicAlgoTaskBO algoTask) {
         log.info("[ScriptGenAlgoTaskProcessor.singleTaskSuccessPostProcess] 开始处理剧本生成结果, algoTaskId: {}", algoTask.getAlgoTaskId());
         try {
-            // 获取生成的剧本内容
-            ScriptResult result = algoGateway.getScriptResult(Objects.toString(algoTask.getAlgoTaskId()));
+            // 获取生成的剧本内容，添加重试逻辑
+            String taskId = Objects.toString(algoTask.getAlgoTaskId());
+            ScriptResult result = retryGetResultOperation(
+                () -> algoGateway.getScriptResult(taskId),
+                "getScriptResult",
+                taskId
+            );
+            
             log.info("[ScriptGenAlgoTaskProcessor.singleTaskSuccessPostProcess] 获取到剧本结果: {}", result);
             if (result == null || result.getScripts() == null || result.getScripts().isEmpty()) {
                 log.error("[ScriptGenAlgoTaskProcessor.singleTaskSuccessPostProcess] 获取剧本结果失败或结果为空, algoTaskId: {}", algoTask.getAlgoTaskId());

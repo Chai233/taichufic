@@ -113,8 +113,14 @@ public class RoleImgAlgoTaskProcessor extends AbstractAlgoTaskProcessor {
     public void singleTaskSuccessPostProcess(FicAlgoTaskBO algoTask) throws Exception {
         log.info("[RoleImgAlgoTaskProcessor.singleTaskSuccessPostProcess] 开始处理角色图片, algoTaskId: {}", algoTask.getAlgoTaskId());
         
-        // 获取角色图片压缩包
-        MultipartFile roleImageZip = algoGateway.getRoleImageResult(Objects.toString(algoTask.getAlgoTaskId()));
+        // 获取角色图片压缩包，添加重试逻辑
+        String taskId = Objects.toString(algoTask.getAlgoTaskId());
+        MultipartFile roleImageZip = retryGetResultOperation(
+            () -> algoGateway.getRoleImageResult(taskId),
+            "getRoleImageResult",
+            taskId
+        );
+        
         if (roleImageZip == null) {
             throw new Exception("[RoleImgAlgoTaskProcessor.singleTaskSuccessPostProcess] 获取角色图片结果失败, algoTaskId: " + algoTask.getAlgoTaskId());
         }

@@ -1,5 +1,6 @@
 package com.taichu.infra.http;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.taichu.domain.algo.model.common.UploadFile;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -22,13 +23,15 @@ import org.springframework.web.client.RestTemplate;
 public class AlgoHttpClient {
     
     private final RestTemplate restTemplate;
-    
+    private final ObjectMapper objectMapper;
     private final String baseUrl;
 
     public AlgoHttpClient(@Qualifier("algoRestTemplate") RestTemplate restTemplate,
-                          @Value("${algo.service.base-url}") String baseUrl) {
+                          @Value("${algo.service.base-url}") String baseUrl,
+                          ObjectMapper objectMapper) {
         this.restTemplate = restTemplate;
         this.baseUrl = baseUrl;
+        this.objectMapper = objectMapper;
     }
     
     /**
@@ -177,6 +180,67 @@ public class AlgoHttpClient {
         } catch (RestClientException e) {
             log.error("HTTP MULTIPART POST 请求失败, path: {}, error: {}", path, e.getMessage(), e);
             throw new AlgoHttpException("HTTP MULTIPART POST 请求失败: " + e.getMessage());
+        }
+    }
+
+    /**
+     * 发送 GET 请求（用于状态查询，支持特殊状态码处理）
+     * 对于状态查询接口，某些非200状态码是正常的业务状态，不应该抛出异常
+     *
+     * @param path 请求路径
+     * @param responseType 响应类型
+     * @return 包含状态码和响应体的对象
+     */
+    public <R> StatusResponse<R> getWithStatusHandling(String path, Class<R> responseType) {
+        String url = baseUrl + path;
+        try {
+            R response = restTemplate.getForObject(url, responseType);
+            return new StatusResponse<>(200, response);
+        } catch (HttpStatusCodeException e) {
+            // 对于状态查询接口，某些状态码是正常的业务状态
+            if (e.getStatusCode().value() == 400 || 
+                e.getStatusCode().value() == 410 || 
+                e.getStatusCode().value() == 411 || 
+                e.getStatusCode().value() == 412) {
+                // 这些状态码是正常的业务状态，返回响应体内容
+                try {
+                    R response = objectMapper.readValue(e.getResponseBodyAsString(), responseType);
+                    return new StatusResponse<>(e.getStatusCode().value(), response);
+                } catch (Exception parseException) {
+                    log.error("解析状态查询响应失败, path: {}, statusCode: {}, responseBody: {}", 
+                        url, e.getStatusCode(), e.getResponseBodyAsString(), parseException);
+                    throw new AlgoHttpException("解析状态查询响应失败: " + e.getResponseBodyAsString(), e.getStatusCode().value());
+                }
+            } else {
+                // 其他状态码仍然抛出异常
+                log.error("HTTP GET 请求失败, path: {}, statusCode: {}, responseBody: {}",
+                        url, e.getStatusCode(), e.getResponseBodyAsString(), e);
+                throw new AlgoHttpException("HTTP GET 请求失败: " + e.getResponseBodyAsString(), e.getStatusCode().value());
+            }
+        } catch (RestClientException e) {
+            log.error("HTTP GET 请求失败, path: {}, error: {}", url, e.getMessage(), e);
+            throw new AlgoHttpException("HTTP GET 请求失败: " + e.getMessage());
+        }
+    }
+
+    /**
+     * 状态响应包装类
+     */
+    public static class StatusResponse<T> {
+        private final int statusCode;
+        private final T response;
+
+        public StatusResponse(int statusCode, T response) {
+            this.statusCode = statusCode;
+            this.response = response;
+        }
+
+        public int getStatusCode() {
+            return statusCode;
+        }
+
+        public T getResponse() {
+            return response;
         }
     }
 } 

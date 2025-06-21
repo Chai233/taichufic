@@ -86,6 +86,71 @@ public abstract class AbstractAlgoTaskProcessor implements AlgoTaskProcessor {
         return null;
     }
 
+    /**
+     * 获取结果的重试方法，专门用于处理获取算法服务结果的操作
+     *
+     * @param operation 需要重试的获取结果操作
+     * @param operationName 操作名称（用于日志）
+     * @param taskId 任务ID（用于日志）
+     * @param <T> 操作返回类型
+     * @return 操作结果，如果重试失败则返回null
+     */
+    protected <T> T retryGetResultOperation(Supplier<T> operation, String operationName, String taskId) {
+        int retryCount = 0;
+        while (retryCount < getMaxRetry()) {
+            try {
+                T result = operation.get();
+                if (result == null) {
+                    getLogger().error("{} returned null for taskId: {}, retry count: {}", operationName, taskId, retryCount + 1);
+                    if (retryCount < getMaxRetry() - 1) {
+                        // 计算等待时间（指数退避：基础等待时间 * 2^重试次数）
+                        long waitTime = calculateWaitTime(retryCount);
+                        getLogger().info("{} will retry for taskId: {} after {} ms", operationName, taskId, waitTime);
+                        Thread.sleep(waitTime);
+                        retryCount++;
+                        continue;
+                    }
+                    return null;
+                }
+                getLogger().info("{} succeeded for taskId: {} after {} retries", operationName, taskId, retryCount);
+                return result;
+            } catch (Exception e) {
+                getLogger().error("Unexpected error during {} for taskId: {}, retry count: {}", operationName, taskId, retryCount + 1, e);
+                if (retryCount < getMaxRetry() - 1) {
+                    // 计算等待时间（指数退避：基础等待时间 * 2^重试次数）
+                    long waitTime = calculateWaitTime(retryCount);
+                    getLogger().info("{} will retry for taskId: {} after {} ms due to exception", operationName, taskId, waitTime);
+                    try {
+                        Thread.sleep(waitTime);
+                    } catch (InterruptedException ie) {
+                        Thread.currentThread().interrupt();
+                        getLogger().error("Retry interrupted for taskId: {}", taskId);
+                        return null;
+                    }
+                    retryCount++;
+                    continue;
+                }
+                return null;
+            }
+        }
+        getLogger().error("Failed to complete {} for taskId: {} after {} retries", operationName, taskId, getMaxRetry());
+        return null;
+    }
+
+    /**
+     * 计算重试等待时间（指数退避策略）
+     *
+     * @param retryCount 当前重试次数
+     * @return 等待时间（毫秒）
+     */
+    protected long calculateWaitTime(int retryCount) {
+        // 基础等待时间
+        long baseWaitTime = getWaitInterval();
+        // 指数退避：基础等待时间 * 2^重试次数，最大不超过30秒
+        long waitTime = baseWaitTime * (long) Math.pow(2, retryCount);
+        return Math.min(waitTime, 30000); // 最大等待30秒
+    }
+
     abstract protected Logger getLogger();
 
     /**

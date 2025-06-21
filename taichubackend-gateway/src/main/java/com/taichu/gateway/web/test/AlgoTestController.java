@@ -2,10 +2,12 @@ package com.taichu.gateway.web.test;
 
 import com.taichu.domain.algo.gateway.AlgoGateway;
 import com.taichu.domain.algo.model.AlgoResponse;
-import com.taichu.domain.algo.model.request.*;
-import com.taichu.domain.algo.model.response.*;
 import com.taichu.domain.model.AlgoTaskStatus;
 import com.taichu.domain.algo.model.common.UploadFile;
+import com.taichu.domain.algo.model.request.*;
+import com.taichu.domain.algo.model.response.ScriptResult;
+import com.taichu.domain.algo.model.response.StoryboardTextResult;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -14,6 +16,7 @@ import org.springframework.web.multipart.MultipartFile;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.Supplier;
 
 /**
  * 算法服务测试控制器
@@ -21,10 +24,99 @@ import java.util.List;
  */
 @RestController
 @RequestMapping("/api/testAlgo")
+@Slf4j
 public class AlgoTestController {
 
     @Autowired
     AlgoGateway algoGateway;
+
+    private static final int MAX_RETRY = 3;
+    private static final int WAIT_INTERVAL = 5000;
+
+    /**
+     * 获取结果的重试方法，专门用于处理获取算法服务结果的操作
+     *
+     * @param operation 需要重试的获取结果操作
+     * @param operationName 操作名称（用于日志）
+     * @param taskId 任务ID（用于日志）
+     * @param <T> 操作返回类型
+     * @return 操作结果，如果重试失败则返回null
+     */
+    private <T> T retryGetResultOperation(Supplier<T> operation, String operationName, String taskId) {
+        int retryCount = 0;
+        while (retryCount < MAX_RETRY) {
+            try {
+                T result = operation.get();
+                if (result == null) {
+                    log.error("{} returned null for taskId: {}, retry count: {}", operationName, taskId, retryCount + 1);
+                    if (retryCount < MAX_RETRY - 1) {
+                        // 计算等待时间（指数退避：基础等待时间 * 2^重试次数）
+                        long waitTime = calculateWaitTime(retryCount);
+                        log.info("{} will retry for taskId: {} after {} ms", operationName, taskId, waitTime);
+                        Thread.sleep(waitTime);
+                        retryCount++;
+                        continue;
+                    }
+                    return null;
+                }
+                log.info("{} succeeded for taskId: {} after {} retries", operationName, taskId, retryCount);
+                return result;
+            } catch (Exception e) {
+                log.error("Unexpected error during {} for taskId: {}, retry count: {}", operationName, taskId, retryCount + 1, e);
+                if (retryCount < MAX_RETRY - 1) {
+                    // 计算等待时间（指数退避：基础等待时间 * 2^重试次数）
+                    long waitTime = calculateWaitTime(retryCount);
+                    log.info("{} will retry for taskId: {} after {} ms due to exception", operationName, taskId, waitTime);
+                    try {
+                        Thread.sleep(waitTime);
+                    } catch (InterruptedException ie) {
+                        Thread.currentThread().interrupt();
+                        log.error("Retry interrupted for taskId: {}", taskId);
+                        return null;
+                    }
+                    retryCount++;
+                    continue;
+                }
+                return null;
+            }
+        }
+        log.error("Failed to complete {} for taskId: {} after {} retries", operationName, taskId, MAX_RETRY);
+        return null;
+    }
+
+    /**
+     * 计算重试等待时间（指数退避策略）
+     *
+     * @param retryCount 当前重试次数
+     * @return 等待时间（毫秒）
+     */
+    private long calculateWaitTime(int retryCount) {
+        // 基础等待时间
+        long baseWaitTime = WAIT_INTERVAL;
+        // 指数退避：基础等待时间 * 2^重试次数，最大不超过30秒
+        long waitTime = baseWaitTime * (long) Math.pow(2, retryCount);
+        return Math.min(waitTime, 30000); // 最大等待30秒
+    }
+
+    /**
+     * 判断是否应该重试
+     *
+     * @param retryCount 当前重试次数
+     * @return 是否应该重试
+     */
+    private boolean shouldRetry(int retryCount) {
+        if (retryCount < MAX_RETRY - 1) {
+            try {
+                Thread.sleep(WAIT_INTERVAL);
+                return true;
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+                log.error("Retry interrupted");
+                return false;
+            }
+        }
+        return false;
+    }
 
     /**
      * 测试创建剧本生成任务
@@ -72,7 +164,11 @@ public class AlgoTestController {
      */
     @GetMapping("/getScriptResult/{taskId}")
     public ResponseEntity<ScriptResult> testGetScriptResult(@PathVariable String taskId) {
-        ScriptResult result = algoGateway.getScriptResult(taskId);
+        ScriptResult result = retryGetResultOperation(
+            () -> algoGateway.getScriptResult(taskId),
+            "getScriptResult",
+            taskId
+        );
         return ResponseEntity.ok(result);
     }
 
@@ -108,7 +204,11 @@ public class AlgoTestController {
      */
     @GetMapping("/getStoryboardImageResult/{taskId}")
     public ResponseEntity<byte[]> testGetStoryboardImageResult(@PathVariable String taskId) throws IOException {
-        MultipartFile file = algoGateway.getStoryboardImageResult(taskId);
+        MultipartFile file = retryGetResultOperation(
+            () -> algoGateway.getStoryboardImageResult(taskId),
+            "getStoryboardImageResult",
+            taskId
+        );
         if (file != null && file.getBytes() != null) {
             return ResponseEntity.ok()
                 .header("Content-Type", file.getContentType())
@@ -138,7 +238,11 @@ public class AlgoTestController {
      */
     @GetMapping("/getStoryboardVideoResult/{taskId}")
     public ResponseEntity<byte[]> testGetStoryboardVideoResult(@PathVariable String taskId) throws IOException {
-        MultipartFile file = algoGateway.getStoryboardVideoResult(taskId);
+        MultipartFile file = retryGetResultOperation(
+            () -> algoGateway.getStoryboardVideoResult(taskId),
+            "getStoryboardVideoResult",
+            taskId
+        );
         if (file != null && file.getBytes() != null) {
             return ResponseEntity.ok()
                 .header("Content-Type", file.getContentType())
@@ -168,7 +272,11 @@ public class AlgoTestController {
      */
     @GetMapping("/getVideoMergeResult/{taskId}")
     public ResponseEntity<byte[]> testGetVideoMergeResult(@PathVariable String taskId) throws IOException {
-        MultipartFile file = algoGateway.getVideoMergeResult(taskId);
+        MultipartFile file = retryGetResultOperation(
+            () -> algoGateway.getVideoMergeResult(taskId),
+            "getVideoMergeResult",
+            taskId
+        );
         if (file != null && file.getBytes() != null) {
             return ResponseEntity.ok()
                 .header("Content-Type", file.getContentType())
@@ -198,7 +306,11 @@ public class AlgoTestController {
      */
     @GetMapping("/getRoleImageResult/{taskId}")
     public ResponseEntity<byte[]> testGetRoleImageResult(@PathVariable String taskId) throws IOException {
-        MultipartFile file = algoGateway.getRoleImageResult(taskId);
+        MultipartFile file = retryGetResultOperation(
+            () -> algoGateway.getRoleImageResult(taskId),
+            "getRoleImageResult",
+            taskId
+        );
         if (file != null && file.getBytes() != null) {
             return ResponseEntity.ok()
                 .header("Content-Type", file.getContentType())
@@ -218,17 +330,6 @@ public class AlgoTestController {
     public ResponseEntity<AlgoTaskStatus> testCheckTaskStatus(@PathVariable String taskId) {
         AlgoTaskStatus status = algoGateway.checkTaskStatus(taskId);
         return ResponseEntity.ok(status);
-    }
-
-    /**
-     * 测试与算法服务的连通性
-     *
-     * @return 字符串 "pong" 或错误信息，表示连接成功与否
-     */
-    @GetMapping("/ping")
-    public ResponseEntity<String> pingAlgoService() {
-        String response = algoGateway.ping();
-        return ResponseEntity.ok(response);
     }
 
     /**

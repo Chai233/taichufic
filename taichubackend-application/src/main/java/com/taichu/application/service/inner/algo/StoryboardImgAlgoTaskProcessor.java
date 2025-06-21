@@ -153,11 +153,20 @@ public class StoryboardImgAlgoTaskProcessor extends AbstractAlgoTaskProcessor {
     @Override
     public void singleTaskSuccessPostProcess(FicAlgoTaskBO algoTask) {
         log.info("[StoryboardImgAlgoTaskProcessor.singleTaskSuccessPostProcess] 开始处理分镜图片, algoTaskId: {}", algoTask.getAlgoTaskId());
-        MultipartFile storyboardImgResult = algoGateway.getStoryboardImageResult(Objects.toString(algoTask.getAlgoTaskId()));
+        
+        // 获取分镜图片结果，添加重试逻辑
+        String taskId = Objects.toString(algoTask.getAlgoTaskId());
+        MultipartFile storyboardImgResult = retryGetResultOperation(
+            () -> algoGateway.getStoryboardImageResult(taskId),
+            "getStoryboardImageResult",
+            taskId
+        );
+        
         if (storyboardImgResult == null) {
             log.error("[StoryboardImgAlgoTaskProcessor.singleTaskSuccessPostProcess] 获取分镜图片结果失败, algoTaskId: {}", algoTask.getAlgoTaskId());
             return;
         }
+        
         try {
             FicWorkflowTaskBO workflowTask = ficWorkflowTaskRepository.findById(algoTask.getWorkflowTaskId());
             if (workflowTask == null) {

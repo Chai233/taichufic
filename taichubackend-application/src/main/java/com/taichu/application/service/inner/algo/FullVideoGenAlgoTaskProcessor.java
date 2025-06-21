@@ -105,7 +105,14 @@ public class FullVideoGenAlgoTaskProcessor extends AbstractAlgoTaskProcessor {
     public void singleTaskSuccessPostProcess(FicAlgoTaskBO algoTask) {
         log.info("[FullVideoGenAlgoTaskProcessor.singleTaskSuccessPostProcess] 开始处理完整视频, algoTaskId: {}", algoTask.getAlgoTaskId());
         try {
-            MultipartFile videoResult = algoGateway.getVideoMergeResult(Objects.toString(algoTask.getAlgoTaskId()));
+            // 获取完整视频结果，添加重试逻辑
+            String taskId = Objects.toString(algoTask.getAlgoTaskId());
+            MultipartFile videoResult = retryGetResultOperation(
+                () -> algoGateway.getVideoMergeResult(taskId),
+                "getVideoMergeResult",
+                taskId
+            );
+            
             log.info("[FullVideoGenAlgoTaskProcessor.singleTaskSuccessPostProcess] 获取到完整视频: {}", videoResult);
             if (videoResult == null) {
                 log.error("[FullVideoGenAlgoTaskProcessor.singleTaskSuccessPostProcess] 获取完整视频结果失败, algoTaskId: {}", algoTask.getAlgoTaskId());

@@ -4,6 +4,7 @@ import com.taichu.domain.algo.gateway.AlgoGateway;
 import com.taichu.domain.algo.model.*;
 import com.taichu.domain.algo.model.request.*;
 import com.taichu.domain.algo.model.response.*;
+import com.taichu.domain.enums.TaskStatusEnum;
 import com.taichu.domain.model.AlgoTaskStatus;
 import com.taichu.infra.http.AlgoHttpClient;
 import com.taichu.infra.http.AlgoHttpException;
@@ -274,11 +275,39 @@ public class AlgoGatewayImpl implements AlgoGateway {
     @Override
     public AlgoTaskStatus checkTaskStatus(String taskId) {
         try {
-            return algoHttpClient.get(AlgoPathEnum.CHECK_TASK_STATUS.getPath(taskId), AlgoTaskStatus.class);
-        } catch (AlgoHttpException e) {
-            log.error("checkTaskStatus error", e);
+            // 使用新的状态处理方法，支持特殊状态码
+            AlgoHttpClient.StatusResponse<AlgoApiResponse> statusResponse = algoHttpClient.getWithStatusHandling(
+                AlgoPathEnum.CHECK_TASK_STATUS.getPath(taskId), 
+                AlgoApiResponse.class
+            );
+            
             AlgoTaskStatus status = new AlgoTaskStatus();
-            status.setCode((byte) -1);  // 使用-1表示查询失败
+            
+            // 根据HTTP状态码映射到任务状态
+            int statusCode = statusResponse.getStatusCode();
+            switch (statusCode) {
+                case 200:
+                    status.setCode(TaskStatusEnum.COMPLETED.getCode());
+                    break;
+                case 400:
+                    status.setCode(TaskStatusEnum.FAILED.getCode());
+                    break;
+                case 410:
+                case 411:
+                case 412:
+                    status.setCode(TaskStatusEnum.RUNNING.getCode());
+                    break;
+                default:
+                    status.setCode((byte) -1); // 查询失败
+                    break;
+            }
+            
+            return status;
+            
+        } catch (AlgoHttpException e) {
+            log.error("checkTaskStatus error, taskId: {}", taskId, e);
+            AlgoTaskStatus status = new AlgoTaskStatus();
+            status.setCode((byte) -1); // 查询失败
             return status;
         }
     }
@@ -320,20 +349,6 @@ public class AlgoGatewayImpl implements AlgoGateway {
         } catch (AlgoHttpException e) {
             log.error("获取角色图片失败, taskId: {}, error: {}", taskId, e.getMessage());
             return null;
-        }
-    }
-
-    @Override
-    public String ping() {
-        try {
-            // 尝试访问一个更通用的接口来测试连接
-            String path = "/get_task/1";
-            // 我们期望一个简单的字符串响应，比如 "OK" 或 "pong"。
-            return algoHttpClient.get(path, String.class);
-        } catch (Exception e) {
-            // 如果请求失败，返回异常信息，这有助于调试。
-            log.error("Ping to algo service failed", e);
-            return "Ping failed: " + e.getMessage();
         }
     }
 
