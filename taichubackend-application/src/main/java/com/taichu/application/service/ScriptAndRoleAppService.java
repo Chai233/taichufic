@@ -108,7 +108,7 @@ public class ScriptAndRoleAppService {
     @AppServiceExceptionHandle(biz = "查询剧本生成状态")
     public SingleResponse<WorkflowTaskStatusDTO> getScriptTaskStatus(Long workflowId) {
         // 1. 查询任务
-        FicWorkflowTaskBO task = ficWorkflowTaskRepository.findByWorkflowIdAndTaskType(workflowId, TaskTypeEnum.SCRIPT_AND_ROLE_GENERATION.name());
+        FicWorkflowTaskBO task = ficWorkflowTaskRepository.findLatestByWorkflowIdAndTaskType(workflowId, TaskTypeEnum.SCRIPT_AND_ROLE_GENERATION.name());
         if (task == null) {
             return SingleResponse.buildFailure("TASK_NOT_FOUND", "任务不存在");
         }

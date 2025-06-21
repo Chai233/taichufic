@@ -147,6 +147,7 @@ public class RoleImgAlgoTaskProcessor extends AbstractAlgoTaskProcessor {
             Long defaultImageResourceId = null;
             for (String ossObjName : ossObjNames) {
                 FicResourceBO resource = new FicResourceBO();
+                resource.setGmtCreate(System.currentTimeMillis());
                 resource.setResourceType(ResourceTypeEnum.ROLE_IMAGE.name());
                 resource.setResourceUrl(ossObjName);
                 resource.setRelevanceId(roleId);

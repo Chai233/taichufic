@@ -7,6 +7,7 @@ import com.taichu.infra.persistance.mapper.FicWorkflowTaskMapper;
 import com.taichu.infra.persistance.model.FicWorkflowTask;
 import com.taichu.infra.persistance.model.FicWorkflowTaskExample;
 
+import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -37,7 +38,7 @@ public class FicWorkflowTaskRepository {
         return taskDOs.stream().map(FicWorkflowTaskConvertor::toDomain).collect(Collectors.toList());
     }
 
-    public FicWorkflowTaskBO findByWorkflowIdAndTaskType(Long workflowId, String taskType) {
+    public FicWorkflowTaskBO findLatestByWorkflowIdAndTaskType(Long workflowId, String taskType) {
         try {
             FicWorkflowTaskExample example = new FicWorkflowTaskExample();
             example.createCriteria().andWorkflowIdEqualTo(workflowId).andTaskTypeEqualTo(taskType);
@@ -45,7 +46,9 @@ public class FicWorkflowTaskRepository {
             if (taskDOs.isEmpty()) {
                 return null;
             }
-            return FicWorkflowTaskConvertor.toDomain(taskDOs.get(0));
+
+            FicWorkflowTask task = taskDOs.stream().max(Comparator.comparing(FicWorkflowTask::getGmtCreate)).get();
+            return FicWorkflowTaskConvertor.toDomain(task);
         } catch (Exception e) {
             // log.error("查询工作流任务失败, workflowId={}, taskType={}", workflowId, taskType, e);
             return null;

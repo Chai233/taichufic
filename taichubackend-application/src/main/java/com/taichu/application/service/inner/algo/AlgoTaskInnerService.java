@@ -52,8 +52,7 @@ public class AlgoTaskInnerService implements InitializingBean {
             List<AlgoTaskBO> algoTaskBOList = processor.generateTasks(ficWorkflowTaskBO);
             log.info("[runAlgoTask] 生成算法任务: {}", algoTaskBOList);
             if (algoTaskBOList == null || algoTaskBOList.isEmpty()) {
-                log.error("[runAlgoTask] 创建算法任务失败，未返回任务ID");
-                return;
+                throw new RuntimeException("创建算法任务失败，未返回任务ID");
             }
 
             // 3. 保存算法任务记录

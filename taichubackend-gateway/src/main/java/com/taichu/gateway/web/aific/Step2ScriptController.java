@@ -37,6 +37,7 @@ public class Step2ScriptController {
 
     @Autowired
     private ScriptAndRoleAppService scriptAppService;
+    @Autowired
     private RoleAppService roleAppService;
 
     /**

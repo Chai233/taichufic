@@ -104,8 +104,10 @@ public class ScriptGenAlgoTaskProcessor extends AbstractAlgoTaskProcessor {
                 })
                 .collect(Collectors.toList());
             request.setFiles(files);
-            
-            log.info("[ScriptGenAlgoTaskProcessor.generateTasks] 构建请求: {}", request);
+
+
+            List<String> fileNames = request.getFiles().stream().map(UploadFile::getFileName).collect(Collectors.toList());
+            log.info("[ScriptGenAlgoTaskProcessor.generateTasks] workflowId={}, workflowTaskId={}, fileNames: {}", workflowId, workflowTask.getId(), fileNames);
             // 调用算法服务生成剧本
             AlgoResponse response = algoGateway.createScriptTask(request);
             log.info("[ScriptGenAlgoTaskProcessor.generateTasks] 算法服务响应: {}", response);
@@ -151,6 +153,7 @@ public class ScriptGenAlgoTaskProcessor extends AbstractAlgoTaskProcessor {
             // 保存每个剧本片段
             for (int i = 0; i < result.getScripts().size(); i++) {
                 FicScriptBO scriptBO = new FicScriptBO();
+                scriptBO.setGmtCreate(System.currentTimeMillis());
                 scriptBO.setWorkflowId(workflowTask.getWorkflowId());
                 scriptBO.setContent(result.getScripts().get(i));
                 scriptBO.setOrderIndex((long) (i + 1));
@@ -168,6 +171,7 @@ public class ScriptGenAlgoTaskProcessor extends AbstractAlgoTaskProcessor {
                 // 保存新的角色信息
                 for (RoleDTO roleDTO : result.getRoles()) {
                     FicRoleBO roleBO = new FicRoleBO();
+                    roleBO.setGmtCreate(System.currentTimeMillis());
                     roleBO.setWorkflowId(workflowTask.getWorkflowId());
                     roleBO.setRoleName(roleDTO.getName());
                     roleBO.setDescription(roleDTO.getDescription());
