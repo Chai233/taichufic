@@ -282,9 +282,11 @@ public class AlgoGatewayImpl implements AlgoGateway {
             );
             
             AlgoTaskStatus status = new AlgoTaskStatus();
-            
+
+
             // 根据HTTP状态码映射到任务状态
-            int statusCode = statusResponse.getStatusCode();
+            int statusCode = statusResponse.getResponse() != null ?
+                    statusResponse.getResponse().getCode() : statusResponse.getStatusCode();
             switch (statusCode) {
                 case 200:
                     status.setCode(TaskStatusEnum.COMPLETED.getCode());

@@ -110,7 +110,7 @@ public class Step2ScriptController {
      */
     @PostMapping("/updateSelectedImage")
     @ControllerExceptionHandle(biz = "Step2Script")
-    public MultiResponse<RoleVO> updateSelectedRoleImage(@RequestParam UpdateRoleImageRequest request) {
+    public MultiResponse<RoleVO> updateSelectedRoleImage(@RequestBody UpdateRoleImageRequest request) {
         return roleAppService.updateSelectedRoleImage(request);
     }
 
