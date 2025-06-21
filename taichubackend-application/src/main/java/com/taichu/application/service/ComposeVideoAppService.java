@@ -110,19 +110,30 @@ public class ComposeVideoAppService {
 
     /**
      * 获取合成视频信息
+     * 
+     * @param workflowId 工作流ID
+     * @return 包含合成视频信息的响应对象列表，包括视频资源URL和分镜图片缩略图URL
      */
     @EntranceLog(bizCode = "获取合成视频信息")
     @AppServiceExceptionHandle(biz = "获取合成视频信息")
     public MultiResponse<FullVideoListItemDTO> getComposeVideo(Long workflowId) {
-        List<FicResourceBO> ficResourceBOList = ficResourceRepository.findByWorkflowIdAndResourceType(
+        // 1. 查询合成视频资源
+        List<FicResourceBO> videoResourceList = ficResourceRepository.findByWorkflowIdAndResourceType(
                 workflowId, ResourceTypeEnum.FULL_VIDEO);
         
-        if (ficResourceBOList.isEmpty()) {
-            return MultiResponse.buildSuccess();
+        if (videoResourceList.isEmpty()) {
+            return MultiResponse.buildFailure("", "合成视频资源不存在");
         }
 
-        List<FullVideoListItemDTO> videoList = StreamUtil.toStream(ficResourceBOList)
-                .map(this::convertToDTO)
+        // 2. 查询第一个分镜图片资源作为缩略图
+        List<FicResourceBO> imgResourceList = ficResourceRepository.findByWorkflowIdAndResourceType(
+                workflowId, ResourceTypeEnum.STORYBOARD_IMG);
+        
+        FicResourceBO thumbnailResourceBO = imgResourceList.isEmpty() ? null : imgResourceList.get(0);
+
+        // 3. 构建视频信息DTO列表
+        List<FullVideoListItemDTO> videoList = StreamUtil.toStream(videoResourceList)
+                .map(videoResourceBO -> buildFullVideoListItemDTO(videoResourceBO, thumbnailResourceBO))
                 .collect(Collectors.toList());
 
         return MultiResponse.of(videoList);
@@ -149,11 +160,30 @@ public class ComposeVideoAppService {
         }
     }
 
-    private FullVideoListItemDTO convertToDTO(FicResourceBO ficResourceBO) {
+    /**
+     * 构建完整视频列表项DTO
+     * 
+     * @param videoResourceBO 视频资源对象
+     * @param thumbnailResourceBO 缩略图资源对象，可为null
+     * @return 完整视频列表项DTO
+     */
+    private FullVideoListItemDTO buildFullVideoListItemDTO(FicResourceBO videoResourceBO, FicResourceBO thumbnailResourceBO) {
         FullVideoListItemDTO videoListItemDTO = new FullVideoListItemDTO();
-        videoListItemDTO.setWorkflowId(ficResourceBO.getWorkflowId());
-        videoListItemDTO.setStoryboardResourceId(ficResourceBO.getId());
-        videoListItemDTO.setThumbnailUrl(ficResourceBO.getResourceUrl());
+        videoListItemDTO.setWorkflowId(videoResourceBO.getWorkflowId());
+        videoListItemDTO.setStoryboardResourceId(videoResourceBO.getId());
+        
+        // 设置缩略图URL：使用第一个分镜图片，如果不存在则置空
+        if (thumbnailResourceBO != null) {
+            String thumbnailUrl = fileGateway.getFileUrl(thumbnailResourceBO.getResourceUrl()).getData();
+            videoListItemDTO.setThumbnailUrl(thumbnailUrl);
+        } else {
+            videoListItemDTO.setThumbnailUrl(null);
+        }
+        
+        // 设置视频资源URL
+        String videoResourceUrl = fileGateway.getFileUrl(videoResourceBO.getResourceUrl()).getData();
+        videoListItemDTO.setVideoResourceUrl(videoResourceUrl);
+        
         return videoListItemDTO;
     }
 }

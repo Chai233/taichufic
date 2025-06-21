@@ -23,4 +23,8 @@ public class VideoListItemDTO {
      * 分镜视频资源id
      */
     private Long storyboardResourceId;
+    /**
+     * 视频资源url
+     */
+    private String videoResourceUrl;
 }

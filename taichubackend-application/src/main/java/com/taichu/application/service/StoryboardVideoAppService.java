@@ -30,6 +30,8 @@ import org.springframework.stereotype.Component;
 
 import java.io.InputStream;
 import java.util.List;
+import java.util.Map;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -129,53 +131,83 @@ public class StoryboardVideoAppService {
 
     /**
      * 获取单个视频信息
+     * 
+     * @param storyboardId 分镜ID
+     * @return 包含视频信息的响应对象，包括视频资源URL和分镜图片缩略图URL
      */
     @EntranceLog(bizCode = "获取单个视频信息")
     @AppServiceExceptionHandle(biz = "获取单个视频信息")
     public SingleResponse<VideoListItemDTO> getSingleVideo(Long storyboardId) {
+        // 1. 根据分镜ID查询分镜信息
         FicStoryboardBO ficStoryboardBO = ficStoryboardRepository.findById(storyboardId);
         if (ficStoryboardBO == null) {
             return SingleResponse.buildFailure("", "not exist storyboardId");
         }
 
-        List<FicResourceBO> ficResourceBOList = ficResourceRepository.findByWorkflowIdAndResourceType(
+        // 2. 查询对应的视频资源
+        List<FicResourceBO> videoResourceList = ficResourceRepository.findByWorkflowIdAndResourceType(
                 ficStoryboardBO.getWorkflowId(), ResourceTypeEnum.STORYBOARD_VIDEO);
 
-        FicResourceBO ficResourceBO = StreamUtil.toStream(ficResourceBOList)
+        FicResourceBO storyBoardVideoResourceBO = StreamUtil.toStream(videoResourceList)
                 .filter(t -> ficStoryboardBO.getId().equals(t.getRelevanceId()))
                 .findFirst()
                 .orElse(null);
 
-        if (ficResourceBO == null) {
+        if (storyBoardVideoResourceBO == null) {
             return SingleResponse.buildFailure("", "视频未生成");
         }
 
-        return SingleResponse.of(convertToDTO(ficStoryboardBO, ficResourceBO));
+        // 3. 查询对应的分镜图片资源作为缩略图
+        List<FicResourceBO> imgResourceList = ficResourceRepository.findByWorkflowIdAndResourceType(
+                ficStoryboardBO.getWorkflowId(), ResourceTypeEnum.STORYBOARD_IMG);
+
+        FicResourceBO storyBoardImgResourceBO = StreamUtil.toStream(imgResourceList)
+                .filter(t -> ficStoryboardBO.getId().equals(t.getRelevanceId()))
+                .findFirst()
+                .orElse(null);
+
+        // 4. 构建视频信息DTO并返回
+        return SingleResponse.of(buildVideoListItemDTO(ficStoryboardBO, storyBoardVideoResourceBO, storyBoardImgResourceBO));
     }
 
     /**
      * 获取所有视频信息
+     * 
+     * @param workflowId 工作流ID
+     * @return 包含所有视频信息的响应对象列表，每个视频包含视频资源URL和分镜图片缩略图URL
      */
     @EntranceLog(bizCode = "获取所有视频信息")
     @AppServiceExceptionHandle(biz = "获取所有视频信息")
     public MultiResponse<VideoListItemDTO> getAllVideo(Long workflowId) {
+        // 1. 根据工作流ID查询所有分镜信息
         List<FicStoryboardBO> ficStoryboardBOList = ficStoryboardRepository.findByWorkflowId(workflowId);
         if (ficStoryboardBOList.isEmpty()) {
             return MultiResponse.buildSuccess();
         }
 
-        List<FicResourceBO> ficResourceBOList = ficResourceRepository.findByWorkflowIdAndResourceType(
+        // 2. 批量查询所有视频资源
+        List<FicResourceBO> videoResourceList = ficResourceRepository.findByWorkflowIdAndResourceType(
                 workflowId, ResourceTypeEnum.STORYBOARD_VIDEO);
 
+        // 3. 批量查询所有分镜图片资源
+        List<FicResourceBO> imgResourceList = ficResourceRepository.findByWorkflowIdAndResourceType(
+                workflowId, ResourceTypeEnum.STORYBOARD_IMG);
+
+        // 4. 构建资源映射，提高查询效率，避免N+1查询问题
+        Map<Long, FicResourceBO> videoResourceMap = StreamUtil.toStream(videoResourceList)
+                .collect(Collectors.toMap(FicResourceBO::getRelevanceId, resource -> resource));
+        
+        Map<Long, FicResourceBO> imgResourceMap = StreamUtil.toStream(imgResourceList)
+                .collect(Collectors.toMap(FicResourceBO::getRelevanceId, resource -> resource));
+
+        // 5. 为每个分镜构建视频信息DTO
         List<VideoListItemDTO> videoList = StreamUtil.toStream(ficStoryboardBOList)
                 .map(ficStoryboardBO -> {
-                    FicResourceBO ficResourceBO = StreamUtil.toStream(ficResourceBOList)
-                            .filter(t -> ficStoryboardBO.getId().equals(t.getRelevanceId()))
-                            .findFirst()
-                            .orElse(null);
-                    return convertToDTO(ficStoryboardBO, ficResourceBO);
+                    FicResourceBO videoResourceBO = videoResourceMap.get(ficStoryboardBO.getId());
+                    FicResourceBO imgResourceBO = imgResourceMap.get(ficStoryboardBO.getId());
+                    return buildVideoListItemDTO(ficStoryboardBO, videoResourceBO, imgResourceBO);
                 })
-                .filter(t -> t != null)
+                .filter(Objects::nonNull)
                 .collect(Collectors.toList());
 
         return MultiResponse.of(videoList);
@@ -198,16 +230,37 @@ public class StoryboardVideoAppService {
         return singleStoryboardVideoTaskExecutor.submitTask(request.getWorkflowId(), request);
     }
 
-    private VideoListItemDTO convertToDTO(FicStoryboardBO ficStoryboardBO, FicResourceBO ficResourceBO) {
-        if (ficResourceBO == null) {
+    /**
+     * 构建视频列表项DTO
+     * 
+     * @param ficStoryboardBO 分镜业务对象
+     * @param videoResourceBO 视频资源对象，可为null
+     * @param imgResourceBO 分镜图片资源对象，可为null
+     * @return 视频列表项DTO，如果视频资源不存在则返回null
+     */
+    private VideoListItemDTO buildVideoListItemDTO(FicStoryboardBO ficStoryboardBO, FicResourceBO videoResourceBO, FicResourceBO imgResourceBO) {
+        if (videoResourceBO == null) {
             return null;
         }
 
         VideoListItemDTO videoListItemDTO = new VideoListItemDTO();
         videoListItemDTO.setStoryboardId(ficStoryboardBO.getId());
-        videoListItemDTO.setStoryboardResourceId(ficResourceBO.getId());
-        videoListItemDTO.setThumbnailUrl(ficResourceBO.getResourceUrl());
+        videoListItemDTO.setStoryboardResourceId(videoResourceBO.getId());
         videoListItemDTO.setOrderIndex(ficStoryboardBO.getOrderIndex());
+
+        // 设置缩略图URL：优先使用分镜图片，如果不存在则置空
+        if (imgResourceBO != null) {
+            String thumbnailUrl = fileGateway.getFileUrl(imgResourceBO.getResourceUrl()).getData();
+            videoListItemDTO.setThumbnailUrl(thumbnailUrl);
+        } else {
+            // 分镜图片不存在，缩略图置空
+            videoListItemDTO.setThumbnailUrl(null);
+        }
+
+        // 设置视频资源URL
+        String videoResourceUrl = fileGateway.getFileUrl(videoResourceBO.getResourceUrl()).getData();
+        videoListItemDTO.setVideoResourceUrl(videoResourceUrl);
+
         return videoListItemDTO;
     }
 

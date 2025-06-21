@@ -7,10 +7,6 @@ import lombok.Data;
  */
 @Data
 public class FullVideoListItemDTO {
-    /**
-     * 排序索引
-     */
-    private Long orderIndex;
 
     /**
      * 缩略图URL
@@ -26,4 +22,9 @@ public class FullVideoListItemDTO {
      * 分镜资源ID
      */
     private Long storyboardResourceId;
+
+    /**
+     * 视频资源url
+     */
+    private String videoResourceUrl;
 }
