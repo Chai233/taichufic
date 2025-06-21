@@ -2,6 +2,8 @@ package com.taichu.sdk.model;
 
 import lombok.Data;
 
+import java.util.List;
+
 /**
  * 工作流数据传输对象
  */
@@ -39,4 +41,9 @@ public class WorkflowDTO {
      * @see com.taichu.sdk.constant.WorkflowTaskTypeEnum
      */
     private String currentRunningTaskType;
+    /**
+     * 用户已经上传的文件名称列表
+     * TODO
+     */
+    private List<String> uploadedFileName;
 }
