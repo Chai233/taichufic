@@ -73,6 +73,7 @@ public abstract class AbstractTaskExecutor {
         Long workflowId = task.getWorkflowId();
         try {
             doStartBackgroundProcessing(task);
+            markWorkflowTaskAsSuccess(task);
         } catch (Exception e) {
             getLog().error("Background processing failed for workflow: " + task.getWorkflowId(), e);
             workflowRepository.updateStatus(workflowId, getRollbackWorkflowStatus().getCode());
@@ -80,6 +81,14 @@ public abstract class AbstractTaskExecutor {
         }
 
         workflowRepository.updateStatus(workflowId, getDoneWorkflowStatus().getCode());
+    }
+
+
+    protected void markWorkflowTaskAsSuccess(FicWorkflowTaskBO workflowTask) {
+        // 更新工作流任务状态为成功
+        workflowTask.setStatus(TaskStatusEnum.COMPLETED.getCode());
+        ficWorkflowTaskRepository.updateTaskStatus(workflowTask.getId(), TaskStatusEnum.COMPLETED);
+        getLog().info("All algo tasks completed successfully for workflow: " + workflowTask.getWorkflowId());
     }
 
     protected abstract void doStartBackgroundProcessing(FicWorkflowTaskBO task);

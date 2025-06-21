@@ -133,20 +133,7 @@ public abstract class AbstractAlgoTaskProcessor implements AlgoTaskProcessor {
 
 
     @Override
-    public void postProcessAllComplete(FicWorkflowTaskBO workflowTask, List<FicAlgoTaskBO> algoTasks) {
-        try {
-            // 更新工作流任务状态为成功
-            workflowTask.setStatus(TaskStatusEnum.COMPLETED.getCode());
-            ficWorkflowTaskRepository.updateTaskStatus(workflowTask.getId(), TaskStatusEnum.COMPLETED);
-            getLogger().info("All script generation tasks completed successfully for workflow: " + workflowTask.getWorkflowId());
-        } catch (Exception e) {
-            getLogger().error("Failed to process script generation workflow: " + workflowTask.getWorkflowId(), e);
-            workflowTask.setStatus(TaskStatusEnum.FAILED.getCode());
-            ficWorkflowTaskRepository.updateTaskStatus(workflowTask.getId(), TaskStatusEnum.FAILED);
-        }
-    }
-
-
+    public void postProcessAllComplete(FicWorkflowTaskBO workflowTask, List<FicAlgoTaskBO> algoTasks) {}
 
     @Override
     public void postProcessAnyFailed(FicWorkflowTaskBO workflowTask, List<FicAlgoTaskBO> algoTasks) {
