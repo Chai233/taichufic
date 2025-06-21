@@ -4,7 +4,7 @@ import lombok.Data;
 
 @Data
 public class RoleDTO {
-    private String name;        // 角色名
+    private String role;        // 角色名
     private String prompt;      // 提示词
     private String description; // 角色描述
 } 

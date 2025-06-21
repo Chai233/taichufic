@@ -95,7 +95,7 @@ public class AlgoGatewayMockImpl implements AlgoGateway {
         result.setTaskId(taskId);
         result.setScripts(Collections.singletonList("这是一个mock的剧本内容。"));
         RoleDTO role = new RoleDTO();
-        role.setName("角色1");
+        role.setRole("角色1");
         role.setPrompt("一个英俊的男人");
         role.setDescription("一个英俊的男人，有着迷人的微笑。");
         result.setRoles(Collections.singletonList(role));

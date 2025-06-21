@@ -1,7 +1,11 @@
 package com.taichu.infra.http;
 
+import com.alibaba.fastjson.JSONObject;
+import com.alibaba.fastjson.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.taichu.domain.algo.model.AlgoApiResponse;
 import com.taichu.domain.algo.model.common.UploadFile;
+import com.taichu.domain.algo.model.response.ScriptResult;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
@@ -69,7 +73,10 @@ public class AlgoHttpClient {
     public <R> R get(String path, Class<R> responseType) {
         String url = baseUrl + path;
         try {
-            return restTemplate.getForObject(url, responseType);
+            AlgoApiResponse<R> scriptResult = JSONObject.parseObject(restTemplate.getForObject(url, String.class), new TypeReference<AlgoApiResponse<R>>(responseType) {
+            });
+            // TODO 空结果和code != 200 处理
+            return scriptResult.getData();
         } catch (HttpStatusCodeException e) {
             log.error("HTTP GET 请求失败, path: {}, statusCode: {}, responseBody: {}",
                     url, e.getStatusCode(), e.getResponseBodyAsString(), e);

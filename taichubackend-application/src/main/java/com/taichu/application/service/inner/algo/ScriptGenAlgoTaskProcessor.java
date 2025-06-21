@@ -179,13 +179,13 @@ public class ScriptGenAlgoTaskProcessor extends AbstractAlgoTaskProcessor {
                     FicRoleBO roleBO = new FicRoleBO();
                     roleBO.setGmtCreate(System.currentTimeMillis());
                     roleBO.setWorkflowId(workflowTask.getWorkflowId());
-                    roleBO.setRoleName(roleDTO.getName());
+                    roleBO.setRoleName(roleDTO.getRole());
                     roleBO.setDescription(roleDTO.getDescription());
                     roleBO.setPrompt(roleDTO.getPrompt());
                     roleBO.setStatus(CommonStatusEnum.VALID.getValue());
                     roleBO.setGmtCreate(System.currentTimeMillis());
                     ficRoleRepository.insert(roleBO);
-                    log.info("[ScriptGenAlgoTaskProcessor.singleTaskSuccessPostProcess] 保存角色, name: {}", roleDTO.getName());
+                    log.info("[ScriptGenAlgoTaskProcessor.singleTaskSuccessPostProcess] 保存角色, name: {}", roleDTO.getRole());
                 }
             }
             
