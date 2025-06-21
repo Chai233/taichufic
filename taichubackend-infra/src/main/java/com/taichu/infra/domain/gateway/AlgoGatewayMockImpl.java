@@ -45,6 +45,18 @@ public class AlgoGatewayMockImpl implements AlgoGateway {
         }
     }
 
+    private MultipartFile loadMockVideo() {
+        try {
+            ClassPathResource resource = new ClassPathResource("test/RPReplay_Final1750482275.MP4");
+            InputStream inputStream = resource.getInputStream();
+            byte[] videoContent = StreamUtils.copyToByteArray(inputStream);
+            return new ByteArrayMultipartFile(videoContent, "mock_video.mp4", "video/mp4");
+        } catch (IOException e) {
+            log.error("Failed to load mock video file", e);
+            return null;
+        }
+    }
+
     private MultipartFile createMockRoleImagesZip() {
         try {
             // 直接加载resource/test目录下的zip文件
@@ -119,7 +131,7 @@ public class AlgoGatewayMockImpl implements AlgoGateway {
     @Override
     public MultipartFile getStoryboardVideoResult(String taskId) {
         log.info("Mocking getStoryboardVideoResult for taskId: {}", taskId);
-        return loadMockFile();
+        return loadMockVideo();
     }
 
     @Override
@@ -131,7 +143,7 @@ public class AlgoGatewayMockImpl implements AlgoGateway {
     @Override
     public MultipartFile getVideoMergeResult(String taskId) {
         log.info("Mocking getVideoMergeResult for taskId: {}", taskId);
-        return loadMockFile();
+        return loadMockVideo();
     }
 
     @Override
