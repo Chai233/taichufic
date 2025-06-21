@@ -21,6 +21,10 @@ public class WorkflowDTO {
      */
     private String tag;
     /**
+     * 上次用户提交的剧本生成prompt
+     */
+    private String scripUserPrompt;
+    /**
      * 工作流状态
      */
     private String status;

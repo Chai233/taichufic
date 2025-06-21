@@ -135,7 +135,10 @@ public class WorkflowAppService {
             workflowDTO.setCurrentRunningTaskType(Objects.requireNonNull(convertTo(taskTypeEnum)).name());
         });
 
-        workflowDTO.setTag(ficWorkflowMetaBO.getStyleType());
+        if (ficWorkflowMetaBO != null) {
+            workflowDTO.setTag(ficWorkflowMetaBO.getStyleType());
+            workflowDTO.setScripUserPrompt(ficWorkflowMetaBO.getUserPrompt());
+        }
         return SingleResponse.of(workflowDTO);
     }
 
