@@ -1,11 +1,11 @@
 package com.taichu.application.service.inner.algo;
 
-import com.google.common.primitives.Longs;
 import com.taichu.domain.enums.AlgoTaskTypeEnum;
 import com.taichu.domain.enums.TaskStatusEnum;
 import com.taichu.domain.model.FicAlgoTaskBO;
 import com.taichu.domain.model.FicWorkflowTaskBO;
 import com.taichu.infra.repo.FicAlgoTaskRepository;
+import com.taichu.infra.repo.FicWorkflowTaskRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.stereotype.Service;
@@ -24,19 +24,21 @@ public class AlgoTaskInnerService implements InitializingBean {
     private final FicAlgoTaskRepository ficAlgoTaskRepository;
     private final List<AlgoTaskProcessor> taskProcessors = new ArrayList<>();
     private final Map<AlgoTaskTypeEnum, AlgoTaskProcessor> taskProcessorMap = new ConcurrentHashMap<>();
+    private final FicWorkflowTaskRepository ficWorkflowTaskRepository;
 
-    public AlgoTaskInnerService(FicAlgoTaskRepository ficAlgoTaskRepository, List<AlgoTaskProcessor> algoTaskProcessors) {
+    public AlgoTaskInnerService(FicAlgoTaskRepository ficAlgoTaskRepository, List<AlgoTaskProcessor> algoTaskProcessors, FicWorkflowTaskRepository ficWorkflowTaskRepository) {
         this.ficAlgoTaskRepository = ficAlgoTaskRepository;
         this.taskProcessors.addAll(algoTaskProcessors);
+        this.ficWorkflowTaskRepository = ficWorkflowTaskRepository;
     }
 
     /**
      * 运行算法任务
      */
     public void runAlgoTask(FicWorkflowTaskBO ficWorkflowTaskBO, AlgoTaskTypeEnum algoTaskTypeEnum) {
-        log.info("[runAlgoTask] 开始运行算法任务, workflowTaskId: {}, algoTaskType: {}", ficWorkflowTaskBO.getId(), algoTaskTypeEnum);
+        Long workflowTaskId = ficWorkflowTaskBO.getId();
+        log.info("[runAlgoTask] 开始运行算法任务, workflowTaskId: {}, algoTaskType: {}", workflowTaskId, algoTaskTypeEnum);
         try {
-            Long workflowTaskId = ficWorkflowTaskBO.getId();
 
             // 1. 获取任务处理器
             AlgoTaskProcessor processor = taskProcessorMap.get(algoTaskTypeEnum);
@@ -58,6 +60,7 @@ public class AlgoTaskInnerService implements InitializingBean {
             List<FicAlgoTaskBO> algoTasks = algoTaskBOList.stream()
                     .map(algoTaskBO -> {
                         FicAlgoTaskBO ficAlgoTaskBO = new FicAlgoTaskBO();
+                        ficAlgoTaskBO.setGmtCreate(System.currentTimeMillis());
                         ficAlgoTaskBO.setWorkflowTaskId(workflowTaskId);
                         ficAlgoTaskBO.setStatus(TaskStatusEnum.RUNNING.getCode());
                         ficAlgoTaskBO.setTaskType(algoTaskTypeEnum.name());
@@ -122,9 +125,11 @@ public class AlgoTaskInnerService implements InitializingBean {
                 processor.postProcessAnyFailed(ficWorkflowTaskBO, algoTasks);
                 throw new RuntimeException("运行算法任务失败");
             }
-            log.info("[runAlgoTask] 算法任务流程结束, workflowTaskId: {}, algoTaskType: {}", ficWorkflowTaskBO.getId(), algoTaskTypeEnum);
+            log.info("[runAlgoTask] 算法任务流程结束, workflowTaskId: {}, algoTaskType: {}", workflowTaskId, algoTaskTypeEnum);
         } catch (Exception e) {
-            log.error("[runAlgoTask] 运行算法任务失败, workflowTaskId: {}, algoTaskType: {}", ficWorkflowTaskBO.getId(), algoTaskTypeEnum, e);
+            log.error("[runAlgoTask] 运行算法任务失败, workflowTaskId: {}, algoTaskType: {}", workflowTaskId, algoTaskTypeEnum, e);
+            ficWorkflowTaskRepository.updateTaskStatus(workflowTaskId, TaskStatusEnum.FAILED);
+            log.warn("[runAlgoTask] 运行算法任务失败, workflowTask置为失败，workflowTaskId: {}", workflowTaskId);
             throw new RuntimeException("运行算法任务失败", e);
         }
     }

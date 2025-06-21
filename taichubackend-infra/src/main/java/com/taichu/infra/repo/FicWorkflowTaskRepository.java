@@ -22,7 +22,7 @@ public class FicWorkflowTaskRepository {
     public long createFicWorkflowTask(FicWorkflowTaskBO ficWorkflowTask) {
         FicWorkflowTask taskDO = FicWorkflowTaskConvertor.toDataObject(ficWorkflowTask);
         int res = ficWorkflowTaskMapper.insert(taskDO);
-        return (long) res;
+        return taskDO.getId();
     }
 
     public FicWorkflowTaskBO findById(Long workflowTaskId) {

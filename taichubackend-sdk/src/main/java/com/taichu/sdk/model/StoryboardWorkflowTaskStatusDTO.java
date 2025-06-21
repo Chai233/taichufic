@@ -1,12 +1,14 @@
 package com.taichu.sdk.model;
 
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 
 import java.util.List;
 
 /**
  * 分镜任务状态
  */
+@EqualsAndHashCode(callSuper = true)
 @Data
 public class StoryboardWorkflowTaskStatusDTO extends WorkflowTaskStatusDTO {
     /**
