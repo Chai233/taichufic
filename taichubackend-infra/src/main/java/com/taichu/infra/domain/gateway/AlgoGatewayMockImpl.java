@@ -175,12 +175,6 @@ public class AlgoGatewayMockImpl implements AlgoGateway {
     }
 
     @Override
-    public String ping() {
-        log.info("Mocking ping");
-        return "pong from mock";
-    }
-
-    @Override
     public AlgoResponse createRoleImageTask(RoleImageRequest request) {
         log.info("Mocking createRoleImageTask with request: {}", request);
         return createTask("mock-role-image");
