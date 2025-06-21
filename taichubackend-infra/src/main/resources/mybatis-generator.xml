@@ -75,11 +75,11 @@
 <!--            <generatedKey column="id" sqlStatement="MySql" identity="true"/>-->
 <!--        </table>-->
 
-        <table tableName="fic_algo_task" domainObjectName="FicAlgoTask" enableCountByExample="true"
-               enableUpdateByExample="false" enableDeleteByExample="true"
-               enableSelectByExample="true" selectByExampleQueryId="true">
-            <generatedKey column="id" sqlStatement="MySql" identity="true"/>
-        </table>
+<!--        <table tableName="fic_algo_task" domainObjectName="FicAlgoTask" enableCountByExample="true"-->
+<!--               enableUpdateByExample="false" enableDeleteByExample="true"-->
+<!--               enableSelectByExample="true" selectByExampleQueryId="true">-->
+<!--            <generatedKey column="id" sqlStatement="MySql" identity="true"/>-->
+<!--        </table>-->
 
 <!--        <table tableName="fic_user" domainObjectName="FicUser" enableCountByExample="true"-->
 <!--               enableUpdateByExample="false" enableDeleteByExample="true"-->
@@ -99,10 +99,10 @@
 <!--            <generatedKey column="id" sqlStatement="MySql" identity="true"/>-->
 <!--        </table>-->
 
-<!--        <table tableName="fic_workflow_meta" domainObjectName="FicWorkflowMeta" enableCountByExample="true"-->
-<!--               enableUpdateByExample="false" enableDeleteByExample="true"-->
-<!--               enableSelectByExample="true" selectByExampleQueryId="true">-->
-<!--            <generatedKey column="id" sqlStatement="MySql" identity="true"/>-->
-<!--        </table>-->
+        <table tableName="fic_workflow_meta" domainObjectName="FicWorkflowMeta" enableCountByExample="true"
+               enableUpdateByExample="false" enableDeleteByExample="true"
+               enableSelectByExample="true" selectByExampleQueryId="true">
+            <generatedKey column="id" sqlStatement="MySql" identity="true"/>
+        </table>
     </context>
 </generatorConfiguration>

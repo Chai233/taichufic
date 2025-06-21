@@ -18,7 +18,7 @@ public class FicWorkflowMetaRepository {
     public FicWorkflowMetaBO findByWorkflowId(Long workflowId) {
         FicWorkflowMetaExample example = new FicWorkflowMetaExample();
         example.createCriteria().andWorkflowIdEqualTo(workflowId);
-        List<FicWorkflowMeta> list = metaMapper.selectByExample(example);
+        List<FicWorkflowMeta> list = metaMapper.selectByExampleWithBLOBs(example);
         if (list.isEmpty()) {
             return null;
         }
@@ -42,4 +42,9 @@ public class FicWorkflowMetaRepository {
         metaMapper.insertSelective(meta);
         return meta.getId();
     }
-} 
+
+    public void update(FicWorkflowMetaBO ficWorkflowMetaBO) {
+        FicWorkflowMeta ficWorkflowMeta = FicWorkflowMetaConvertor.toDataObject(ficWorkflowMetaBO);
+        metaMapper.updateByPrimaryKeyWithBLOBs(ficWorkflowMeta);
+    }
+}

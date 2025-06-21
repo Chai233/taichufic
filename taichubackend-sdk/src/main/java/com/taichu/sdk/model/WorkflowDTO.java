@@ -12,7 +12,27 @@ public class WorkflowDTO {
      */
     private Long workflowId;
     /**
+     * 当前工作流状态
+     * @see com.taichu.sdk.constant.WorkflowPageEnum
+     */
+    private String currentWorkflowPage;
+    /**
+     * 剧本生成标签
+     */
+    private String tag;
+    /**
      * 工作流状态
      */
     private String status;
+
+    /**
+     * 当前执行的任务id
+     * 没有执行中的任务id则字段为空
+     */
+    private Long currentRunningTaskId;
+    /**
+     * 当前执行的任务状态
+     * @see com.taichu.sdk.constant.WorkflowTaskTypeEnum
+     */
+    private String currentRunningTaskType;
 }

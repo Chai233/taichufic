@@ -12,6 +12,7 @@ import com.taichu.domain.enums.TaskStatusEnum;
 import com.taichu.domain.enums.TaskTypeEnum;
 import com.taichu.domain.enums.WorkflowStatusEnum;
 import com.taichu.domain.model.FicScriptBO;
+import com.taichu.domain.model.FicWorkflowMetaBO;
 import com.taichu.domain.model.FicWorkflowTaskBO;
 import com.taichu.infra.repo.FicScriptRepository;
 import com.taichu.infra.repo.FicWorkflowTaskRepository;
@@ -83,8 +84,9 @@ public class ScriptAndRoleAppService {
     @AppServiceExceptionHandle(biz = "剧本生成")
     public SingleResponse<Long> submitGenScriptTask(GenerateScriptRequest request, Long userId) {
         // 1. 校验工作流状态
+        Long workflowId = request.getWorkflowId();
         SingleResponse<?> validateResponse = workflowValidationHelper.validateWorkflow(
-            request.getWorkflowId(), 
+                workflowId,
             userId,
             WorkflowStatusEnum.UPLOAD_FILE_DONE
         );
@@ -94,10 +96,13 @@ public class ScriptAndRoleAppService {
         }
 
         // 1.5. 更新styleType
-        ficWorkflowMetaRepository.updateStyleType(request.getWorkflowId(), request.getTag());
+        FicWorkflowMetaBO ficWorkflowMetaBO = ficWorkflowMetaRepository.findByWorkflowId(workflowId);
+        ficWorkflowMetaBO.setStyleType(request.getTag());
+        ficWorkflowMetaBO.setUserPrompt(request.getUserPrompt());
+        ficWorkflowMetaRepository.update(ficWorkflowMetaBO);
 
         // 2. 提交任务
-        return scriptTaskExecutor.submitTask(request.getWorkflowId(), request);
+        return scriptTaskExecutor.submitTask(workflowId, request);
     }
 
     /**
@@ -170,6 +175,12 @@ public class ScriptAndRoleAppService {
         if (!validateResponse.isSuccess()) {
             return SingleResponse.buildFailure(validateResponse.getErrCode(), validateResponse.getErrMessage());
         }
+
+        // 1.5. 更新styleType
+        FicWorkflowMetaBO ficWorkflowMetaBO = ficWorkflowMetaRepository.findByWorkflowId(request.getWorkflowId());
+        ficWorkflowMetaBO.setStyleType(request.getTag());
+        ficWorkflowMetaBO.setUserPrompt(request.getUserPrompt());
+        ficWorkflowMetaRepository.update(ficWorkflowMetaBO);
 
         // 2. 提交任务
         return retryScriptTaskExecutor.submitTask(request.getWorkflowId(), request);

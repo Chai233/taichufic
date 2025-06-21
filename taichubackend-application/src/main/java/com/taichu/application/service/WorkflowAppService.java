@@ -2,13 +2,20 @@ package com.taichu.application.service;
 
 import com.alibaba.cola.dto.SingleResponse;
 import com.taichu.application.annotation.EntranceLog;
+import com.taichu.application.helper.WorkflowPageConvertHelper;
 import com.taichu.common.common.exception.AppServiceExceptionHandle;
+import com.taichu.common.common.util.StreamUtil;
+import com.taichu.domain.enums.TaskStatusEnum;
+import com.taichu.domain.enums.TaskTypeEnum;
 import com.taichu.domain.enums.WorkflowStatusEnum;
+import com.taichu.domain.model.FicWorkflowTaskBO;
 import com.taichu.infra.persistance.model.FicWorkflow;
 import com.taichu.infra.persistance.model.FicWorkflowExample;
 import com.taichu.infra.repo.FicWorkflowRepository;
 import com.taichu.infra.repo.FicWorkflowMetaRepository;
 import com.taichu.domain.model.FicWorkflowMetaBO;
+import com.taichu.infra.repo.FicWorkflowTaskRepository;
+import com.taichu.sdk.constant.WorkflowTaskTypeEnum;
 import com.taichu.sdk.model.WorkflowDTO;
 import lombok.extern.slf4j.Slf4j;
 
@@ -17,6 +24,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
+import java.util.Objects;
+import java.util.Optional;
 
 /**
  * 工作流应用服务
@@ -30,6 +39,11 @@ public class WorkflowAppService {
 
     @Autowired
     private FicWorkflowMetaRepository ficWorkflowMetaRepository;
+
+    @Autowired
+    private WorkflowPageConvertHelper workflowPageConvertHelper;
+    @Autowired
+    private FicWorkflowTaskRepository ficWorkflowTaskRepository;
 
     /**
      * 创建工作流
@@ -102,9 +116,52 @@ public class WorkflowAppService {
             return SingleResponse.buildFailure("WORKFLOW_004", "没有生效中的的工作流");
         }
         FicWorkflow ficWorkflow = ficWorkflowList.get(0);
+
+        FicWorkflowMetaBO ficWorkflowMetaBO = ficWorkflowMetaRepository.findByWorkflowId(ficWorkflow.getId());
+        List<FicWorkflowTaskBO> tasks = ficWorkflowTaskRepository.findByWorkflowId(ficWorkflow.getId());
+        FicWorkflowTaskBO runningTask = StreamUtil.toStream(tasks).filter(t -> TaskStatusEnum.RUNNING.getCode().equals(t.getStatus()))
+                .findFirst().orElse(null);
+
         WorkflowDTO workflowDTO = new WorkflowDTO();
         workflowDTO.setWorkflowId(ficWorkflow.getId());
-        workflowDTO.setStatus(WorkflowStatusEnum.fromCode(ficWorkflow.getStatus()).name());
+
+        WorkflowStatusEnum workflowStatusEnum = WorkflowStatusEnum.fromCode(ficWorkflow.getStatus());
+        workflowDTO.setStatus(workflowStatusEnum.name());
+        workflowDTO.setCurrentWorkflowPage(workflowPageConvertHelper.convertToWorkflowPage(workflowStatusEnum, runningTask).name());
+
+        Optional.ofNullable(runningTask).ifPresent(t -> workflowDTO.setCurrentRunningTaskId(t.getId()));
+        Optional.ofNullable(runningTask).ifPresent(t -> {
+            TaskTypeEnum taskTypeEnum = TaskTypeEnum.valueOf(t.getTaskType());
+            workflowDTO.setCurrentRunningTaskType(Objects.requireNonNull(convertTo(taskTypeEnum)).name());
+        });
+
+        workflowDTO.setTag(ficWorkflowMetaBO.getStyleType());
         return SingleResponse.of(workflowDTO);
+    }
+
+    static WorkflowTaskTypeEnum convertTo(TaskTypeEnum taskTypeEnum) {
+        if (TaskTypeEnum.SCRIPT_AND_ROLE_GENERATION.equals(taskTypeEnum)) {
+            return WorkflowTaskTypeEnum.SCRIPT;
+        }
+
+        if (TaskTypeEnum.STORYBOARD_TEXT_AND_IMG_GENERATION.equals(taskTypeEnum)
+                || TaskTypeEnum.USER_RETRY_SINGLE_STORYBOARD_IMG_GENERATION.equals(taskTypeEnum)
+        ) {
+            return WorkflowTaskTypeEnum.STORYBOARD_IMG;
+        }
+
+        if (TaskTypeEnum.STORYBOARD_VIDEO_GENERATION.equals(taskTypeEnum)
+                || TaskTypeEnum.USER_RETRY_SINGLE_STORYBOARD_VIDEO_GENERATION.equals(taskTypeEnum)
+        ) {
+            return WorkflowTaskTypeEnum.STORYBOARD_VIDEO;
+        }
+
+        if (TaskTypeEnum.FULL_VIDEO_GENERATION.equals(taskTypeEnum)
+                || TaskTypeEnum.USER_RETRY_FULL_VIDEO_GENERATION.equals(taskTypeEnum)
+        ) {
+            return WorkflowTaskTypeEnum.MERGE_VIDEO;
+        }
+
+        return null;
     }
 }

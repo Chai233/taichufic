@@ -17,4 +17,6 @@ public class FicWorkflowMetaBO {
     private String storyName;
     /** 故事简介 */
     private String storyInfo;
+
+    private String userPrompt;
 } 
