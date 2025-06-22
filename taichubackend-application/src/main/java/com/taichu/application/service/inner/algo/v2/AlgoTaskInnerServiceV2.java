@@ -203,7 +203,6 @@ public class AlgoTaskInnerServiceV2 implements InitializingBean {
                     return true;
                 } else {
                     // 任务失败，执行失败后置处理
-                    processor.singleTaskFailedPostProcess(algoTask, context, null);
                     throw new RuntimeException("任务执行失败，最终状态: " + finalStatus);
                 }
                 

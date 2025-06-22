@@ -77,6 +77,8 @@ public abstract class AbstractTaskExecutor {
         } catch (Exception e) {
             getLog().error("Background processing failed for workflow: " + task.getWorkflowId(), e);
             workflowRepository.updateStatus(workflowId, getRollbackWorkflowStatus().getCode());
+            // 做后置处理，处理多种algo任务中有任何一个失败了进行的回滚
+            doWhileBackgroundProcessingFail(task);
             return;
         }
 
