@@ -51,7 +51,7 @@ public class StoryboardVideoAlgoTaskProcessor extends AbstractAlgoTaskProcessor 
     public List<AlgoTaskBO> generateTasks(FicWorkflowTaskBO workflowTask) {
         Long workflowId = workflowTask.getWorkflowId();
         log.info("[StoryboardVideoAlgoTaskProcessor.generateTasks] 开始生成分镜视频任务, workflowId: {}", workflowId);
-        List<FicStoryboardBO> ficStoryboardBOList = ficStoryboardRepository.findByWorkflowId(workflowId);
+        List<FicStoryboardBO> ficStoryboardBOList = ficStoryboardRepository.findValidByWorkflowId(workflowId);
         log.info("[StoryboardVideoAlgoTaskProcessor.generateTasks] 查询到分镜: {}", ficStoryboardBOList);
         if (ficStoryboardBOList.isEmpty()) {
             log.warn("[StoryboardVideoAlgoTaskProcessor.generateTasks] 分镜为空, workflowId: {}", workflowId);

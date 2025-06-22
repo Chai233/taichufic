@@ -1,5 +1,6 @@
-package com.taichu.application.service.inner.algo;
+package com.taichu.application.service.inner.algo.v2;
 
+import com.taichu.application.service.inner.algo.v2.context.AlgoTaskContext;
 import com.taichu.domain.algo.gateway.AlgoGateway;
 import com.taichu.domain.algo.model.AlgoResponse;
 import com.taichu.domain.enums.TaskStatusEnum;
@@ -14,14 +15,19 @@ import java.util.List;
 import java.util.Objects;
 import java.util.function.Supplier;
 
-public abstract class AbstractAlgoTaskProcessor implements AlgoTaskProcessor {
+/**
+ * V2版本算法任务处理器抽象基类
+ * 提供公共逻辑和重试机制
+ */
+public abstract class AbstractAlgoTaskProcessorV2 implements AlgoTaskProcessorV2 {
+    
     private static final int MAX_RETRY = 3;
     private static final int WAIT_INTERVAL = 5000;
 
     protected final FicWorkflowTaskRepository ficWorkflowTaskRepository;
     protected final FicWorkflowRepository ficWorkflowRepository;
 
-    protected AbstractAlgoTaskProcessor(FicWorkflowTaskRepository ficWorkflowTaskRepository, FicWorkflowRepository ficWorkflowRepository) {
+    protected AbstractAlgoTaskProcessorV2(FicWorkflowTaskRepository ficWorkflowTaskRepository, FicWorkflowRepository ficWorkflowRepository) {
         this.ficWorkflowTaskRepository = ficWorkflowTaskRepository;
         this.ficWorkflowRepository = ficWorkflowRepository;
     }
@@ -151,8 +157,6 @@ public abstract class AbstractAlgoTaskProcessor implements AlgoTaskProcessor {
         return Math.min(waitTime, 30000); // 最大等待30秒
     }
 
-    abstract protected Logger getLogger();
-
     /**
      * 判断是否应该重试
      *
@@ -174,14 +178,28 @@ public abstract class AbstractAlgoTaskProcessor implements AlgoTaskProcessor {
         return false;
     }
 
+    /**
+     * 获取算法网关
+     */
     protected abstract AlgoGateway getAlgoGateway();
 
+    /**
+     * 获取日志记录器
+     */
+    protected abstract Logger getLogger();
+
+    /**
+     * 获取最大重试次数
+     */
     protected int getMaxRetry() {
-        return AbstractAlgoTaskProcessor.MAX_RETRY;
+        return AbstractAlgoTaskProcessorV2.MAX_RETRY;
     }
 
+    /**
+     * 获取等待间隔
+     */
     protected int getWaitInterval() {
-        return AbstractAlgoTaskProcessor.WAIT_INTERVAL;
+        return AbstractAlgoTaskProcessorV2.WAIT_INTERVAL;
     }
 
     @Override
@@ -196,18 +214,23 @@ public abstract class AbstractAlgoTaskProcessor implements AlgoTaskProcessor {
         return TaskStatusEnum.FAILED;
     }
 
+    @Override
+    public void postProcessAllComplete(FicWorkflowTaskBO workflowTask, List<AlgoTaskContext> contexts) {
+        // 默认实现为空，子类可以重写
+    }
 
     @Override
-    public void postProcessAllComplete(FicWorkflowTaskBO workflowTask, List<FicAlgoTaskBO> algoTasks) {}
-
-    @Override
-    public void postProcessAnyFailed(FicWorkflowTaskBO workflowTask, List<FicAlgoTaskBO> algoTasks) {
-        // TODO 回滚当前阶段创建的所有资源
-
+    public void postProcessAnyFailed(FicWorkflowTaskBO workflowTask, List<AlgoTaskContext> contexts) {
         // 如果有任何任务失败，将工作流任务标记为失败
         workflowTask.setStatus(TaskStatusEnum.FAILED.getCode());
         ficWorkflowTaskRepository.updateTaskStatus(workflowTask.getId(), TaskStatusEnum.FAILED);
-        getLogger().error("Script generation failed for workflow: " + workflowTask.getWorkflowId());
+        getLogger().error("Algorithm task failed for workflow: " + workflowTask.getWorkflowId());
     }
 
-}
+    @Override
+    public void singleTaskFailedPostProcess(FicAlgoTaskBO algoTask, AlgoTaskContext context, Exception e) {
+        // 默认实现为空，子类可以重写
+        getLogger().error("Single task failed post process for algoTask: {}, context: {}", 
+            algoTask.getAlgoTaskId(), context.getTaskSummary(), e);
+    }
+} 

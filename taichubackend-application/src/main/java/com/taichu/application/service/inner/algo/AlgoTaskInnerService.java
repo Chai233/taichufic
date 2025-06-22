@@ -1,5 +1,6 @@
 package com.taichu.application.service.inner.algo;
 
+import com.taichu.application.service.inner.algo.v2.AlgoTaskInnerServiceV2;
 import com.taichu.domain.enums.AlgoTaskTypeEnum;
 import com.taichu.domain.enums.TaskStatusEnum;
 import com.taichu.domain.model.FicAlgoTaskBO;
@@ -25,17 +26,34 @@ public class AlgoTaskInnerService implements InitializingBean {
     private final List<AlgoTaskProcessor> taskProcessors = new ArrayList<>();
     private final Map<AlgoTaskTypeEnum, AlgoTaskProcessor> taskProcessorMap = new ConcurrentHashMap<>();
     private final FicWorkflowTaskRepository ficWorkflowTaskRepository;
+    
+    // V2版本服务
+    private final AlgoTaskInnerServiceV2 algoTaskInnerServiceV2;
+    
+    // 开关：true使用V2版本，false使用V1版本
+    private static final boolean USE_V2_VERSION = true;
 
-    public AlgoTaskInnerService(FicAlgoTaskRepository ficAlgoTaskRepository, List<AlgoTaskProcessor> algoTaskProcessors, FicWorkflowTaskRepository ficWorkflowTaskRepository) {
+    public AlgoTaskInnerService(FicAlgoTaskRepository ficAlgoTaskRepository, 
+                               List<AlgoTaskProcessor> algoTaskProcessors, 
+                               FicWorkflowTaskRepository ficWorkflowTaskRepository,
+                               AlgoTaskInnerServiceV2 algoTaskInnerServiceV2) {
         this.ficAlgoTaskRepository = ficAlgoTaskRepository;
         this.taskProcessors.addAll(algoTaskProcessors);
         this.ficWorkflowTaskRepository = ficWorkflowTaskRepository;
+        this.algoTaskInnerServiceV2 = algoTaskInnerServiceV2;
     }
 
     /**
      * 运行算法任务
      */
     public void runAlgoTask(FicWorkflowTaskBO ficWorkflowTaskBO, AlgoTaskTypeEnum algoTaskTypeEnum) {
+        if (USE_V2_VERSION) {
+            log.info("[AlgoTaskInnerService.runAlgoTask] 使用V2版本处理算法任务");
+            algoTaskInnerServiceV2.runAlgoTask(ficWorkflowTaskBO, algoTaskTypeEnum);
+            return;
+        }
+        
+        // V1版本的原有逻辑
         Long workflowTaskId = ficWorkflowTaskBO.getId();
         log.info("[runAlgoTask] 开始运行算法任务, workflowTaskId: {}, algoTaskType: {}", workflowTaskId, algoTaskTypeEnum);
         try {
@@ -145,5 +163,6 @@ public class AlgoTaskInnerService implements InitializingBean {
         for (AlgoTaskProcessor processor : taskProcessors) {
             registerTaskProcessor(processor);
         }
+        log.info("[AlgoTaskInnerService] 算法任务服务初始化完成，当前使用版本: {}", USE_V2_VERSION ? "V2" : "V1");
     }
 }

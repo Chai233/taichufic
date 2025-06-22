@@ -180,7 +180,7 @@ public class StoryboardVideoAppService {
     @AppServiceExceptionHandle(biz = "获取所有视频信息")
     public MultiResponse<VideoListItemDTO> getAllVideo(Long workflowId) {
         // 1. 根据工作流ID查询所有分镜信息
-        List<FicStoryboardBO> ficStoryboardBOList = ficStoryboardRepository.findByWorkflowId(workflowId);
+        List<FicStoryboardBO> ficStoryboardBOList = ficStoryboardRepository.findValidByWorkflowId(workflowId);
         if (ficStoryboardBOList.isEmpty()) {
             return MultiResponse.buildSuccess();
         }

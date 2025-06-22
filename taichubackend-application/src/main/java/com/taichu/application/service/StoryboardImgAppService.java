@@ -268,7 +268,7 @@ public class StoryboardImgAppService {
     @AppServiceExceptionHandle(biz = "获取全部分镜信息")
     public MultiResponse<StoryboardImgListItemDTO> getAllStoryboardImg(Long workflowId) {
         // 1. 获取工作流下的所有分镜
-        List<FicStoryboardBO> ficStoryboardBOList = ficStoryboardRepository.findByWorkflowId(workflowId);
+        List<FicStoryboardBO> ficStoryboardBOList = ficStoryboardRepository.findValidByWorkflowId(workflowId);
         if (ficStoryboardBOList.isEmpty()) {
             return MultiResponse.buildSuccess();
         }

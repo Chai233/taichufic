@@ -55,7 +55,7 @@ public class StoryboardImgAlgoTaskProcessor extends AbstractAlgoTaskProcessor {
         Long workflowId = workflowTask.getWorkflowId();
         log.info("[StoryboardImgAlgoTaskProcessor.generateTasks] 开始生成分镜图片任务, workflowId: {}", workflowId);
         // 1. 查询分镜
-        List<FicStoryboardBO> ficStoryboardBOList = ficStoryboardRepository.findByWorkflowId(workflowId);
+        List<FicStoryboardBO> ficStoryboardBOList = ficStoryboardRepository.findValidByWorkflowId(workflowId);
         log.info("[StoryboardImgAlgoTaskProcessor.generateTasks] 查询到分镜: {}", ficStoryboardBOList);
         if (ficStoryboardBOList.isEmpty()) {
             log.warn("[StoryboardImgAlgoTaskProcessor.generateTasks] 分镜为空, workflowId: {}", workflowId);

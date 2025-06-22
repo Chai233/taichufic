@@ -53,4 +53,16 @@ public class FicAlgoTaskBO {
      * 错误信息
      */
     private String taskAbstract;
-} 
+
+    public String buildSummary() {
+        return "FicAlgoTaskBO{" +
+                "id=" + id +
+                ", gmtCreate=" + gmtCreate +
+                ", workflowTaskId=" + workflowTaskId +
+                ", taskType='" + taskType + '\'' +
+                ", algoTaskId='" + algoTaskId + '\'' +
+                ", relevantIdType='" + relevantIdType + '\'' +
+                ", relevantId=" + relevantId +
+                '}';
+    }
+}

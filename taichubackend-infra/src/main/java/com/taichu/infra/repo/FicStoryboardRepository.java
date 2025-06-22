@@ -51,7 +51,7 @@ public class FicStoryboardRepository {
      * @param workflowId
      * @return
      */
-    public List<FicStoryboardBO> findByWorkflowId(Long workflowId) {
+    public List<FicStoryboardBO> findValidByWorkflowId(Long workflowId) {
         FicStoryboardExample example = new FicStoryboardExample();
         example.createCriteria().andWorkflowIdEqualTo(workflowId).andStatusEqualTo(CommonStatusEnum.VALID.getValue());
         List<FicStoryboard> storyboardDOs = storyboardMapper.selectByExampleWithBLOBs(example);

@@ -69,7 +69,7 @@ public class FullVideoGenAlgoTaskProcessor extends AbstractAlgoTaskProcessor {
         Long workflowId = workflowTask.getWorkflowId();
         log.info("[FullVideoGenAlgoTaskProcessor.generateTasks] 开始生成完整视频任务, workflowId: {}", workflowId);
         try {
-            List<FicStoryboardBO> storyboardBOS = ficStoryboardRepository.findByWorkflowId(workflowId);
+            List<FicStoryboardBO> storyboardBOS = ficStoryboardRepository.findValidByWorkflowId(workflowId);
             log.info("[FullVideoGenAlgoTaskProcessor.generateTasks] 查询到分镜: {}", storyboardBOS);
             List<String> storyboardIds = StreamUtil.toStream(storyboardBOS)
                     .filter(Objects::nonNull)
@@ -84,7 +84,7 @@ public class FullVideoGenAlgoTaskProcessor extends AbstractAlgoTaskProcessor {
             VideoMergeRequest request = new VideoMergeRequest();
             request.setWorkflow_id(String.valueOf(workflowId));
             request.setStoryboard_ids(storyboardIds);
-            Optional.ofNullable(workflowTask.getParams().get(WorkflowTaskConstant.VIDEO_VOICE_TYPE)).ifPresent(request::setVoice_type);
+            Optional.ofNullable(workflowTask.getParams().get(WorkflowTaskConstant.VIDEO_VOICE_TYPE)).ifPresentOrElse(request::setVoice_type, () -> request.setVoice_type("磁性男声"));
             Optional.ofNullable(workflowTask.getParams().get(WorkflowTaskConstant.VIDEO_BGM_TYPE)).ifPresentOrElse(request::setBgm_type, () -> request.setBgm_type("摇滚质感"));
             log.info("[FullVideoGenAlgoTaskProcessor.generateTasks] 构建请求: {}", request);
             AlgoResponse response = algoGateway.createVideoMergeTask(request);
