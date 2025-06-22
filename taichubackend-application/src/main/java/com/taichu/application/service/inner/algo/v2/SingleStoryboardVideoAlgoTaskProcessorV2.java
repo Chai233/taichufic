@@ -15,20 +15,13 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
-import java.util.Objects;
 
 @Component
 public class SingleStoryboardVideoAlgoTaskProcessorV2 extends StoryboardVideoAlgoTaskProcessorV2 {
-    private final FicStoryboardRepository ficStoryboardRepository;
-    private final FicRoleRepository ficRoleRepository;
 
     public SingleStoryboardVideoAlgoTaskProcessorV2(FicStoryboardRepository ficStoryboardRepository, AlgoGateway algoGateway, FicRoleRepository ficRoleRepository, FileGateway fileGateway, FicResourceRepository ficResourceRepository, FicWorkflowTaskRepository ficWorkflowTaskRepository, FicWorkflowRepository ficWorkflowRepository) {
         super(ficStoryboardRepository, algoGateway, ficRoleRepository, fileGateway, ficResourceRepository, ficWorkflowTaskRepository, ficWorkflowRepository);
-
-        this.ficStoryboardRepository = ficStoryboardRepository;
-        this.ficRoleRepository = ficRoleRepository;
     }
-
 
     @Override
     public AlgoTaskTypeEnum getAlgoTaskType() {
@@ -50,12 +43,8 @@ public class SingleStoryboardVideoAlgoTaskProcessorV2 extends StoryboardVideoAlg
         if (CollectionUtils.isEmpty(roles)) {
             return List.of();
         }
-        StoryboardVideoTaskContext context = new StoryboardVideoTaskContext();
-        context.setWorkflowId(workflowTask.getWorkflowId());
-        context.setWorkflowTaskId(workflowTask.getId());
-        context.setStoryboard(storyboard);
-        context.setRoles(roles);
-        // 这里可根据需要设置voiceType/bgmType
+        
+        StoryboardVideoTaskContext context = buildStoryboardVideoTaskContext(workflowTask, storyboard, roles);
         return List.of(context);
     }
 } 

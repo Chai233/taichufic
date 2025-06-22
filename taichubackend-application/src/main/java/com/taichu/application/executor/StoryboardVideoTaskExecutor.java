@@ -5,7 +5,9 @@ import com.taichu.domain.enums.AlgoTaskTypeEnum;
 import com.taichu.domain.enums.TaskTypeEnum;
 import com.taichu.domain.enums.WorkflowStatusEnum;
 import com.taichu.domain.enums.WorkflowTaskConstant;
+import com.taichu.domain.model.FicWorkflowMetaBO;
 import com.taichu.domain.model.FicWorkflowTaskBO;
+import com.taichu.infra.repo.FicWorkflowMetaRepository;
 import com.taichu.infra.repo.FicWorkflowRepository;
 import com.taichu.infra.repo.FicWorkflowTaskRepository;
 import com.taichu.sdk.model.request.GenerateVideoRequest;
@@ -22,11 +24,13 @@ import java.util.Optional;
 @Slf4j
 public class StoryboardVideoTaskExecutor extends AbstractTaskExecutor {
     private final AlgoTaskInnerService algoTaskInnerService;
+    private final FicWorkflowMetaRepository ficWorkflowMetaRepository;
 
     @Autowired
-    public StoryboardVideoTaskExecutor(FicWorkflowRepository workflowRepository, FicWorkflowTaskRepository ficWorkflowTaskRepository, AlgoTaskInnerService algoTaskInnerService) {
+    public StoryboardVideoTaskExecutor(FicWorkflowRepository workflowRepository, FicWorkflowTaskRepository ficWorkflowTaskRepository, AlgoTaskInnerService algoTaskInnerService, FicWorkflowMetaRepository ficWorkflowMetaRepository) {
         super(workflowRepository, ficWorkflowTaskRepository);
         this.algoTaskInnerService = algoTaskInnerService;
+        this.ficWorkflowMetaRepository = ficWorkflowMetaRepository;
     }
 
     @Override
@@ -72,7 +76,9 @@ public class StoryboardVideoTaskExecutor extends AbstractTaskExecutor {
         }
 
         Map<String, String> map = new HashMap<>();
-        map.put(WorkflowTaskConstant.VIDEO_STYLE, null);    // TODO 查workflowMeta
+        FicWorkflowMetaBO ficWorkflowMetaBO = ficWorkflowMetaRepository.findByWorkflowId(workflowId);
+        Optional.ofNullable(ficWorkflowMetaBO).map(FicWorkflowMetaBO::getStyleType)
+                .ifPresent(t -> map.put(WorkflowTaskConstant.VIDEO_STYLE, t));
         return map;
     }
 }

@@ -24,11 +24,11 @@ import java.util.stream.Collectors;
 @Component
 @Slf4j
 public class StoryboardVideoAlgoTaskProcessorV2 extends AbstractAlgoTaskProcessorV2 {
-    private final FicStoryboardRepository ficStoryboardRepository;
-    private final AlgoGateway algoGateway;
-    private final FicRoleRepository ficRoleRepository;
-    private final FileGateway fileGateway;
-    private final FicResourceRepository ficResourceRepository;
+    protected final FicStoryboardRepository ficStoryboardRepository;
+    protected final AlgoGateway algoGateway;
+    protected final FicRoleRepository ficRoleRepository;
+    protected final FileGateway fileGateway;
+    protected final FicResourceRepository ficResourceRepository;
 
     public StoryboardVideoAlgoTaskProcessorV2(FicStoryboardRepository ficStoryboardRepository, 
                                              AlgoGateway algoGateway, 
@@ -70,25 +70,38 @@ public class StoryboardVideoAlgoTaskProcessorV2 extends AbstractAlgoTaskProcesso
         
         List<AlgoTaskContext> contexts = new ArrayList<>();
         for (FicStoryboardBO ficStoryboardBO : ficStoryboardBOList) {
-            StoryboardVideoTaskContext context = new StoryboardVideoTaskContext();
-            context.setWorkflowId(workflowId);
-            context.setWorkflowTaskId(workflowTask.getId());
-            context.setStoryboard(ficStoryboardBO);
-            context.setRoles(ficRoleBOList);
-            
-            // 从工作流任务参数中获取配置
-            String voiceType = workflowTask.getParams().get(WorkflowTaskConstant.VIDEO_VOICE_TYPE);
-            context.setVoiceType(StringUtils.isBlank(voiceType) ? 
-                VoiceTypeEnum.DEFAULT_MAN_SOUND.getValue() : voiceType);
-            
-            String videoStyle = workflowTask.getParams().get(WorkflowTaskConstant.VIDEO_STYLE);
-            context.setBgmType(StringUtils.isBlank(videoStyle) ? 
-                ImageVideoStyleEnum.CYBER_PUNK.getValue() : videoStyle);
-            
+            StoryboardVideoTaskContext context = buildStoryboardVideoTaskContext(workflowTask, ficStoryboardBO, ficRoleBOList);
             contexts.add(context);
         }
         
         return contexts;
+    }
+
+    /**
+     * 构建单个分镜视频任务上下文
+     * 
+     * @param workflowTask 工作流任务
+     * @param storyboard 分镜信息
+     * @param roles 角色列表
+     * @return 分镜视频任务上下文
+     */
+    protected StoryboardVideoTaskContext buildStoryboardVideoTaskContext(FicWorkflowTaskBO workflowTask, 
+                                                                        FicStoryboardBO storyboard, 
+                                                                        List<FicRoleBO> roles) {
+        StoryboardVideoTaskContext context = new StoryboardVideoTaskContext();
+        context.setWorkflowId(workflowTask.getWorkflowId());
+        context.setWorkflowTaskId(workflowTask.getId());
+        context.setStoryboard(storyboard);
+        context.setRoles(roles);
+        
+        // 从工作流任务参数中获取配置
+        String voiceType = workflowTask.getParams().get(WorkflowTaskConstant.VIDEO_VOICE_TYPE);
+        String videoStyle = workflowTask.getParams().get(WorkflowTaskConstant.VIDEO_STYLE);
+
+        context.setVoiceType(StringUtils.isBlank(voiceType) ? VoiceTypeEnum.DEFAULT_MAN_SOUND.getValue() : voiceType);
+        context.setBgmType(StringUtils.isBlank(videoStyle) ? ImageVideoStyleEnum.CYBER_PUNK.getValue() : videoStyle);
+        
+        return context;
     }
 
     @Override

@@ -22,11 +22,11 @@ import java.util.stream.Collectors;
 @Component
 @Slf4j
 public class StoryboardImgAlgoTaskProcessorV2 extends AbstractAlgoTaskProcessorV2 {
-    private final FicStoryboardRepository ficStoryboardRepository;
-    private final AlgoGateway algoGateway;
-    private final FicRoleRepository ficRoleRepository;
-    private final FileGateway fileGateway;
-    private final FicResourceRepository ficResourceRepository;
+    protected final FicStoryboardRepository ficStoryboardRepository;
+    protected final AlgoGateway algoGateway;
+    protected final FicRoleRepository ficRoleRepository;
+    protected final FileGateway fileGateway;
+    protected final FicResourceRepository ficResourceRepository;
 
     public StoryboardImgAlgoTaskProcessorV2(FicStoryboardRepository ficStoryboardRepository, 
                                            AlgoGateway algoGateway, 
