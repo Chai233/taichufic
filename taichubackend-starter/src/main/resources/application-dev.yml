@@ -42,6 +42,7 @@ file:
 
 # 算法服务配置
 algo:
+  small-scale-test: true
   service:
     base-url: http://192.168.100.106:7861
 

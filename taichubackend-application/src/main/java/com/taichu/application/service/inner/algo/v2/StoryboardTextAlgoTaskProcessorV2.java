@@ -12,6 +12,7 @@ import com.taichu.infra.repo.*;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
 import org.slf4j.Logger;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
@@ -22,6 +23,9 @@ import java.util.stream.Collectors;
 @Component
 @Slf4j
 public class StoryboardTextAlgoTaskProcessorV2 extends AbstractAlgoTaskProcessorV2 {
+
+    @Value("${algo.small-scale-test:false}")
+    private boolean testMark;
 
     private final FicScriptRepository ficScriptRepository;
     private final FicStoryboardRepository ficStoryboardRepository;
@@ -61,6 +65,11 @@ public class StoryboardTextAlgoTaskProcessorV2 extends AbstractAlgoTaskProcessor
             context.setWorkflowTaskId(workflowTask.getId());
             context.setScript(ficScriptBO);
             contexts.add(context);
+
+            // fixme: 测试阶段，只生成一个scrip对应的分镜
+            if (testMark) {
+                break;
+            }
         }
         
         return contexts;
@@ -162,6 +171,10 @@ public class StoryboardTextAlgoTaskProcessorV2 extends AbstractAlgoTaskProcessor
             storyboard.setOrderIndex(orderIndex);
             ficStoryboardRepository.insert(storyboard);
             log.info("[StoryboardTextAlgoTaskProcessorV2.processStoryboardTextResult] 创建分镜记录成功, scriptId: {}, storyboardId: {}", script.getId(), storyboard.getId());
+
+            if (testMark) {
+                break;
+            }
             index++;
         }
         log.info("[StoryboardTextAlgoTaskProcessorV2.processStoryboardTextResult] 分镜文本处理完成, scriptId: {}, 分镜数量: {}", script.getId(), result.getData().size());
