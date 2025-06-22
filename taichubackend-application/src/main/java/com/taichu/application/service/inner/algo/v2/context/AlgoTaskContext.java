@@ -10,17 +10,18 @@ import lombok.Setter;
 @Setter
 @Getter
 public abstract class AlgoTaskContext {
-    // getter/setter
+    private static final int DEFAULT_MAX_RETRY_COUNT = 3;
+
     private Long workflowId;
     private Long workflowTaskId;
     private int retryCount = 0;
-    private static final int MAX_RETRY_COUNT = 10;
-    
+    private int maxRetryCount = DEFAULT_MAX_RETRY_COUNT;
+
     // 获取任务摘要信息（用于日志和调试）
     public abstract String getTaskSummary();
     
     public boolean canRetry() {
-        return retryCount < MAX_RETRY_COUNT;
+        return retryCount < maxRetryCount;
     }
     
     public void incrementRetryCount() {

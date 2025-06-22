@@ -203,7 +203,8 @@ public class AlgoTaskInnerServiceV2 implements InitializingBean {
                     return true;
                 } else {
                     // 任务失败，执行失败后置处理
-                    throw new RuntimeException("任务执行失败，最终状态: " + finalStatus);
+                    ficAlgoTaskRepository.updateStatus(algoTask.getId(), TaskStatusEnum.FAILED);
+                    throw new RuntimeException("任务执行失败，最终状态: " + finalStatus + " algoTaskId: " + algoTask.getId());
                 }
                 
             } catch (Exception e) {
