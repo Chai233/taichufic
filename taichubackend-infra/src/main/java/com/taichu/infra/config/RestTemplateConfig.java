@@ -25,7 +25,7 @@ public class RestTemplateConfig {
     @Bean("algoRestTemplate")
     public RestTemplate algoRestTemplate() {
         SimpleClientHttpRequestFactory requestFactory = new SimpleClientHttpRequestFactory();
-        requestFactory.setConnectTimeout(10000); // 10 seconds
+        requestFactory.setConnectTimeout(20000); // 10 seconds
         requestFactory.setReadTimeout(300000);    // 5 minutes, for long-running algo tasks
 
         return new RestTemplate(requestFactory);

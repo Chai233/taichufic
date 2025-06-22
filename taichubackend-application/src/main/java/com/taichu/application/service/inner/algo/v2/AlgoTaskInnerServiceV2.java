@@ -1,6 +1,7 @@
 package com.taichu.application.service.inner.algo.v2;
 
 import com.taichu.application.service.inner.algo.v2.context.AlgoTaskContext;
+import com.taichu.application.util.AlgoTaskThreadPoolManager;
 import com.taichu.domain.enums.AlgoTaskTypeEnum;
 import com.taichu.domain.enums.TaskStatusEnum;
 import com.taichu.domain.model.FicAlgoTaskBO;
@@ -15,6 +16,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
 
 @Slf4j
 @Service
@@ -67,23 +70,57 @@ public class AlgoTaskInnerServiceV2 implements InitializingBean {
                 return;
             }
             
-            // 3. 逐个处理每个任务上下文
+            // 3. 并发处理每个任务上下文
             List<AlgoTaskContext> completedContexts = new ArrayList<>();
             List<AlgoTaskContext> failedContexts = new ArrayList<>();
             
+            // 创建Future列表来跟踪所有任务
+            List<Future<TaskResult>> futures = new ArrayList<>();
+            List<AlgoTaskContext> submittedContexts = new ArrayList<>();
+            
+            // 提交所有任务到线程池
             for (AlgoTaskContext context : taskContexts) {
                 try {
                     // 验证上下文
                     processor.validateContext(context);
                     
-                    boolean success = processSingleTaskWithRetry(processor, context, workflowTaskId);
-                    if (success) {
-                        completedContexts.add(context);
+                    // 提交任务到线程池
+                    Future<TaskResult> future = AlgoTaskThreadPoolManager.getInstance().submit(() -> {
+                        try {
+                            boolean success = processSingleTaskWithRetry(processor, context, workflowTaskId);
+                            return new TaskResult(context, success, null);
+                        } catch (Exception e) {
+                            log.error("[AlgoTaskInnerServiceV2.runAlgoTask] 处理任务上下文失败: {}", context.getTaskSummary(), e);
+                            return new TaskResult(context, false, e);
+                        }
+                    });
+                    futures.add(future);
+                    submittedContexts.add(context);
+                    
+                } catch (Exception e) {
+                    log.error("[AlgoTaskInnerServiceV2.runAlgoTask] 提交任务到线程池失败: {}", context.getTaskSummary(), e);
+                    failedContexts.add(context);
+                }
+            }
+            
+            // 等待所有任务完成并收集结果
+            for (int i = 0; i < futures.size(); i++) {
+                Future<TaskResult> future = futures.get(i);
+                AlgoTaskContext context = submittedContexts.get(i);
+                
+                try {
+                    TaskResult result = future.get(30, TimeUnit.MINUTES); // 设置30分钟超时
+                    if (result.isSuccess()) {
+                        completedContexts.add(result.getContext());
                     } else {
-                        failedContexts.add(context);
+                        failedContexts.add(result.getContext());
+                        if (result.getException() != null) {
+                            log.error("[AlgoTaskInnerServiceV2.runAlgoTask] 任务执行异常: {}", 
+                                result.getContext().getTaskSummary(), result.getException());
+                        }
                     }
                 } catch (Exception e) {
-                    log.error("[AlgoTaskInnerServiceV2.runAlgoTask] 处理任务上下文失败: {}", context.getTaskSummary(), e);
+                    log.error("[AlgoTaskInnerServiceV2.runAlgoTask] 等待任务完成时发生异常: {}", context.getTaskSummary(), e);
                     failedContexts.add(context);
                 }
             }
@@ -102,6 +139,33 @@ public class AlgoTaskInnerServiceV2 implements InitializingBean {
             log.error("[AlgoTaskInnerServiceV2.runAlgoTask] 运行算法任务失败, workflowTaskId: {}, algoTaskType: {}", workflowTaskId, algoTaskType, e);
             ficWorkflowTaskRepository.updateTaskStatus(workflowTaskId, TaskStatusEnum.FAILED);
             throw new RuntimeException("运行算法任务失败", e);
+        }
+    }
+    
+    /**
+     * 任务结果包装类
+     */
+    private static class TaskResult {
+        private final AlgoTaskContext context;
+        private final boolean success;
+        private final Exception exception;
+        
+        public TaskResult(AlgoTaskContext context, boolean success, Exception exception) {
+            this.context = context;
+            this.success = success;
+            this.exception = exception;
+        }
+        
+        public AlgoTaskContext getContext() {
+            return context;
+        }
+        
+        public boolean isSuccess() {
+            return success;
+        }
+        
+        public Exception getException() {
+            return exception;
         }
     }
     
@@ -157,7 +221,7 @@ public class AlgoTaskInnerServiceV2 implements InitializingBean {
                 if (context.canRetry()) {
                     log.info("[AlgoTaskInnerServiceV2.processSingleTaskWithRetry] 准备重试任务: {}", context.getTaskSummary());
                     try {
-                        Thread.sleep(5000); // 重试前等待5秒
+                        Thread.sleep(10000); // 重试前等待10秒
                     } catch (InterruptedException ie) {
                         Thread.currentThread().interrupt();
                         break;
@@ -176,7 +240,7 @@ public class AlgoTaskInnerServiceV2 implements InitializingBean {
      */
     private TaskStatusEnum pollTaskUntilComplete(AlgoTaskProcessorV2 processor, FicAlgoTaskBO algoTask) {
         int pollCount = 0;
-        while (pollCount < 100) { // 最多轮询100次，避免无限循环
+        while (pollCount < 40) { // 最多轮询40次，避免无限循环
             try {
                 TaskStatusEnum status = processor.checkSingleTaskStatus(algoTask);
                 

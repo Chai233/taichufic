@@ -14,7 +14,7 @@ public abstract class AlgoTaskContext {
     private Long workflowId;
     private Long workflowTaskId;
     private int retryCount = 0;
-    private static final int MAX_RETRY_COUNT = 3;
+    private static final int MAX_RETRY_COUNT = 10;
     
     // 获取任务摘要信息（用于日志和调试）
     public abstract String getTaskSummary();
