@@ -30,7 +30,7 @@ public class SingleStoryboardImgTaskExecutor extends StoryboardTextAndImgTaskExe
     }
 
     @Override
-    protected void doStartBackgroundProcessing(FicWorkflowTaskBO task) {
+    protected void doStartBackgroundProcessing(FicWorkflowTaskBO task) throws Exception {
         algoTaskInnerService.runAlgoTask(task, AlgoTaskTypeEnum.USER_RETRY_SINGLE_STORYBOARD_IMG_GENERATION);
     }
 

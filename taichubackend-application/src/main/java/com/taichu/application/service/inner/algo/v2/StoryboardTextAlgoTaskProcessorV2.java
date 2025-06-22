@@ -2,6 +2,7 @@ package com.taichu.application.service.inner.algo.v2;
 
 import com.taichu.application.service.inner.algo.v2.context.AlgoTaskContext;
 import com.taichu.application.service.inner.algo.v2.context.StoryboardTextTaskContext;
+import com.taichu.common.common.util.StreamUtil;
 import com.taichu.domain.algo.gateway.AlgoGateway;
 import com.taichu.domain.algo.model.request.StoryboardTextRequest;
 import com.taichu.domain.algo.model.response.StoryboardTextResult;
@@ -16,6 +17,7 @@ import org.springframework.stereotype.Component;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import java.util.stream.Collectors;
 
 @Component
 @Slf4j
@@ -89,7 +91,7 @@ public class StoryboardTextAlgoTaskProcessorV2 extends AbstractAlgoTaskProcessor
         StoryboardTextResult result = retryOperation(() -> algoGateway.createStoryboardTextTask(request), operationName);
         
         if (result == null) {
-            throw new RuntimeException("创建分镜文本任务失败");
+            throw new RuntimeException("分镜文本任务失败");
         }
         
         // 直接处理结果，创建分镜记录
@@ -121,6 +123,7 @@ public class StoryboardTextAlgoTaskProcessorV2 extends AbstractAlgoTaskProcessor
     public void singleTaskFailedPostProcess(FicAlgoTaskBO algoTask, AlgoTaskContext context, Exception e) {
         log.error("[StoryboardTextAlgoTaskProcessorV2.singleTaskFailedPostProcess] 分镜文本生成任务失败: {}", 
             algoTask.buildSummary(), e);
+        cleanupStoryboard(algoTask.getWorkflowTaskId(), algoTask.getRelevantId());
     }
 
     @Override
@@ -143,6 +146,9 @@ public class StoryboardTextAlgoTaskProcessorV2 extends AbstractAlgoTaskProcessor
             log.error("[StoryboardTextAlgoTaskProcessorV2.processStoryboardTextResult] 分镜文本结果为空, scriptId: {}", script.getId());
             throw new RuntimeException("分镜文本结果为空, scriptId: " + script.getId());
         }
+
+        // 清理旧分镜
+        cleanupStoryboard(script.getWorkflowId(), script.getId());
         
         int index = 1;
         for (String storyboardContent : result.getData()) {
@@ -166,10 +172,7 @@ public class StoryboardTextAlgoTaskProcessorV2 extends AbstractAlgoTaskProcessor
         try {
             List<FicStoryboardBO> allStoryboards = ficStoryboardRepository.findValidByWorkflowId(workflowId);
             for (FicStoryboardBO storyboard : allStoryboards) {
-                // 由于没有直接的deleteById方法，我们通过设置状态为无效来"删除"
-                storyboard.setStatus(CommonStatusEnum.INVALID.getValue());
-                // 这里需要调用更新方法，但由于没有直接的更新方法，我们暂时跳过
-                // 在实际实现中，应该添加相应的更新方法
+                ficStoryboardRepository.offlineById(storyboard.getId());
                 log.warn("[cleanupFailedStoryboardTextTask] 需要实现分镜删除功能, storyboardId: {}", storyboard.getId());
             }
             log.info("[cleanupFailedStoryboardTextTask] 清理失败任务资源成功, workflowId: {}", workflowId);
@@ -186,5 +189,22 @@ public class StoryboardTextAlgoTaskProcessorV2 extends AbstractAlgoTaskProcessor
     @Override
     protected Logger getLogger() {
         return log;
+    }
+
+    /**
+     * @param workflowId 工作流ID
+     */
+    private void cleanupStoryboard(Long workflowId, Long scriptId) {
+        try {
+            
+            List<FicStoryboardBO> allValid = ficStoryboardRepository.findValidByWorkflowIdAndScripId(workflowId, scriptId);
+            
+            for (FicStoryboardBO storyboardBO : allValid) {
+                ficStoryboardRepository.offlineById(storyboardBO.getId());
+                log.info("[cleanupStoryboard] 下线旧分镜文本, scriptId: {}, storyboardId: {}", scriptId, storyboardBO.getId());
+            }
+        } catch (Exception e) {
+            log.error("[cleanupStoryboard] 下线旧分镜文本失败); workflowId: {}, scriptId: {}", workflowId, scriptId, e);
+        }
     }
 } 

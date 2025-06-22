@@ -180,16 +180,8 @@ public class StoryboardImgAlgoTaskProcessorV2 extends AbstractAlgoTaskProcessorV
             throw new Exception("上传分镜图片到OSS失败");
         }
         
-        // 删除旧的资源
-        List<FicResourceBO> oldResources = ficResourceRepository.findByWorkflowIdAndResourceType(workflowId, ResourceTypeEnum.STORYBOARD_IMG);
-        for (FicResourceBO resource : oldResources) {
-            if (Objects.equals(resource.getRelevanceId(), algoTask.getRelevantId()) && 
-                Objects.equals(resource.getRelevanceType(), algoTask.getRelevantIdType())) {
-                ficResourceRepository.offlineResourceById(resource.getId());
-                log.info("[StoryboardImgAlgoTaskProcessorV2.singleTaskSuccessPostProcess] 下线旧资源, resourceId: {}", resource.getId());
-                break;
-            }
-        }
+        // 清理关联storyboard已存在的图片资源
+        cleanupStoryboardImgResources(workflowId, algoTask.getRelevantId(), algoTask.getRelevantIdType());
         
         // 保存新的资源记录
         FicResourceBO ficResourceBO = new FicResourceBO();
@@ -211,6 +203,15 @@ public class StoryboardImgAlgoTaskProcessorV2 extends AbstractAlgoTaskProcessorV
     public void singleTaskFailedPostProcess(FicAlgoTaskBO algoTask, AlgoTaskContext context, Exception e) {
         log.error("[StoryboardImgAlgoTaskProcessorV2.singleTaskFailedPostProcess] 分镜图片生成任务失败: {}", 
             algoTask.buildSummary(), e);
+        
+        // 清理关联storyboard已存在的图片资源
+        try {
+            StoryboardImgTaskContext storyboardContext = (StoryboardImgTaskContext) context;
+            cleanupStoryboardImgResources(storyboardContext.getWorkflowId(), algoTask.getRelevantId(), algoTask.getRelevantIdType());
+        } catch (Exception cleanupException) {
+            log.error("[StoryboardImgAlgoTaskProcessorV2.singleTaskFailedPostProcess] 清理失败任务资源时发生异常: {}", 
+                algoTask.buildSummary(), cleanupException);
+        }
     }
 
     @Override
@@ -246,5 +247,26 @@ public class StoryboardImgAlgoTaskProcessorV2 extends AbstractAlgoTaskProcessorV
     @Override
     protected Logger getLogger() {
         return log;
+    }
+
+    /**
+     * 清理关联storyboard的图片资源
+     * @param workflowId 工作流ID
+     * @param relevantId 关联ID（storyboard ID）
+     * @param relevantType 关联类型
+     */
+    private void cleanupStoryboardImgResources(Long workflowId, Long relevantId, String relevantType) {
+        try {
+            List<FicResourceBO> oldResources = ficResourceRepository.findByWorkflowIdAndResourceType(workflowId, ResourceTypeEnum.STORYBOARD_IMG);
+            for (FicResourceBO resource : oldResources) {
+                if (Objects.equals(resource.getRelevanceId(), relevantId) && 
+                    Objects.equals(resource.getRelevanceType(), relevantType)) {
+                    ficResourceRepository.offlineResourceById(resource.getId());
+                    log.info("[cleanupStoryboardImgResources] 下线旧资源, resourceId: {}, storyboardId: {}", resource.getId(), relevantId);
+                }
+            }
+        } catch (Exception e) {
+            log.error("[cleanupStoryboardImgResources] 清理storyboard图片资源失败, workflowId: {}, storyboardId: {}", workflowId, relevantId, e);
+        }
     }
 } 

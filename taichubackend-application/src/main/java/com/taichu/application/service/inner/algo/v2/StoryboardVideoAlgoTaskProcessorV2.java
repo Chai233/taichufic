@@ -1,6 +1,7 @@
 package com.taichu.application.service.inner.algo.v2;
 
 import com.taichu.application.service.inner.algo.v2.context.AlgoTaskContext;
+import com.taichu.application.service.inner.algo.v2.context.StoryboardImgTaskContext;
 import com.taichu.application.service.inner.algo.v2.context.StoryboardVideoTaskContext;
 import com.taichu.application.service.inner.algo.ImageVideoStyleEnum;
 import com.taichu.common.common.model.Resp;
@@ -185,13 +186,16 @@ public class StoryboardVideoAlgoTaskProcessorV2 extends AbstractAlgoTaskProcesso
         
         Long workflowId = videoContext.getWorkflowId();
         String fileName = String.format("storyboard_video_%s_%s_%s", workflowId, algoTask.getAlgoTaskId(), videoResult.getName());
-        
+
         // 上传到OSS
         Resp<String> uploadResp = fileGateway.saveFile(fileName, videoResult);
         if (!uploadResp.isSuccess()) {
             throw new Exception("上传分镜视频到OSS失败");
         }
-        
+
+        // 清理关联storyboard已存在的图片资源
+        cleanupStoryboardVideoResources(workflowId, algoTask.getRelevantId(), algoTask.getRelevantIdType());
+
         // 删除旧的资源
         List<FicResourceBO> oldResources = ficResourceRepository.findByWorkflowIdAndResourceType(workflowId, ResourceTypeEnum.STORYBOARD_VIDEO);
         for (FicResourceBO resource : oldResources) {
@@ -223,6 +227,9 @@ public class StoryboardVideoAlgoTaskProcessorV2 extends AbstractAlgoTaskProcesso
     public void singleTaskFailedPostProcess(FicAlgoTaskBO algoTask, AlgoTaskContext context, Exception e) {
         log.error("[StoryboardVideoAlgoTaskProcessorV2.singleTaskFailedPostProcess] 分镜视频生成任务失败: {}", 
             algoTask.buildSummary(), e);
+
+        StoryboardVideoTaskContext storyboardContext = (StoryboardVideoTaskContext) context;
+        cleanupStoryboardVideoResources(storyboardContext.getWorkflowId(), algoTask.getRelevantId(), algoTask.getRelevantIdType());
     }
 
     @Override
@@ -258,5 +265,27 @@ public class StoryboardVideoAlgoTaskProcessorV2 extends AbstractAlgoTaskProcesso
     @Override
     protected Logger getLogger() {
         return log;
+    }
+
+
+    /**
+     * 清理关联storyboard的视频资源
+     * @param workflowId 工作流ID
+     * @param relevantId 关联ID（storyboard ID）
+     * @param relevantType 关联类型
+     */
+    private void cleanupStoryboardVideoResources(Long workflowId, Long relevantId, String relevantType) {
+        try {
+            List<FicResourceBO> oldResources = ficResourceRepository.findByWorkflowIdAndResourceType(workflowId, ResourceTypeEnum.STORYBOARD_VIDEO);
+            for (FicResourceBO resource : oldResources) {
+                if (Objects.equals(resource.getRelevanceId(), relevantId) &&
+                        Objects.equals(resource.getRelevanceType(), relevantType)) {
+                    ficResourceRepository.offlineResourceById(resource.getId());
+                    log.info("[cleanupStoryboardImgResources] 下线旧资源, resourceId: {}, storyboardId: {}", resource.getId(), relevantId);
+                }
+            }
+        } catch (Exception e) {
+            log.error("[cleanupStoryboardImgResources] 清理storyboard图片资源失败, workflowId: {}, storyboardId: {}", workflowId, relevantId, e);
+        }
     }
 }

@@ -1,6 +1,8 @@
 package com.taichu.application.executor;
 
 import com.taichu.application.service.inner.algo.AlgoTaskInnerService;
+import com.taichu.application.service.inner.algo.v2.RoleImgAlgoTaskProcessorV2;
+import com.taichu.application.service.inner.algo.v2.ScriptGenAlgoTaskProcessorV2;
 import com.taichu.domain.enums.AlgoTaskTypeEnum;
 import com.taichu.domain.enums.TaskTypeEnum;
 import com.taichu.domain.enums.WorkflowStatusEnum;
@@ -21,6 +23,11 @@ import java.util.Map;
 public class ScriptTaskExecutor extends AbstractTaskExecutor {
 
     @Autowired
+    ScriptGenAlgoTaskProcessorV2 scriptGenAlgoTaskProcessorV2;
+    @Autowired
+    RoleImgAlgoTaskProcessorV2 roleImgAlgoTaskProcessorV2;
+
+    @Autowired
     private AlgoTaskInnerService algoTaskInnerService;
 
     public ScriptTaskExecutor(FicWorkflowRepository workflowRepository, FicWorkflowTaskRepository ficWorkflowTaskRepository) {
@@ -28,9 +35,15 @@ public class ScriptTaskExecutor extends AbstractTaskExecutor {
     }
 
     @Override
-    protected void doStartBackgroundProcessing(FicWorkflowTaskBO task) {
+    protected void doStartBackgroundProcessing(FicWorkflowTaskBO task) throws Exception {
         algoTaskInnerService.runAlgoTask(task, AlgoTaskTypeEnum.SCRIPT_GENERATION);
         algoTaskInnerService.runAlgoTask(task, AlgoTaskTypeEnum.ROLE_IMG_GENERATION);
+    }
+
+    @Override
+    protected void doWhileBackgroundProcessingFail(FicWorkflowTaskBO task) {
+        scriptGenAlgoTaskProcessorV2.postProcessAnyFailed(task, null);
+        roleImgAlgoTaskProcessorV2.postProcessAnyFailed(task, null);
     }
 
     @Override

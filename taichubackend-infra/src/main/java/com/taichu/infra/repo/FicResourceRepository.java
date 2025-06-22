@@ -64,6 +64,27 @@ public class FicResourceRepository {
                 .collect(Collectors.toList());
     }
 
+    /**
+     * 根据关联ID、关联类型和资源类型查询资源列表
+     *
+     * @param relevanceId 关联ID
+     * @param relevanceType 关联类型
+     * @param resourceType 资源类型
+     * @return 资源列表
+     */
+    public List<FicResourceBO> findValidByRelevance(Long relevanceId, String relevanceType, ResourceTypeEnum resourceType) {
+        FicResourceExample example = new FicResourceExample();
+        example.createCriteria()
+                .andRelevanceIdEqualTo(relevanceId)
+                .andRelevanceTypeEqualTo(relevanceType)
+                .andResourceTypeEqualTo(resourceType.name())
+                .andStatusEqualTo(CommonStatusEnum.VALID.getValue());
+        List<FicResource> resources = resourceMapper.selectByExample(example);
+        return resources.stream()
+                .map(FicResourceConvertor::toDomain)
+                .collect(Collectors.toList());
+    }
+
     public void offlineResourceById(Long id) {
         FicResource resource = resourceMapper.selectByPrimaryKey(id);
         if (resource == null) {

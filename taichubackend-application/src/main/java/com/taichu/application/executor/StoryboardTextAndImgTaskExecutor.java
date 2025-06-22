@@ -1,6 +1,8 @@
 package com.taichu.application.executor;
 
 import com.taichu.application.service.inner.algo.AlgoTaskInnerService;
+import com.taichu.application.service.inner.algo.v2.StoryboardImgAlgoTaskProcessorV2;
+import com.taichu.application.service.inner.algo.v2.StoryboardTextAlgoTaskProcessorV2;
 import com.taichu.domain.enums.AlgoTaskTypeEnum;
 import com.taichu.domain.enums.TaskTypeEnum;
 import com.taichu.domain.enums.WorkflowStatusEnum;
@@ -25,6 +27,12 @@ public class StoryboardTextAndImgTaskExecutor extends AbstractTaskExecutor {
     private final AlgoTaskInnerService algoTaskInnerService;
 
     @Autowired
+    StoryboardTextAlgoTaskProcessorV2 storyboardTextAlgoTaskProcessorV2;
+    @Autowired
+    StoryboardImgAlgoTaskProcessorV2 storyboardImgAlgoTaskProcessorV2;
+
+
+    @Autowired
     public StoryboardTextAndImgTaskExecutor(FicWorkflowRepository workflowRepository, FicWorkflowTaskRepository ficWorkflowTaskRepository, AlgoTaskInnerService algoTaskInnerService) {
         super(workflowRepository, ficWorkflowTaskRepository);
         this.algoTaskInnerService = algoTaskInnerService;
@@ -36,9 +44,15 @@ public class StoryboardTextAndImgTaskExecutor extends AbstractTaskExecutor {
     }
 
     @Override
-    protected void doStartBackgroundProcessing(FicWorkflowTaskBO task) {
+    protected void doStartBackgroundProcessing(FicWorkflowTaskBO task) throws Exception {
         algoTaskInnerService.runAlgoTask(task, AlgoTaskTypeEnum.STORYBOARD_TEXT_GENERATION);
         algoTaskInnerService.runAlgoTask(task, AlgoTaskTypeEnum.STORYBOARD_IMG_GENERATION);
+    }
+
+    @Override
+    protected void doWhileBackgroundProcessingFail(FicWorkflowTaskBO task) {
+        storyboardTextAlgoTaskProcessorV2.postProcessAnyFailed(task, null);
+        storyboardImgAlgoTaskProcessorV2.postProcessAnyFailed(task, null);
     }
 
     @Override

@@ -7,14 +7,11 @@ import com.taichu.domain.enums.WorkflowStatusEnum;
 import com.taichu.domain.enums.WorkflowTaskConstant;
 import com.taichu.domain.model.FicWorkflowMetaBO;
 import com.taichu.domain.model.FicWorkflowTaskBO;
-import com.taichu.infra.repo.FicRoleRepository;
 import com.taichu.infra.repo.FicWorkflowMetaRepository;
 import com.taichu.infra.repo.FicWorkflowRepository;
 import com.taichu.infra.repo.FicWorkflowTaskRepository;
-import com.taichu.sdk.model.request.GenerateVideoRequest;
 import com.taichu.sdk.model.request.SingleStoryboardVideoRegenRequest;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -42,7 +39,7 @@ public class SingleStoryboardVideoTaskExecutor extends AbstractTaskExecutor {
     }
 
     @Override
-    protected void doStartBackgroundProcessing(FicWorkflowTaskBO task) {
+    protected void doStartBackgroundProcessing(FicWorkflowTaskBO task) throws Exception {
         algoTaskInnerService.runAlgoTask(task, AlgoTaskTypeEnum.USER_RETRY_SINGLE_STORYBOARD_VIDEO_GENERATION);
     }
 

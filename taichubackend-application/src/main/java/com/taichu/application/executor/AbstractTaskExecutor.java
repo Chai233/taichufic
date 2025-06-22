@@ -43,7 +43,7 @@ public abstract class AbstractTaskExecutor {
 
             // 3. 提交后台任务到线程池
             submit(() -> {
-                startBackgroundProcessing(ficWorkflowTaskBO);
+                backgroundProcessing(ficWorkflowTaskBO);
                 return null;
             });
 
@@ -69,7 +69,7 @@ public abstract class AbstractTaskExecutor {
 
     protected abstract Logger getLog();
 
-    protected void startBackgroundProcessing(FicWorkflowTaskBO task) {
+    protected void backgroundProcessing(FicWorkflowTaskBO task) {
         Long workflowId = task.getWorkflowId();
         try {
             doStartBackgroundProcessing(task);
@@ -83,6 +83,8 @@ public abstract class AbstractTaskExecutor {
         workflowRepository.updateStatus(workflowId, getDoneWorkflowStatus().getCode());
     }
 
+    protected void doWhileBackgroundProcessingFail(FicWorkflowTaskBO task) {}
+
 
     protected void markWorkflowTaskAsSuccess(FicWorkflowTaskBO workflowTask) {
         // 更新工作流任务状态为成功
@@ -91,7 +93,7 @@ public abstract class AbstractTaskExecutor {
         getLog().info("All algo tasks completed successfully for workflow: " + workflowTask.getWorkflowId());
     }
 
-    protected abstract void doStartBackgroundProcessing(FicWorkflowTaskBO task);
+    protected abstract void doStartBackgroundProcessing(FicWorkflowTaskBO task) throws Exception;
 
     protected abstract WorkflowStatusEnum getInitWorkflowStatus();
 

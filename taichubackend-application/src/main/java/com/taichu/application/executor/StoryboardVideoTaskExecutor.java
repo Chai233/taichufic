@@ -39,14 +39,8 @@ public class StoryboardVideoTaskExecutor extends AbstractTaskExecutor {
     }
 
     @Override
-    protected void doStartBackgroundProcessing(FicWorkflowTaskBO task) {
-        try {
-            algoTaskInnerService.runAlgoTask(task, AlgoTaskTypeEnum.STORYBOARD_VIDEO_GENERATION);
-        } catch (Exception e) {
-            // 发生异常，
-            log.error("Background processing failed for workflow: " + task.getWorkflowId(), e);
-        }
-
+    protected void doStartBackgroundProcessing(FicWorkflowTaskBO task) throws Exception {
+        algoTaskInnerService.runAlgoTask(task, AlgoTaskTypeEnum.STORYBOARD_VIDEO_GENERATION);
     }
 
     @Override

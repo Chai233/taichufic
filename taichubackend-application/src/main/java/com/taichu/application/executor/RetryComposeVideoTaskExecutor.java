@@ -22,12 +22,8 @@ public class RetryComposeVideoTaskExecutor extends ComposeVideoTaskExecutor {
     }
 
     @Override
-    protected void doStartBackgroundProcessing(FicWorkflowTaskBO task) {
-        try {
-            algoTaskInnerService.runAlgoTask(task, AlgoTaskTypeEnum.USER_RETRY_FULL_VIDEO_GENERATION);
-        } catch (Exception e) {
-            log.error("Background processing failed for workflow: " + task.getWorkflowId(), e);
-        }
+    protected void doStartBackgroundProcessing(FicWorkflowTaskBO task) throws Exception {
+        algoTaskInnerService.runAlgoTask(task, AlgoTaskTypeEnum.USER_RETRY_FULL_VIDEO_GENERATION);
     }
 
     @Override

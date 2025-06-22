@@ -161,6 +161,8 @@ public class RoleImgAlgoTaskProcessorV2 extends AbstractAlgoTaskProcessorV2 {
             throw new Exception("未找到对应的角色信息");
         }
 
+        // 清理该角色已存在的图片资源
+        cleanupExistingRoleImages(roleId);
         Long defaultImageResourceId = null;
         
         // 逐个处理每张图片
@@ -212,6 +214,16 @@ public class RoleImgAlgoTaskProcessorV2 extends AbstractAlgoTaskProcessorV2 {
     public void singleTaskFailedPostProcess(FicAlgoTaskBO algoTask, AlgoTaskContext context, Exception e) {
         log.error("[RoleImgAlgoTaskProcessorV2.singleTaskFailedPostProcess] 角色图片生成任务失败: {}", 
             algoTask.buildSummary(), e);
+        
+        // 清理该角色已存在的图片资源
+        try {
+            Long roleId = algoTask.getRelevantId();
+            cleanupExistingRoleImages(roleId);
+            log.info("[RoleImgAlgoTaskProcessorV2.singleTaskFailedPostProcess] 清理失败任务的角色图片完成, roleId: {}", roleId);
+        } catch (Exception cleanupException) {
+            log.error("[RoleImgAlgoTaskProcessorV2.singleTaskFailedPostProcess] 清理失败任务的角色图片失败, roleId: {}", 
+                algoTask.getRelevantId(), cleanupException);
+        }
     }
 
     @Override
@@ -296,5 +308,19 @@ public class RoleImgAlgoTaskProcessorV2 extends AbstractAlgoTaskProcessorV2 {
     @Override
     protected Logger getLogger() {
         return log;
+    }
+
+    /**
+     * 清理角色已存在的图片资源
+     * @param roleId 角色ID
+     */
+    private void cleanupExistingRoleImages(Long roleId) {
+        List<FicResourceBO> existingRoleImages = ficResourceRepository.findValidByRelevance(
+            roleId, RelevanceType.ROLE_ID.name(), ResourceTypeEnum.ROLE_IMAGE);
+
+        for (FicResourceBO resource : existingRoleImages) {
+            ficResourceRepository.offlineResourceById(resource.getId());
+            log.debug("[cleanupExistingRoleImages] 清理角色图片资源, roleId: {}, resourceId: {}", roleId, resource.getId());
+        }
     }
 } 

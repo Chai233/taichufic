@@ -57,4 +57,29 @@ public class FicStoryboardRepository {
         List<FicStoryboard> storyboardDOs = storyboardMapper.selectByExampleWithBLOBs(example);
         return StreamUtil.toStream(storyboardDOs).map(FicStoryboardConvertor::toDomain).collect(Collectors.toList());
     }
+
+    /**
+     * 根据workflowId查询分镜
+     * @param workflowId
+     * @return
+     */
+    public List<FicStoryboardBO> findValidByWorkflowIdAndScripId(Long workflowId, Long scriptId) {
+        FicStoryboardExample example = new FicStoryboardExample();
+        example.createCriteria().andWorkflowIdEqualTo(workflowId)
+                .andScriptIdEqualTo(scriptId)
+                .andStatusEqualTo(CommonStatusEnum.VALID.getValue());
+        List<FicStoryboard> storyboardDOs = storyboardMapper.selectByExampleWithBLOBs(example);
+        return StreamUtil.toStream(storyboardDOs).map(FicStoryboardConvertor::toDomain).collect(Collectors.toList());
+    }
+
+    /**
+     * TODO
+     * @param id
+     */
+    public void offlineById(Long id) {
+        FicStoryboard storyboard = new FicStoryboard();
+        storyboard.setId(id);
+        storyboard.setStatus(CommonStatusEnum.INVALID.getValue());
+        storyboardMapper.updateByPrimaryKeySelective(storyboard);
+    }
 }

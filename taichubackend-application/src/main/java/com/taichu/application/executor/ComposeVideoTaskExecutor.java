@@ -30,12 +30,8 @@ public class ComposeVideoTaskExecutor extends AbstractTaskExecutor {
     }
 
     @Override
-    protected void doStartBackgroundProcessing(FicWorkflowTaskBO task) {
-        try {
-            algoTaskInnerService.runAlgoTask(task, AlgoTaskTypeEnum.FULL_VIDEO_GENERATION);
-        } catch (Exception e) {
-            log.error("Background processing failed for workflow: " + task.getWorkflowId(), e);
-        }
+    protected void doStartBackgroundProcessing(FicWorkflowTaskBO task) throws Exception {
+        algoTaskInnerService.runAlgoTask(task, AlgoTaskTypeEnum.FULL_VIDEO_GENERATION);
     }
 
     @Override
