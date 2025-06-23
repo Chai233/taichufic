@@ -52,7 +52,7 @@ public class FicResourceRepository {
      * @param resourceType 资源类型
      * @return 资源列表
      */
-    public List<FicResourceBO> findByWorkflowIdAndResourceType(Long workflowId, ResourceTypeEnum resourceType) {
+    public List<FicResourceBO> findValidByWorkflowIdAndResourceType(Long workflowId, ResourceTypeEnum resourceType) {
         FicResourceExample example = new FicResourceExample();
         example.createCriteria()
                 .andWorkflowIdEqualTo(workflowId)
@@ -78,6 +78,23 @@ public class FicResourceRepository {
                 .andRelevanceIdEqualTo(relevanceId)
                 .andRelevanceTypeEqualTo(relevanceType)
                 .andResourceTypeEqualTo(resourceType.name())
+                .andStatusEqualTo(CommonStatusEnum.VALID.getValue());
+        List<FicResource> resources = resourceMapper.selectByExample(example);
+        return resources.stream()
+                .map(FicResourceConvertor::toDomain)
+                .collect(Collectors.toList());
+    }
+
+    /**
+     * 根据工作流ID查询资源列表
+     *
+     * @param workflowId 工作流ID
+     * @return 资源列表
+     */
+    public List<FicResourceBO> findValidByWorkflowId(Long workflowId) {
+        FicResourceExample example = new FicResourceExample();
+        example.createCriteria()
+                .andWorkflowIdEqualTo(workflowId)
                 .andStatusEqualTo(CommonStatusEnum.VALID.getValue());
         List<FicResource> resources = resourceMapper.selectByExample(example);
         return resources.stream()

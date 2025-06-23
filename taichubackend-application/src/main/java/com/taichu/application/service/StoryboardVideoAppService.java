@@ -145,7 +145,7 @@ public class StoryboardVideoAppService {
         }
 
         // 2. 查询对应的视频资源
-        List<FicResourceBO> videoResourceList = ficResourceRepository.findByWorkflowIdAndResourceType(
+        List<FicResourceBO> videoResourceList = ficResourceRepository.findValidByWorkflowIdAndResourceType(
                 ficStoryboardBO.getWorkflowId(), ResourceTypeEnum.STORYBOARD_VIDEO);
 
         FicResourceBO storyBoardVideoResourceBO = StreamUtil.toStream(videoResourceList)
@@ -158,7 +158,7 @@ public class StoryboardVideoAppService {
         }
 
         // 3. 查询对应的分镜图片资源作为缩略图
-        List<FicResourceBO> imgResourceList = ficResourceRepository.findByWorkflowIdAndResourceType(
+        List<FicResourceBO> imgResourceList = ficResourceRepository.findValidByWorkflowIdAndResourceType(
                 ficStoryboardBO.getWorkflowId(), ResourceTypeEnum.STORYBOARD_IMG);
 
         FicResourceBO storyBoardImgResourceBO = StreamUtil.toStream(imgResourceList)
@@ -186,11 +186,11 @@ public class StoryboardVideoAppService {
         }
 
         // 2. 批量查询所有视频资源
-        List<FicResourceBO> videoResourceList = ficResourceRepository.findByWorkflowIdAndResourceType(
+        List<FicResourceBO> videoResourceList = ficResourceRepository.findValidByWorkflowIdAndResourceType(
                 workflowId, ResourceTypeEnum.STORYBOARD_VIDEO);
 
         // 3. 批量查询所有分镜图片资源
-        List<FicResourceBO> imgResourceList = ficResourceRepository.findByWorkflowIdAndResourceType(
+        List<FicResourceBO> imgResourceList = ficResourceRepository.findValidByWorkflowIdAndResourceType(
                 workflowId, ResourceTypeEnum.STORYBOARD_IMG);
 
         // 4. 构建资源映射，提高查询效率，避免N+1查询问题

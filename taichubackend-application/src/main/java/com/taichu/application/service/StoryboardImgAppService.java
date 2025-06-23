@@ -248,7 +248,7 @@ public class StoryboardImgAppService {
             return SingleResponse.buildFailure("", "not exist storyboardId");
         }
 
-        List<FicResourceBO> ficResourceBOList = ficResourceRepository.findByWorkflowIdAndResourceType(ficStoryboardBO.getWorkflowId(), ResourceTypeEnum.STORYBOARD_IMG);
+        List<FicResourceBO> ficResourceBOList = ficResourceRepository.findValidByWorkflowIdAndResourceType(ficStoryboardBO.getWorkflowId(), ResourceTypeEnum.STORYBOARD_IMG);
         FicResourceBO ficResourceBO = StreamUtil.toStream(ficResourceBOList)
                 .filter(t -> ficStoryboardBO.getId().equals(t.getRelevanceId()))
                 .findFirst()
@@ -276,7 +276,7 @@ public class StoryboardImgAppService {
         }
 
         // 2. 获取所有分镜对应的资源信息
-        List<FicResourceBO> ficResourceBOList = ficResourceRepository.findByWorkflowIdAndResourceType(workflowId, ResourceTypeEnum.STORYBOARD_IMG);
+        List<FicResourceBO> ficResourceBOList = ficResourceRepository.findValidByWorkflowIdAndResourceType(workflowId, ResourceTypeEnum.STORYBOARD_IMG);
 
         // 3. 组装返回数据
         List<StoryboardImgListItemDTO> storyboardImgList = StreamUtil.toStream(ficStoryboardBOList)

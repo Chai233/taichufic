@@ -131,7 +131,7 @@ public class FullVideoGenAlgoTaskProcessor extends AbstractAlgoTaskProcessor {
                 log.error("[FullVideoGenAlgoTaskProcessor.singleTaskSuccessPostProcess] 上传完整视频到OSS失败, algoTaskId: {}, error: {}", algoTask.getAlgoTaskId(), uploadResp.getMessage());
                 return;
             }
-            List<FicResourceBO> oldFullVideoResources = ficResourceRepository.findByWorkflowIdAndResourceType(workflowId, ResourceTypeEnum.FULL_VIDEO);
+            List<FicResourceBO> oldFullVideoResources = ficResourceRepository.findValidByWorkflowIdAndResourceType(workflowId, ResourceTypeEnum.FULL_VIDEO);
             for (FicResourceBO oldFullVideoResource : oldFullVideoResources) {
                 ficResourceRepository.offlineResourceById(oldFullVideoResource.getId());
                 log.info("[FullVideoGenAlgoTaskProcessor.singleTaskSuccessPostProcess] 下线旧资源, resourceId: {}", oldFullVideoResource.getId());

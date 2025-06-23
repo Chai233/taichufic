@@ -241,7 +241,7 @@ public class RoleImgAlgoTaskProcessorV2 extends AbstractAlgoTaskProcessorV2 {
     private void cleanupFailedRoleImgTask(Long workflowId) {
         // 清理已创建的角色图片资源
         try {
-            List<FicResourceBO> roleImages = ficResourceRepository.findByWorkflowIdAndResourceType(workflowId, ResourceTypeEnum.ROLE_IMAGE);
+            List<FicResourceBO> roleImages = ficResourceRepository.findValidByWorkflowIdAndResourceType(workflowId, ResourceTypeEnum.ROLE_IMAGE);
             for (FicResourceBO resource : roleImages) {
                 ficResourceRepository.offlineResourceById(resource.getId());
             }

@@ -150,7 +150,7 @@ public class FullVideoGenAlgoTaskProcessorV2 extends AbstractAlgoTaskProcessorV2
         }
         
         // 删除旧的资源
-        List<FicResourceBO> oldFullVideoResources = ficResourceRepository.findByWorkflowIdAndResourceType(workflowId, ResourceTypeEnum.FULL_VIDEO);
+        List<FicResourceBO> oldFullVideoResources = ficResourceRepository.findValidByWorkflowIdAndResourceType(workflowId, ResourceTypeEnum.FULL_VIDEO);
         for (FicResourceBO oldFullVideoResource : oldFullVideoResources) {
             ficResourceRepository.offlineResourceById(oldFullVideoResource.getId());
             log.info("[FullVideoGenAlgoTaskProcessorV2.singleTaskSuccessPostProcess] 下线旧资源, resourceId: {}", oldFullVideoResource.getId());
@@ -193,7 +193,7 @@ public class FullVideoGenAlgoTaskProcessorV2 extends AbstractAlgoTaskProcessorV2
     private void cleanupFailedFullVideoTask(Long workflowId) {
         // 清理已创建的完整视频资源
         try {
-            List<FicResourceBO> resources = ficResourceRepository.findByWorkflowIdAndResourceType(workflowId, ResourceTypeEnum.FULL_VIDEO);
+            List<FicResourceBO> resources = ficResourceRepository.findValidByWorkflowIdAndResourceType(workflowId, ResourceTypeEnum.FULL_VIDEO);
             for (FicResourceBO resource : resources) {
                 ficResourceRepository.offlineResourceById(resource.getId());
             }

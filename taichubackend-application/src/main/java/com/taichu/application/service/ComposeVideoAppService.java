@@ -118,7 +118,7 @@ public class ComposeVideoAppService {
     @AppServiceExceptionHandle(biz = "获取合成视频信息")
     public MultiResponse<FullVideoListItemDTO> getComposeVideo(Long workflowId) {
         // 1. 查询合成视频资源
-        List<FicResourceBO> videoResourceList = ficResourceRepository.findByWorkflowIdAndResourceType(
+        List<FicResourceBO> videoResourceList = ficResourceRepository.findValidByWorkflowIdAndResourceType(
                 workflowId, ResourceTypeEnum.FULL_VIDEO);
         
         if (videoResourceList.isEmpty()) {
@@ -126,7 +126,7 @@ public class ComposeVideoAppService {
         }
 
         // 2. 查询第一个分镜图片资源作为缩略图
-        List<FicResourceBO> imgResourceList = ficResourceRepository.findByWorkflowIdAndResourceType(
+        List<FicResourceBO> imgResourceList = ficResourceRepository.findValidByWorkflowIdAndResourceType(
                 workflowId, ResourceTypeEnum.STORYBOARD_IMG);
         
         FicResourceBO thumbnailResourceBO = imgResourceList.isEmpty() ? null : imgResourceList.get(0);
@@ -143,7 +143,7 @@ public class ComposeVideoAppService {
      * 下载合成视频
      */
     public Optional<Resource> downloadComposeVideo(Long workflowId) {
-        List<FicResourceBO> ficResourceBOList = ficResourceRepository.findByWorkflowIdAndResourceType(
+        List<FicResourceBO> ficResourceBOList = ficResourceRepository.findValidByWorkflowIdAndResourceType(
                 workflowId, ResourceTypeEnum.FULL_VIDEO);
         if (ficResourceBOList.isEmpty()) {
             return Optional.empty();

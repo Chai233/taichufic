@@ -73,7 +73,7 @@ public class ScriptGenAlgoTaskProcessor extends AbstractAlgoTaskProcessor {
         log.info("[ScriptGenAlgoTaskProcessor.generateTasks] 开始生成剧本任务, workflowId: {}", workflowId);
         try {
             // 获取小说文件
-            List<FicResourceBO> novelFiles = ficResourceRepository.findByWorkflowIdAndResourceType(
+            List<FicResourceBO> novelFiles = ficResourceRepository.findValidByWorkflowIdAndResourceType(
                     workflowId,
                 ResourceTypeEnum.NOVEL_FILE
             );

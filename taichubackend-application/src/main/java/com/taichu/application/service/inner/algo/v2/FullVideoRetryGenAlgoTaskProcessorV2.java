@@ -184,7 +184,7 @@ public class FullVideoRetryGenAlgoTaskProcessorV2 extends AbstractAlgoTaskProces
         }
         
         // 删除旧的完整视频资源
-        List<FicResourceBO> oldFullVideoResources = ficResourceRepository.findByWorkflowIdAndResourceType(workflowId, ResourceTypeEnum.FULL_VIDEO);
+        List<FicResourceBO> oldFullVideoResources = ficResourceRepository.findValidByWorkflowIdAndResourceType(workflowId, ResourceTypeEnum.FULL_VIDEO);
         for (FicResourceBO oldFullVideoResource : oldFullVideoResources) {
             ficResourceRepository.offlineResourceById(oldFullVideoResource.getId());
             log.info("[FullVideoRetryGenAlgoTaskProcessorV2.processFullVideoResult] 下线旧资源, resourceId: {}", oldFullVideoResource.getId());

@@ -229,7 +229,7 @@ public class StoryboardImgAlgoTaskProcessorV2 extends AbstractAlgoTaskProcessorV
     private void cleanupFailedStoryboardImgTask(Long workflowId) {
         // 清理已创建的分镜图片资源
         try {
-            List<FicResourceBO> storyboardImages = ficResourceRepository.findByWorkflowIdAndResourceType(workflowId, ResourceTypeEnum.STORYBOARD_IMG);
+            List<FicResourceBO> storyboardImages = ficResourceRepository.findValidByWorkflowIdAndResourceType(workflowId, ResourceTypeEnum.STORYBOARD_IMG);
             for (FicResourceBO resource : storyboardImages) {
                 ficResourceRepository.offlineResourceById(resource.getId());
             }
@@ -257,7 +257,7 @@ public class StoryboardImgAlgoTaskProcessorV2 extends AbstractAlgoTaskProcessorV
      */
     private void cleanupStoryboardImgResources(Long workflowId, Long relevantId, String relevantType) {
         try {
-            List<FicResourceBO> oldResources = ficResourceRepository.findByWorkflowIdAndResourceType(workflowId, ResourceTypeEnum.STORYBOARD_IMG);
+            List<FicResourceBO> oldResources = ficResourceRepository.findValidByWorkflowIdAndResourceType(workflowId, ResourceTypeEnum.STORYBOARD_IMG);
             for (FicResourceBO resource : oldResources) {
                 if (Objects.equals(resource.getRelevanceId(), relevantId) && 
                     Objects.equals(resource.getRelevanceType(), relevantType)) {

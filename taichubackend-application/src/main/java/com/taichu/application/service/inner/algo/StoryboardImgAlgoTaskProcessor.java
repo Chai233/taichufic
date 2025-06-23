@@ -182,7 +182,7 @@ public class StoryboardImgAlgoTaskProcessor extends AbstractAlgoTaskProcessor {
                 return;
             }
             // 删除旧的资源
-            List<FicResourceBO> oldFullVideoResources = ficResourceRepository.findByWorkflowIdAndResourceType(workflowId, ResourceTypeEnum.STORYBOARD_IMG);
+            List<FicResourceBO> oldFullVideoResources = ficResourceRepository.findValidByWorkflowIdAndResourceType(workflowId, ResourceTypeEnum.STORYBOARD_IMG);
             for (FicResourceBO resource : oldFullVideoResources) {
                 if (Objects.equals(resource.getRelevanceId(), algoTask.getRelevantId()) && Objects.equals(resource.getResourceType(), algoTask.getRelevantIdType())) {
                     ficResourceRepository.offlineResourceById(resource.getId());

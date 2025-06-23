@@ -1,7 +1,6 @@
 package com.taichu.application.service.inner.algo.v2;
 
 import com.taichu.application.service.inner.algo.v2.context.AlgoTaskContext;
-import com.taichu.application.service.inner.algo.v2.context.StoryboardImgTaskContext;
 import com.taichu.application.service.inner.algo.v2.context.StoryboardVideoTaskContext;
 import com.taichu.application.service.inner.algo.ImageVideoStyleEnum;
 import com.taichu.common.common.model.Resp;
@@ -197,7 +196,7 @@ public class StoryboardVideoAlgoTaskProcessorV2 extends AbstractAlgoTaskProcesso
         cleanupStoryboardVideoResources(workflowId, algoTask.getRelevantId(), algoTask.getRelevantIdType());
 
         // 删除旧的资源
-        List<FicResourceBO> oldResources = ficResourceRepository.findByWorkflowIdAndResourceType(workflowId, ResourceTypeEnum.STORYBOARD_VIDEO);
+        List<FicResourceBO> oldResources = ficResourceRepository.findValidByWorkflowIdAndResourceType(workflowId, ResourceTypeEnum.STORYBOARD_VIDEO);
         for (FicResourceBO resource : oldResources) {
             if (Objects.equals(resource.getRelevanceId(), algoTask.getRelevantId()) && 
                 Objects.equals(resource.getRelevanceType(), algoTask.getRelevantIdType())) {
@@ -247,7 +246,7 @@ public class StoryboardVideoAlgoTaskProcessorV2 extends AbstractAlgoTaskProcesso
     private void cleanupFailedStoryboardVideoTask(Long workflowId) {
         // 清理已创建的分镜视频资源
         try {
-            List<FicResourceBO> storyboardVideos = ficResourceRepository.findByWorkflowIdAndResourceType(workflowId, ResourceTypeEnum.STORYBOARD_VIDEO);
+            List<FicResourceBO> storyboardVideos = ficResourceRepository.findValidByWorkflowIdAndResourceType(workflowId, ResourceTypeEnum.STORYBOARD_VIDEO);
             for (FicResourceBO resource : storyboardVideos) {
                 ficResourceRepository.offlineResourceById(resource.getId());
             }
@@ -276,7 +275,7 @@ public class StoryboardVideoAlgoTaskProcessorV2 extends AbstractAlgoTaskProcesso
      */
     private void cleanupStoryboardVideoResources(Long workflowId, Long relevantId, String relevantType) {
         try {
-            List<FicResourceBO> oldResources = ficResourceRepository.findByWorkflowIdAndResourceType(workflowId, ResourceTypeEnum.STORYBOARD_VIDEO);
+            List<FicResourceBO> oldResources = ficResourceRepository.findValidByWorkflowIdAndResourceType(workflowId, ResourceTypeEnum.STORYBOARD_VIDEO);
             for (FicResourceBO resource : oldResources) {
                 if (Objects.equals(resource.getRelevanceId(), relevantId) &&
                         Objects.equals(resource.getRelevanceType(), relevantType)) {

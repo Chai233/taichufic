@@ -88,7 +88,7 @@ public class RoleAppService {
             roleFullBO.setDescription(roleBO.getDescription());
 
             // 3. 获取角色的所有图片资源
-            List<FicResourceBO> resourceList = ficResourceRepository.findByWorkflowIdAndResourceType(
+            List<FicResourceBO> resourceList = ficResourceRepository.findValidByWorkflowIdAndResourceType(
                     workflowId, ResourceTypeEnum.ROLE_IMAGE);
 
             // 4. 过滤出当前角色的图片
