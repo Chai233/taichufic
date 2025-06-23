@@ -1,6 +1,4 @@
 spring:
-  profiles:
-    include: mock
   application:
     name: taichu-backend
   datasource:
@@ -45,6 +43,7 @@ algo:
   small-scale-test: true
   service:
     base-url: http://192.168.100.106:7861
+    mock: false
 
 # 阿里云 OSS 配置
 aliyun:

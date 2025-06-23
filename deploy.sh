@@ -1,10 +1,67 @@
 #!/bin/bash
 
-# 检查是否开启debug模式
+# 帮助函数
+function print_help() {
+    echo "用法: ./deploy.sh [选项]"
+    echo "部署太初后端应用。"
+    echo ""
+    echo "选项:"
+    echo "  --debug                     开启Java远程调试，监听 9002 端口。"
+    echo "  --mockAlgo                  使用 AlgoGateway 的 mock 实现。"
+    echo "  --algo-small-scale-test     将 'algo.small-scale-test' 属性设置为 true。"
+    echo "  -h, --help                  显示此帮助信息并退出。"
+}
+
+# 解析命令行参数
 DEBUG_MODE=false
-if [[ "$1" == "--debug" ]]; then
-    DEBUG_MODE=true
+MOCK_ALGO=false
+ALGO_SMALL_SCALE_TEST=false
+for arg in "$@"
+do
+    case $arg in
+        -h|--help)
+        print_help
+        exit 0
+        ;;
+        --debug)
+        DEBUG_MODE=true
+        ;;
+        --mockAlgo)
+        MOCK_ALGO=true
+        ;;
+        --algo-small-scale-test)
+        ALGO_SMALL_SCALE_TEST=true
+        ;;
+    esac
+done
+
+if [ "$DEBUG_MODE" = true ]; then
     echo "Debug模式已开启"
+fi
+
+if [ "$MOCK_ALGO" = true ]; then
+    echo "Algo Mock模式已开启"
+    export ALGO_SERVICE_MOCK=true
+else
+    echo "Algo Mock模式未开启，将连接VPN并使用真实服务"
+    export ALGO_SERVICE_MOCK=false
+    
+    # 确保VPN脚本存在并执行
+    if [ -f "./vpn_connect_full.sh" ]; then
+        echo "正在执行 vpn_connect_full.sh..."
+        chmod +x ./vpn_connect_full.sh
+        ./vpn_connect_full.sh
+    else
+        echo "警告: vpn_connect_full.sh 未找到，跳过VPN连接。"
+    fi
+fi
+
+if [ "$ALGO_SMALL_SCALE_TEST" = true ]; then
+    echo "Algo 小流量测试已开启"
+    export ALGO_SMALL_SCALE_TEST=true
+else
+    echo "Algo 小流量测试未开启"
+    export ALGO_SMALL_SCALE_TEST=false
 fi
 
 echo "开始部署..."

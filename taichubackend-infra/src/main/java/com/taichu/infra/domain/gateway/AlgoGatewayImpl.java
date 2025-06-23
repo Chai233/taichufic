@@ -12,7 +12,7 @@ import com.taichu.infra.http.FileResponse;
 import com.taichu.common.common.model.ByteArrayMultipartFile;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.context.annotation.Profile;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Component;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -24,7 +24,7 @@ import java.util.List;
  */
 @Slf4j
 @Component
-@Profile("!mock")
+@ConditionalOnProperty(name = "algo.service.mock", havingValue = "false", matchIfMissing = true)
 @RequiredArgsConstructor
 public class AlgoGatewayImpl implements AlgoGateway {
     
