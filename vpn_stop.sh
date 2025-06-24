@@ -17,6 +17,6 @@ echo "关闭 VPN 进程..."
 sudo pkill -f openfortivpn
 
 echo "删除静态路由..."
-sudo ip route del $TARGET_IP || true
+sudo ip route del "$TARGET_IP" dev "$VPN_IF" 2>/dev/null || echo "路由已不存在"
 
 echo "VPN 已断开，路由已清理。"
