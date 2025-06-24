@@ -50,6 +50,9 @@ if [ "$MOCK_ALGO" = true ]; then
 else
     echo "Algo Mock模式未开启，将连接VPN并使用真实服务"
     export ALGO_SERVICE_MOCK=false
+
+    # 关闭vpn、清理路由
+    ./vpn_stop.sh
     
     # 确保VPN脚本存在并执行
     if [ -f "./vpn_connect_full.sh" ]; then
