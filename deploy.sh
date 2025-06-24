@@ -9,6 +9,7 @@ function print_help() {
     echo "  --debug                     开启Java远程调试，监听 9002 端口。"
     echo "  --mockAlgo                  使用 AlgoGateway 的 mock 实现。"
     echo "  --algo-small-scale-test     将 'algo.small-scale-test' 属性设置为 true。"
+    echo "  --use-80-port               将应用端口设置为 80。"
     echo "  -h, --help                  显示此帮助信息并退出。"
 }
 
@@ -16,6 +17,7 @@ function print_help() {
 DEBUG_MODE=false
 MOCK_ALGO=false
 ALGO_SMALL_SCALE_TEST=false
+USE_80_PORT=false
 for arg in "$@"
 do
     case $arg in
@@ -31,6 +33,9 @@ do
         ;;
         --algo-small-scale-test)
         ALGO_SMALL_SCALE_TEST=true
+        ;;
+        --use-80-port)
+        USE_80_PORT=true
         ;;
     esac
 done
@@ -62,6 +67,13 @@ if [ "$ALGO_SMALL_SCALE_TEST" = true ]; then
 else
     echo "Algo 小流量测试未开启"
     export ALGO_SMALL_SCALE_TEST=false
+fi
+
+if [ "$USE_80_PORT" = true ]; then
+    echo "应用端口已设置为 80"
+    export SERVER_PORT=80
+else
+    echo "使用默认端口 8080"
 fi
 
 echo "开始部署..."
