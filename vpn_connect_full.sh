@@ -9,7 +9,8 @@ PID_FILE="/tmp/vpn_monitor.pid"
 
 function start_vpn() {
     echo "启动 VPN..."
-    sudo openfortivpn -c $VPN_CONFIG --trusted-cert $TRUSTED_CERT --keepalive=5 >> $VPN_LOG 2>&1 &
+    sudo openfortivpn -c $VPN_CONFIG --trusted-cert $TRUSTED_CERT --persistent=60 >> $VPN_LOG 2>&1 &
+
     VPN_PID=$!
 
     echo "VPN 进程已启动 (PID: $VPN_PID)，等待接口上线..."
@@ -43,7 +44,7 @@ function monitor_vpn() {
             echo "$(date) VPN 掉线，自动重连..." >> $VPN_LOG
             start_vpn
         fi
-        sleep 5
+        sleep 15
     done
 }
 
