@@ -4,6 +4,7 @@ import com.alibaba.cola.dto.Response;
 import com.alibaba.cola.dto.SingleResponse;
 import com.taichu.application.service.user.UserAppService;
 import com.taichu.application.service.user.dto.AuthDTO;
+import com.taichu.common.common.exception.ControllerExceptionHandle;
 import org.springframework.web.bind.annotation.*;
 
 /**
@@ -28,6 +29,7 @@ public class UserController {
      * @return 认证信息
      */
     @PostMapping("/login")
+    @ControllerExceptionHandle(biz = "LOGIN")
     public SingleResponse<AuthDTO> login(
             @RequestParam String phone,
             @RequestParam String verifyCode) {
