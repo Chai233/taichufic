@@ -79,10 +79,16 @@ public class StoryboardImgAlgoTaskProcessorV2 extends AbstractAlgoTaskProcessorV
             Optional.ofNullable(workflowTask.getParams().get(WorkflowTaskConstant.IMG_IMAGE_STYLE))
                 .ifPresent(context::setImageStyle);
             Optional.ofNullable(workflowTask.getParams().get(WorkflowTaskConstant.IMG_SCALE))
-                .map(Float::parseFloat)
+                .map(t -> {
+                    long imgScale = Long.parseLong(t);
+                    return imgScale / 100f;
+                })
                 .ifPresent(context::setScale);
             Optional.ofNullable(workflowTask.getParams().get(WorkflowTaskConstant.IMG_STYLE_SCALE))
-                .map(Float::parseFloat)
+                .map(t -> {
+                    long imgStyleScale = Long.parseLong(t);
+                    return imgStyleScale / 100f;
+                })
                 .ifPresent(context::setStyleScale);
             
             contexts.add(context);

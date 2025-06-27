@@ -28,11 +28,13 @@ public interface WorkflowTaskConstant {
     String IMG_IMAGE_STYLE = "image_style";
 
     /**
+     * 前端传过来是0-100的整数
      * 文本引导强度，默认为None，代表使用算法的默认scale值，取值范围是0~1的一个小数
      */
     String IMG_SCALE = "scale";
 
     /**
+     * 前端传过来是0-100的整数
      * 风格引导强度，默认为None，代表使用算法的默认scale值，取值范围是0~1的一个小数
      */
     String IMG_STYLE_SCALE = "style_scale";

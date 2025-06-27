@@ -18,13 +18,13 @@ public class GenerateStoryboardImgRequest {
      */
     private Long storyboardId;
     /**
-     * 文本引导强度
+     * 文本引导强度(1-100)
      */
-    private Double scale;
+    private Long scale;
     /**
-     * 风格强度
+     * 风格强度(1-100)
      */
-    private Double styleScale;
+    private Long styleScale;
     /**
      * 用户自定义prompt
      */

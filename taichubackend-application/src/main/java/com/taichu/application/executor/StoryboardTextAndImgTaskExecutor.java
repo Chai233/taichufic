@@ -81,8 +81,8 @@ public class StoryboardTextAndImgTaskExecutor extends AbstractTaskExecutor {
             return Map.of();
         }
         GenerateStoryboardImgRequest storyboardImgRequest = (GenerateStoryboardImgRequest) request;
-        Double styleScale = storyboardImgRequest.getStyleScale();
-        Double scale = storyboardImgRequest.getScale();
+        Long styleScale = storyboardImgRequest.getStyleScale();
+        Long scale = storyboardImgRequest.getScale();
         String imageStyle = storyboardImgRequest.getImageStyle();
 
         Map<String, String> params = new HashMap<>();
