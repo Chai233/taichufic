@@ -8,13 +8,16 @@ import com.taichu.common.common.util.StreamUtil;
 import com.taichu.domain.enums.TaskStatusEnum;
 import com.taichu.domain.enums.TaskTypeEnum;
 import com.taichu.domain.enums.WorkflowStatusEnum;
+import com.taichu.domain.enums.ResourceTypeEnum;
 import com.taichu.domain.model.FicWorkflowTaskBO;
+import com.taichu.domain.model.FicResourceBO;
 import com.taichu.infra.persistance.model.FicWorkflow;
 import com.taichu.infra.persistance.model.FicWorkflowExample;
 import com.taichu.infra.repo.FicWorkflowRepository;
 import com.taichu.infra.repo.FicWorkflowMetaRepository;
 import com.taichu.domain.model.FicWorkflowMetaBO;
 import com.taichu.infra.repo.FicWorkflowTaskRepository;
+import com.taichu.infra.repo.FicResourceRepository;
 import com.taichu.sdk.constant.WorkflowTaskTypeEnum;
 import com.taichu.sdk.model.WorkflowDTO;
 import lombok.extern.slf4j.Slf4j;
@@ -26,6 +29,7 @@ import org.springframework.stereotype.Component;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 /**
  * 工作流应用服务
@@ -44,6 +48,9 @@ public class WorkflowAppService {
     private WorkflowPageConvertHelper workflowPageConvertHelper;
     @Autowired
     private FicWorkflowTaskRepository ficWorkflowTaskRepository;
+    
+    @Autowired
+    private FicResourceRepository ficResourceRepository;
 
     /**
      * 创建工作流
@@ -139,6 +146,16 @@ public class WorkflowAppService {
             workflowDTO.setTag(ficWorkflowMetaBO.getStyleType());
             workflowDTO.setScripUserPrompt(ficWorkflowMetaBO.getUserPrompt());
         }
+        
+        // 查询当前工作流的有效文件名
+        List<FicResourceBO> novelFiles = ficResourceRepository.findValidByWorkflowIdAndResourceType(
+                ficWorkflow.getId(), ResourceTypeEnum.NOVEL_FILE);
+        List<String> uploadedFileNames = novelFiles.stream()
+                .map(FicResourceBO::getOriginName)
+                .filter(Objects::nonNull)
+                .collect(Collectors.toList());
+        workflowDTO.setUploadedFileName(uploadedFileNames);
+        
         return SingleResponse.of(workflowDTO);
     }
 
