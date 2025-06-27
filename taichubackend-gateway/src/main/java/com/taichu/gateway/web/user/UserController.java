@@ -1,5 +1,6 @@
 package com.taichu.gateway.web.user;
 
+import com.alibaba.cola.dto.Response;
 import com.alibaba.cola.dto.SingleResponse;
 import com.taichu.application.service.user.UserAppService;
 import com.taichu.application.service.user.dto.AuthDTO;
@@ -34,15 +35,14 @@ public class UserController {
     }
 
     /**
-     * 获取验证码
+     * 获取验证码（兼容旧接口）
      *
      * @param phone 手机号
      * @return 空响应
      */
     @PostMapping("/getVerificationCode")
-    public SingleResponse<Void> getVerificationCode(
-            @RequestParam String phone) {
-        // TODO
-        return SingleResponse.of(null);
+    @ControllerExceptionHandle(biz = "GET_VERIFICATION_CODE")
+    public SingleResponse<Void> getVerificationCode(@RequestParam String phone) {
+        return userAppService.sendVerifyCode(phone);
     }
 }

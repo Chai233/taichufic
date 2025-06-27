@@ -52,6 +52,10 @@ aliyun:
     accessKeyId: ${ALIYUN_ACCESS_KEY_ID}
     accessKeySecret: ${ALIYUN_ACCESS_KEY_SECRET}
     bucketName: ${ALIYUN_OSS_BUCKET}
+  sms:
+    sign-name: ${ALIYUN_SMS_SIGN_NAME:北京印刷学院}
+    template-code: ${ALIYUN_SMS_TEMPLATE_CODE:SMS_321420813}
+    region: cn-hangzhou
 
 logging:
   level:

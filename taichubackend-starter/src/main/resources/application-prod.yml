@@ -48,4 +48,8 @@ aliyun:
     endpoint: oss-cn-hangzhou.aliyuncs.com
     accessKeyId: ${ALIYUN_ACCESS_KEY_ID}
     accessKeySecret: ${ALIYUN_ACCESS_KEY_SECRET}
-    bucketName: taich-fic-backend-file-storage 
+    bucketName: taich-fic-backend-file-storage
+  sms:
+    sign-name: ${ALIYUN_SMS_SIGN_NAME:泰初科技}
+    template-code: ${ALIYUN_SMS_TEMPLATE_CODE:SMS_123456789}
+    region: cn-qingdao 

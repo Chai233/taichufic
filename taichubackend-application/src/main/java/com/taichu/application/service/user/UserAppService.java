@@ -3,8 +3,12 @@ package com.taichu.application.service.user;
 import com.alibaba.cola.dto.SingleResponse;
 import com.taichu.application.annotation.EntranceLog;
 import com.taichu.application.service.user.cache.AuthCache;
+import com.taichu.application.service.user.cache.VerifyCodeCache;
 import com.taichu.application.service.user.dto.AuthDTO;
+import com.taichu.application.service.user.util.AuthUtil;
 import com.taichu.common.common.exception.AppServiceExceptionHandle;
+import com.taichu.common.util.VerifyCodeUtil;
+import com.taichu.domain.gateway.SmsGateway;
 import com.taichu.infra.persistance.model.FicUser;
 import com.taichu.infra.repository.FicUserRepository;
 import lombok.extern.slf4j.Slf4j;
@@ -40,6 +44,7 @@ public class UserAppService {
             user.setPhoneNumber(phone);
             user.setGmtCreate(System.currentTimeMillis());
             user = ficUserRepository.save(user);
+            log.info("创建新用户: phone={}, userId={}", phone, user.getId());
         }
         
         // 生成认证信息
@@ -52,7 +57,7 @@ public class UserAppService {
         // 保存认证信息
         authCache.saveAuth(authId, authDTO);
 
-        log.debug("authDTO={}", authDTO);
+        log.info("用户登录成功: phone={}, userId={}, authId={}", phone, user.getId(), authId);
         return SingleResponse.of(authDTO);
     }
 } 
