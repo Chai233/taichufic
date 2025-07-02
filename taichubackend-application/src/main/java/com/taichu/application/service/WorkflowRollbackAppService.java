@@ -5,6 +5,7 @@ import com.taichu.application.annotation.EntranceLog;
 import com.taichu.application.helper.WorkflowValidationHelper;
 import com.taichu.application.service.user.util.AuthUtil;
 import com.taichu.common.common.exception.AppServiceExceptionHandle;
+import com.taichu.common.common.util.StreamUtil;
 import com.taichu.domain.enums.*;
 import com.taichu.domain.model.FicAlgoTaskBO;
 import com.taichu.domain.model.FicResourceBO;
@@ -219,7 +220,7 @@ public class WorkflowRollbackAppService {
         List<FicAlgoTaskBO> runningAlgoTasks = new ArrayList<>();
         for (FicWorkflowTaskBO workflowTask : workflowTasks) {
             List<FicAlgoTaskBO> algoTasks = ficAlgoTaskRepository.findByWorkflowTaskId(workflowTask.getId());
-            List<FicAlgoTaskBO> running = algoTasks.stream()
+            List<FicAlgoTaskBO> running = StreamUtil.toStream(algoTasks)
                     .filter(task -> TaskStatusEnum.RUNNING.getCode().equals(task.getStatus()))
                     .collect(Collectors.toList());
             runningAlgoTasks.addAll(running);
