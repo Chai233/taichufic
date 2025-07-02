@@ -14,6 +14,8 @@ import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 
+import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -75,7 +77,7 @@ public class FicAlgoTaskRepository {
         List<FicAlgoTask> taskDOs = taskMapper.selectByExample(example);
         if (CollectionUtils.isEmpty(taskDOs)) {
             log.info("findByWorkflowTaskId - 工作流任务ID: {}, 未找到算法任务", workflowTaskId);
-            return null;
+            return Collections.emptyList();
         }
         return taskDOs.stream().map(FicAlgoTaskConvertor::toDomain).collect(Collectors.toList());
     }
