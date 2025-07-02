@@ -56,5 +56,19 @@ public class WorkflowController {
                 request.getWorkflowId(),
                 WorkflowRollbackTargetEnum.findByValue(request.getTargetStatus()));
     }
+
+    /**
+     * 关闭工作流
+     * 关闭工作流时，会将所有关联资源的状态都改为invalid
+     *
+     * @param workflowId 工作流ID
+     * @return 关闭结果
+     */
+    @PostMapping("close")
+    @ControllerExceptionHandle(biz = "CLOSE_WORKFLOW")
+    public SingleResponse<Void> closeWorkflow(@RequestParam Long workflowId) {
+        Long userId = AuthUtil.getCurrentUserId();
+        return workflowAppService.closeWorkflow(workflowId, userId);
+    }
 }
 

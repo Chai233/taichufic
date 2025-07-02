@@ -3,6 +3,7 @@ package com.taichu.application.service;
 import com.alibaba.cola.dto.SingleResponse;
 import com.taichu.application.annotation.EntranceLog;
 import com.taichu.application.helper.WorkflowPageConvertHelper;
+import com.taichu.application.service.user.util.AuthUtil;
 import com.taichu.common.common.exception.AppServiceExceptionHandle;
 import com.taichu.common.common.util.StreamUtil;
 import com.taichu.domain.enums.TaskStatusEnum;
@@ -183,5 +184,63 @@ public class WorkflowAppService {
         }
 
         return null;
+    }
+
+    /**
+     * 关闭工作流
+     * 1. 验证工作流权限（owner或admin）
+     * 2. 将所有关联资源状态改为invalid
+     * 3. 将工作流状态改为CLOSE
+     *
+     * @param workflowId 工作流ID
+     * @param userId 用户ID
+     * @return 关闭结果
+     */
+    @EntranceLog(bizCode = "关闭工作流")
+    @AppServiceExceptionHandle(biz = "关闭工作流")
+    public SingleResponse<Void> closeWorkflow(Long workflowId, Long userId) {
+        try {
+            // 1. 验证工作流权限（owner或admin）
+            FicWorkflowExample example = new FicWorkflowExample();
+            example.createCriteria().andIdEqualTo(workflowId);
+            List<FicWorkflow> workflows = workflowRepository.findByExample(example);
+            
+            if (CollectionUtils.isEmpty(workflows)) {
+                return SingleResponse.buildFailure("WORKFLOW_002", "工作流不存在");
+            }
+            
+            FicWorkflow workflow = workflows.get(0);
+            
+            // 检查权限：只有工作流所有者或管理员可以关闭
+            boolean isOwner = workflow.getUserId().equals(userId);
+            boolean isAdmin = AuthUtil.isAdmin();
+            
+            if (!isOwner && !isAdmin) {
+                return SingleResponse.buildFailure("WORKFLOW_001", "无权限操作此工作流");
+            }
+            
+            if (isAdmin) {
+                log.info("管理员权限验证通过, workflowId: {}, userId: {}", workflowId, userId);
+            }
+            
+            // 2. 检查工作流状态，如果已经是关闭状态则直接返回成功
+            if (WorkflowStatusEnum.CLOSE.getCode().equals(workflow.getStatus())) {
+                log.info("工作流已经是关闭状态, workflowId: {}", workflowId);
+                return SingleResponse.buildSuccess();
+            }
+            
+            // 3. 将工作流状态改为CLOSE
+            workflowRepository.updateStatus(workflowId, WorkflowStatusEnum.CLOSE.getCode());
+            log.info("工作流已关闭, workflowId: {}", workflowId);
+
+            // 4. 将所有关联资源状态改为invalid
+            ficResourceRepository.offlineByWorkflowId(workflowId);
+            log.info("已下线工作流的所有资源, workflowId: {}", workflowId);
+
+            return SingleResponse.buildSuccess();
+        } catch (Exception e) {
+            log.error("关闭工作流失败, workflowId: {}, userId: {}", workflowId, userId, e);
+            return SingleResponse.buildFailure("WORKFLOW_006", "关闭工作流失败: " + e.getMessage());
+        }
     }
 }

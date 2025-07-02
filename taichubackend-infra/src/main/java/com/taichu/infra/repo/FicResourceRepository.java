@@ -110,4 +110,21 @@ public class FicResourceRepository {
         resource.setStatus(CommonStatusEnum.INVALID.getValue());
         resourceMapper.updateByPrimaryKey(resource);
     }
+
+    /**
+     * 下线指定工作流的所有有效资源
+     * @param workflowId 工作流ID
+     */
+    public void offlineByWorkflowId(Long workflowId) {
+        // 先查询所有需要下线的资源
+        List<FicResourceBO> resources = findValidByWorkflowId(workflowId);
+        
+        // 逐个更新资源状态为无效
+        for (FicResourceBO resource : resources) {
+            FicResource resourceDO = new FicResource();
+            resourceDO.setId(resource.getId());
+            resourceDO.setStatus(CommonStatusEnum.INVALID.getValue());
+            resourceMapper.updateByPrimaryKeySelective(resourceDO);
+        }
+    }
 } 
