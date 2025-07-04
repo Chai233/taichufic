@@ -8,12 +8,15 @@ import com.taichu.application.executor.ScriptTaskExecutor;
 import com.taichu.application.helper.WorkflowValidationHelper;
 import com.taichu.common.common.exception.AppServiceExceptionHandle;
 import com.taichu.domain.algo.gateway.FileGateway;
+import com.taichu.domain.enums.ResourceTypeEnum;
 import com.taichu.domain.enums.TaskStatusEnum;
 import com.taichu.domain.enums.TaskTypeEnum;
 import com.taichu.domain.enums.WorkflowStatusEnum;
+import com.taichu.domain.model.FicResourceBO;
 import com.taichu.domain.model.FicScriptBO;
 import com.taichu.domain.model.FicWorkflowMetaBO;
 import com.taichu.domain.model.FicWorkflowTaskBO;
+import com.taichu.infra.repo.FicResourceRepository;
 import com.taichu.infra.repo.FicScriptRepository;
 import com.taichu.infra.repo.FicWorkflowTaskRepository;
 import com.taichu.infra.repo.FicWorkflowMetaRepository;
@@ -41,8 +44,9 @@ public class ScriptAndRoleAppService {
     private final FicScriptRepository ficScriptRepository;
     private final FileGateway fileGateway;
     private final FicWorkflowMetaRepository ficWorkflowMetaRepository;
+    private final FicResourceRepository ficResourceRepository;
 
-    public ScriptAndRoleAppService(WorkflowValidationHelper workflowValidationHelper, ScriptTaskExecutor scriptTaskExecutor, RetryScriptTaskExecutor retryScriptTaskExecutor, FicWorkflowTaskRepository ficWorkflowTaskRepository, FicScriptRepository ficScriptRepository, FileGateway fileGateway, FicWorkflowMetaRepository ficWorkflowMetaRepository) {
+    public ScriptAndRoleAppService(WorkflowValidationHelper workflowValidationHelper, ScriptTaskExecutor scriptTaskExecutor, RetryScriptTaskExecutor retryScriptTaskExecutor, FicWorkflowTaskRepository ficWorkflowTaskRepository, FicScriptRepository ficScriptRepository, FileGateway fileGateway, FicWorkflowMetaRepository ficWorkflowMetaRepository, FicResourceRepository ficResourceRepository) {
         this.workflowValidationHelper = workflowValidationHelper;
         this.scriptTaskExecutor = scriptTaskExecutor;
         this.retryScriptTaskExecutor = retryScriptTaskExecutor;
@@ -50,6 +54,7 @@ public class ScriptAndRoleAppService {
         this.ficScriptRepository = ficScriptRepository;
         this.fileGateway = fileGateway;
         this.ficWorkflowMetaRepository = ficWorkflowMetaRepository;
+        this.ficResourceRepository = ficResourceRepository;
     }
 
 
@@ -95,7 +100,14 @@ public class ScriptAndRoleAppService {
             return SingleResponse.buildFailure(validateResponse.getErrCode(), validateResponse.getErrMessage());
         }
 
-        // 1.5. 更新styleType
+        // 1.5. 检查是否有文件
+        List<FicResourceBO> novelFiles = ficResourceRepository.findValidByWorkflowIdAndResourceType(
+                workflowId, ResourceTypeEnum.NOVEL_FILE);
+        if (novelFiles == null || novelFiles.isEmpty()) {
+            return SingleResponse.buildFailure("FILE_NOT_FOUND", "当前工作流没有上传文件，请先上传文件");
+        }
+
+        // 1.6. 更新styleType
         FicWorkflowMetaBO ficWorkflowMetaBO = ficWorkflowMetaRepository.findByWorkflowId(workflowId);
         ficWorkflowMetaBO.setStyleType(request.getTag());
         ficWorkflowMetaBO.setUserPrompt(request.getUserPrompt());
