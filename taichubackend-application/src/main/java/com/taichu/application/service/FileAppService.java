@@ -10,6 +10,7 @@ import com.taichu.domain.model.FicResourceBO;
 import com.taichu.infra.repo.FicResourceRepository;
 import com.taichu.infra.repo.FicWorkflowRepository;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
@@ -41,6 +42,10 @@ public class FileAppService {
             SingleResponse<?> validateResponse = workflowValidationHelper.validateWorkflow(workflowId, userId, WorkflowStatusEnum.INIT_WAIT_FOR_FILE);
             if (!validateResponse.isSuccess()) {
                 return validateResponse;
+            }
+
+            if (CollectionUtils.isEmpty(files)) {
+                return SingleResponse.buildFailure("FILE_SAVE_001", "文件缺失");
             }
 
             // 存储文件并创建资源记录
