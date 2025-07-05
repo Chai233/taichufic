@@ -27,4 +27,8 @@ public class VideoListItemDTO {
      * 视频资源url
      */
     private String videoResourceUrl;
+    /**
+     * 剧情
+     */
+    private String storyboardContent;
 }

@@ -261,6 +261,9 @@ public class StoryboardVideoAppService {
         String videoResourceUrl = fileGateway.getFileUrl(videoResourceBO.getResourceUrl()).getData();
         videoListItemDTO.setVideoResourceUrl(videoResourceUrl);
 
+        // 设置分镜内容
+        videoListItemDTO.setStoryboardContent(ficStoryboardBO.getContent());
+
         return videoListItemDTO;
     }
 
