@@ -1,6 +1,6 @@
 package com.taichu.application.executor;
 
-import com.taichu.application.service.inner.algo.AlgoTaskInnerService;
+import com.taichu.application.service.inner.algo.v2.AlgoTaskInnerServiceV2;
 import com.taichu.domain.enums.AlgoTaskTypeEnum;
 import com.taichu.domain.enums.TaskTypeEnum;
 import com.taichu.domain.enums.WorkflowStatusEnum;
@@ -19,11 +19,11 @@ import java.util.Objects;
 @Component
 @Slf4j
 public class SingleStoryboardImgTaskExecutor extends StoryboardTextAndImgTaskExecutor {
-    private final AlgoTaskInnerService algoTaskInnerService;
+    private final AlgoTaskInnerServiceV2 algoTaskInnerServiceV2;
 
-    public SingleStoryboardImgTaskExecutor(FicWorkflowRepository workflowRepository, FicWorkflowTaskRepository ficWorkflowTaskRepository, AlgoTaskInnerService algoTaskInnerService) {
-        super(workflowRepository, ficWorkflowTaskRepository, algoTaskInnerService);
-        this.algoTaskInnerService = algoTaskInnerService;
+    public SingleStoryboardImgTaskExecutor(FicWorkflowRepository workflowRepository, FicWorkflowTaskRepository ficWorkflowTaskRepository, AlgoTaskInnerServiceV2 algoTaskInnerServiceV2) {
+        super(workflowRepository, ficWorkflowTaskRepository, algoTaskInnerServiceV2);
+        this.algoTaskInnerServiceV2 = algoTaskInnerServiceV2;
     }
 
 
@@ -34,7 +34,7 @@ public class SingleStoryboardImgTaskExecutor extends StoryboardTextAndImgTaskExe
 
     @Override
     protected void doStartBackgroundProcessing(FicWorkflowTaskBO task) throws Exception {
-        algoTaskInnerService.runAlgoTask(task, AlgoTaskTypeEnum.USER_RETRY_SINGLE_STORYBOARD_IMG_GENERATION);
+        algoTaskInnerServiceV2.runAlgoTask(task, AlgoTaskTypeEnum.USER_RETRY_SINGLE_STORYBOARD_IMG_GENERATION);
     }
 
     @Override

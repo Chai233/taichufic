@@ -1,6 +1,6 @@
 package com.taichu.application.executor;
 
-import com.taichu.application.service.inner.algo.AlgoTaskInnerService;
+import com.taichu.application.service.inner.algo.v2.AlgoTaskInnerServiceV2;
 import com.taichu.domain.enums.AlgoTaskTypeEnum;
 import com.taichu.domain.enums.TaskTypeEnum;
 import com.taichu.domain.enums.WorkflowStatusEnum;
@@ -23,13 +23,13 @@ import java.util.Optional;
 @Component
 @Slf4j
 public class SingleStoryboardVideoTaskExecutor extends AbstractTaskExecutor {
-    private final AlgoTaskInnerService algoTaskInnerService;
+    private final AlgoTaskInnerServiceV2 algoTaskInnerServiceV2;
     private final FicWorkflowMetaRepository ficWorkflowMetaRepository;
 
     @Autowired
-    public SingleStoryboardVideoTaskExecutor(FicWorkflowRepository workflowRepository, FicWorkflowTaskRepository ficWorkflowTaskRepository, AlgoTaskInnerService algoTaskInnerService, FicWorkflowMetaRepository ficWorkflowMetaRepository) {
+    public SingleStoryboardVideoTaskExecutor(FicWorkflowRepository workflowRepository, FicWorkflowTaskRepository ficWorkflowTaskRepository, AlgoTaskInnerServiceV2 algoTaskInnerServiceV2, FicWorkflowMetaRepository ficWorkflowMetaRepository) {
         super(workflowRepository, ficWorkflowTaskRepository);
-        this.algoTaskInnerService = algoTaskInnerService;
+        this.algoTaskInnerServiceV2 = algoTaskInnerServiceV2;
         this.ficWorkflowMetaRepository = ficWorkflowMetaRepository;
     }
 
@@ -40,7 +40,7 @@ public class SingleStoryboardVideoTaskExecutor extends AbstractTaskExecutor {
 
     @Override
     protected void doStartBackgroundProcessing(FicWorkflowTaskBO task) throws Exception {
-        algoTaskInnerService.runAlgoTask(task, AlgoTaskTypeEnum.USER_RETRY_SINGLE_STORYBOARD_VIDEO_GENERATION);
+        algoTaskInnerServiceV2.runAlgoTask(task, AlgoTaskTypeEnum.USER_RETRY_SINGLE_STORYBOARD_VIDEO_GENERATION);
     }
 
     @Override

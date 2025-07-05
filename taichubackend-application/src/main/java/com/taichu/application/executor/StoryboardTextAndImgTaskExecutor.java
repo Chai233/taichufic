@@ -1,6 +1,6 @@
 package com.taichu.application.executor;
 
-import com.taichu.application.service.inner.algo.AlgoTaskInnerService;
+import com.taichu.application.service.inner.algo.v2.AlgoTaskInnerServiceV2;
 import com.taichu.application.service.inner.algo.v2.StoryboardImgAlgoTaskProcessorV2;
 import com.taichu.application.service.inner.algo.v2.StoryboardTextAlgoTaskProcessorV2;
 import com.taichu.domain.enums.AlgoTaskTypeEnum;
@@ -24,7 +24,7 @@ import java.util.Optional;
 @Component
 public class StoryboardTextAndImgTaskExecutor extends AbstractTaskExecutor {
 
-    private final AlgoTaskInnerService algoTaskInnerService;
+    private final AlgoTaskInnerServiceV2 algoTaskInnerServiceV2;
 
     @Autowired
     StoryboardTextAlgoTaskProcessorV2 storyboardTextAlgoTaskProcessorV2;
@@ -33,9 +33,9 @@ public class StoryboardTextAndImgTaskExecutor extends AbstractTaskExecutor {
 
 
     @Autowired
-    public StoryboardTextAndImgTaskExecutor(FicWorkflowRepository workflowRepository, FicWorkflowTaskRepository ficWorkflowTaskRepository, AlgoTaskInnerService algoTaskInnerService) {
+    public StoryboardTextAndImgTaskExecutor(FicWorkflowRepository workflowRepository, FicWorkflowTaskRepository ficWorkflowTaskRepository, AlgoTaskInnerServiceV2 algoTaskInnerServiceV2) {
         super(workflowRepository, ficWorkflowTaskRepository);
-        this.algoTaskInnerService = algoTaskInnerService;
+        this.algoTaskInnerServiceV2 = algoTaskInnerServiceV2;
     }
 
     @Override
@@ -45,8 +45,8 @@ public class StoryboardTextAndImgTaskExecutor extends AbstractTaskExecutor {
 
     @Override
     protected void doStartBackgroundProcessing(FicWorkflowTaskBO task) throws Exception {
-        algoTaskInnerService.runAlgoTask(task, AlgoTaskTypeEnum.STORYBOARD_TEXT_GENERATION);
-        algoTaskInnerService.runAlgoTask(task, AlgoTaskTypeEnum.STORYBOARD_IMG_GENERATION);
+        algoTaskInnerServiceV2.runAlgoTask(task, AlgoTaskTypeEnum.STORYBOARD_TEXT_GENERATION);
+        algoTaskInnerServiceV2.runAlgoTask(task, AlgoTaskTypeEnum.STORYBOARD_IMG_GENERATION);
     }
 
     @Override
