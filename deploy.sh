@@ -54,13 +54,55 @@ else
     # 关闭vpn、清理路由
     ./vpn_stop.sh
     
+    # 检查VPN配置
+    echo "检查VPN配置..."
+    if [ -f "./check_vpn_config.sh" ]; then
+        chmod +x ./check_vpn_config.sh
+        ./check_vpn_config.sh
+    fi
+    
     # 确保VPN脚本存在并执行
-    if [ -f "./vpn_connect_full.sh" ]; then
-        echo "正在执行 vpn_connect_full.sh..."
+    if [ -f "./vpn_connect_for_deploy.sh" ]; then
+        echo "正在执行部署专用VPN连接脚本..."
+        chmod +x ./vpn_connect_for_deploy.sh
+        if ./vpn_connect_for_deploy.sh; then
+            echo "✓ VPN连接成功，继续部署..."
+        else
+            echo "✗ VPN连接失败，部署终止"
+            exit 1
+        fi
+    elif [ -f "./vpn_connect_full.sh" ]; then
+        echo "正在执行原始VPN连接脚本..."
         chmod +x ./vpn_connect_full.sh
         ./vpn_connect_full.sh
+        
+        # 等待VPN连接建立
+        echo "等待VPN连接建立..."
+        sleep 15
+        
+        # 验证VPN连接
+        if ping -c 3 192.168.100.106 >/dev/null 2>&1; then
+            echo "✓ VPN连接成功，目标IP可达"
+        else
+            echo "⚠ VPN连接可能有问题，但继续部署..."
+        fi
+    elif [ -f "./vpn_connect_full.sh" ]; then
+        echo "正在执行原始VPN连接脚本..."
+        chmod +x ./vpn_connect_full.sh
+        ./vpn_connect_full.sh
+        
+        # 等待VPN连接建立
+        echo "等待VPN连接建立..."
+        sleep 15
+        
+        # 验证VPN连接
+        if ping -c 3 192.168.100.106 >/dev/null 2>&1; then
+            echo "✓ VPN连接成功，目标IP可达"
+        else
+            echo "⚠ VPN连接可能有问题，但继续部署..."
+        fi
     else
-        echo "警告: vpn_connect_full.sh 未找到，跳过VPN连接。"
+        echo "警告: VPN连接脚本未找到，跳过VPN连接。"
     fi
 fi
 
