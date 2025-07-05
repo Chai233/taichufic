@@ -48,61 +48,26 @@ if [ "$MOCK_ALGO" = true ]; then
     echo "Algo Mock模式已开启"
     export ALGO_SERVICE_MOCK=true
 else
-    echo "Algo Mock模式未开启，将连接VPN并使用真实服务"
+    echo "Algo Mock模式未开启，将使用真实服务"
+    echo "请确保已手动连接VPN并可以访问目标服务"
     export ALGO_SERVICE_MOCK=false
-
-    # 关闭vpn、清理路由
-    ./vpn_stop.sh
     
-    # 检查VPN配置
-    echo "检查VPN配置..."
-    if [ -f "./check_vpn_config.sh" ]; then
-        chmod +x ./check_vpn_config.sh
-        ./check_vpn_config.sh
-    fi
+    # 检查VPN连接状态
+    echo "检查VPN连接状态..."
+    echo "正在ping目标IP: 192.168.100.106"
     
-    # 确保VPN脚本存在并执行
-    if [ -f "./vpn_connect_for_deploy.sh" ]; then
-        echo "正在执行部署专用VPN连接脚本..."
-        chmod +x ./vpn_connect_for_deploy.sh
-        if ./vpn_connect_for_deploy.sh; then
-            echo "✓ VPN连接成功，继续部署..."
-        else
-            echo "✗ VPN连接失败，部署终止"
-            exit 1
-        fi
-    elif [ -f "./vpn_connect_full.sh" ]; then
-        echo "正在执行原始VPN连接脚本..."
-        chmod +x ./vpn_connect_full.sh
-        ./vpn_connect_full.sh
-        
-        # 等待VPN连接建立
-        echo "等待VPN连接建立..."
-        sleep 15
-        
-        # 验证VPN连接
-        if ping -c 3 192.168.100.106 >/dev/null 2>&1; then
-            echo "✓ VPN连接成功，目标IP可达"
-        else
-            echo "⚠ VPN连接可能有问题，但继续部署..."
-        fi
-    elif [ -f "./vpn_connect_full.sh" ]; then
-        echo "正在执行原始VPN连接脚本..."
-        chmod +x ./vpn_connect_full.sh
-        ./vpn_connect_full.sh
-        
-        # 等待VPN连接建立
-        echo "等待VPN连接建立..."
-        sleep 15
-        
-        # 验证VPN连接
-        if ping -c 3 192.168.100.106 >/dev/null 2>&1; then
-            echo "✓ VPN连接成功，目标IP可达"
-        else
-            echo "⚠ VPN连接可能有问题，但继续部署..."
-        fi
+    if ping -c 3 192.168.100.106 >/dev/null 2>&1; then
+        echo "✓ VPN连接正常，目标IP可达"
     else
-        echo "警告: VPN连接脚本未找到，跳过VPN连接。"
+        echo "✗ VPN连接失败，目标IP不可达"
+        echo "请先手动连接VPN:"
+        echo "  ./vpn_connect_full.sh"
+        echo ""
+        echo "或者使用Mock模式部署:"
+        echo "  ./deploy.sh --mockAlgo"
+        echo ""
+        echo "部署已终止"
+        exit 1
     fi
 fi
 
