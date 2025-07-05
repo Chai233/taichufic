@@ -4,14 +4,17 @@ import com.taichu.application.service.inner.algo.AlgoTaskInnerService;
 import com.taichu.domain.enums.AlgoTaskTypeEnum;
 import com.taichu.domain.enums.TaskTypeEnum;
 import com.taichu.domain.enums.WorkflowStatusEnum;
+import com.taichu.domain.enums.WorkflowTaskConstant;
 import com.taichu.domain.model.FicWorkflowTaskBO;
 import com.taichu.infra.repo.FicWorkflowRepository;
 import com.taichu.infra.repo.FicWorkflowTaskRepository;
+import com.taichu.sdk.model.request.GenerateStoryboardImgRequest;
 import lombok.extern.slf4j.Slf4j;
 import org.slf4j.Logger;
 import org.springframework.stereotype.Component;
 
 import java.util.Map;
+import java.util.Objects;
 
 @Component
 @Slf4j
@@ -56,6 +59,12 @@ public class SingleStoryboardImgTaskExecutor extends StoryboardTextAndImgTaskExe
 
     @Override
     protected Map<String, String> constructTaskParams(Long workflowId, Object request) {
-        return super.constructTaskParams(workflowId, request);
+        if (!(request instanceof GenerateStoryboardImgRequest)) {
+            return Map.of();
+        }
+        GenerateStoryboardImgRequest storyboardImgRequest = (GenerateStoryboardImgRequest) request;
+        Map<String, String> params = super.constructTaskParams(workflowId, request);
+        params.put(WorkflowTaskConstant.STORYBOARD_ID, Objects.toString(storyboardImgRequest.getStoryboardId()));
+        return params;
     }
 } 
