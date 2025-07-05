@@ -148,7 +148,7 @@ public class StoryboardImgAppService {
             setRunningStatusForImgOnly(storyboardTaskStatusDTO, ficAlgoTaskBOList);
         } else {
             // STORYBOARD_TEXT_AND_IMG_GENERATION 任务，需要检查文本生成任务
-            setRunningStatusForTextAndImg(storyboardTaskStatusDTO, ficAlgoTaskBOList);
+            setRunningStatusForTextAndImg(storyboardTaskStatusDTO, ficAlgoTaskBOList, ficWorkflowTaskBO.getWorkflowId());
         }
 
         return SingleResponse.of(storyboardTaskStatusDTO);
@@ -179,39 +179,30 @@ public class StoryboardImgAppService {
                 .collect(Collectors.toList());
 
         storyboardTaskStatusDTO.setCompleteCnt(completedStoryboardIdList.size());
-        storyboardTaskStatusDTO.setTotalCnt(imgGenerationTasks.size());
+        storyboardTaskStatusDTO.setTotalCnt(1);
         storyboardTaskStatusDTO.setCompletedStoryboardIds(completedStoryboardIdList);
     }
 
     /**
      * 设置文本和图片生成任务的运行状态
      */
-    private void setRunningStatusForTextAndImg(StoryboardWorkflowTaskStatusDTO storyboardTaskStatusDTO, List<FicAlgoTaskBO> ficAlgoTaskBOList) {
-        boolean textGenerationCompleted = StreamUtil.toStream(ficAlgoTaskBOList)
-                .anyMatch(t -> AlgoTaskTypeEnum.STORYBOARD_TEXT_GENERATION.name().equals(t.getTaskType())
-                        && TaskStatusEnum.COMPLETED.getCode().equals(t.getStatus()));
+    private void setRunningStatusForTextAndImg(StoryboardWorkflowTaskStatusDTO storyboardTaskStatusDTO, List<FicAlgoTaskBO> ficAlgoTaskBOList, Long workflowId) {
+        // 获取分镜总数
+        List<FicStoryboardBO> allStoryboards = ficStoryboardRepository.findValidByWorkflowId(workflowId);
+        int totalStoryboardCount = allStoryboards.size();
 
-        if (!textGenerationCompleted) {
-            // 文本生成未完成，进度为0
-            storyboardTaskStatusDTO.setCompleteCnt(0);
-            storyboardTaskStatusDTO.setTotalCnt(0);
-            storyboardTaskStatusDTO.setCompletedStoryboardIds(List.of());
-            return;
-        }
-
-        // 文本生成已完成，计算图片生成进度
+        // 获取已完成的分镜任务
         List<FicAlgoTaskBO> imgGenerationTasks = StreamUtil.toStream(ficAlgoTaskBOList)
                 .filter(t -> AlgoTaskTypeEnum.STORYBOARD_IMG_GENERATION.name().equals(t.getTaskType()))
                 .collect(Collectors.toList());
-
         List<Long> completedStoryboardIdList = StreamUtil.toStream(imgGenerationTasks)
                 .filter(t -> TaskStatusEnum.COMPLETED.getCode().equals(t.getStatus()))
                 .map(FicAlgoTaskBO::getRelevantId)
                 .collect(Collectors.toList());
 
         storyboardTaskStatusDTO.setCompleteCnt(completedStoryboardIdList.size());
-        storyboardTaskStatusDTO.setTotalCnt(imgGenerationTasks.size());
         storyboardTaskStatusDTO.setCompletedStoryboardIds(completedStoryboardIdList);
+        storyboardTaskStatusDTO.setTotalCnt(totalStoryboardCount);
     }
 
     /**

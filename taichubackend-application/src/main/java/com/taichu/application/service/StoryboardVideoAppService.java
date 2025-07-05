@@ -95,8 +95,12 @@ public class StoryboardVideoAppService {
             return SingleResponse.buildFailure("", "不是视频生成任务");
         }
 
+        Long workflowId = ficWorkflowTaskBO.getWorkflowId();
+
         List<FicAlgoTaskBO> ficAlgoTaskBOList = ficAlgoTaskRepository.findByWorkflowTaskId(ficWorkflowTaskBO.getId());
         StoryboardWorkflowTaskStatusDTO taskStatusDTO = new StoryboardWorkflowTaskStatusDTO();
+
+        List<FicStoryboardBO> allStoryboards = ficStoryboardRepository.findValidByWorkflowId(workflowId);
 
         if (TaskStatusEnum.FAILED.getCode().equals(ficWorkflowTaskBO.getStatus())) {
             taskStatusDTO.setTaskId(taskId);
@@ -110,9 +114,9 @@ public class StoryboardVideoAppService {
 
             taskStatusDTO.setTaskId(taskId);
             taskStatusDTO.setStatus(TaskStatusEnum.COMPLETED.name());
-            taskStatusDTO.setCompleteCnt(ficAlgoTaskBOList.size());
-            taskStatusDTO.setTotalCnt(ficAlgoTaskBOList.size());
+            taskStatusDTO.setCompleteCnt(completedVideoIdList.size());
             taskStatusDTO.setCompletedStoryboardIds(completedVideoIdList);
+            taskStatusDTO.setTotalCnt(allStoryboards.size());
         } else {
             List<Long> completedVideoIdList = StreamUtil.toStream(ficAlgoTaskBOList)
                     .filter(t -> TaskStatusEnum.COMPLETED.getCode().equals(t.getStatus()))
@@ -122,8 +126,8 @@ public class StoryboardVideoAppService {
             taskStatusDTO.setTaskId(taskId);
             taskStatusDTO.setStatus(TaskStatusEnum.RUNNING.name());
             taskStatusDTO.setCompleteCnt(completedVideoIdList.size());
-            taskStatusDTO.setTotalCnt(ficAlgoTaskBOList.size());
             taskStatusDTO.setCompletedStoryboardIds(completedVideoIdList);
+            taskStatusDTO.setTotalCnt(allStoryboards.size());
         }
 
         return SingleResponse.of(taskStatusDTO);
