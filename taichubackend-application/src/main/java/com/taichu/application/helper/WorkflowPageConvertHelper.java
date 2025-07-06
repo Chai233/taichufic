@@ -79,10 +79,17 @@ public class WorkflowPageConvertHelper {
      * 包括：剧本生成完成、分镜图片生成初始化（且没有图片已完成）
      */
     private boolean isScriptPage(WorkflowStatusEnum workflowStatusEnum, FicWorkflowTaskBO runningTask) {
+        // 剧本生成完成
         if (WorkflowStatusEnum.SCRIPT_GEN_DONE.equals(workflowStatusEnum)) return true;
 
+        // 分镜图片生成初始化（且没有图片已完成）
         if (WorkflowStatusEnum.STORYBOARD_IMG_GEN_INIT.equals(workflowStatusEnum)) {
             return !hasAnyCompletedTasks(runningTask, AlgoTaskTypeEnum.STORYBOARD_IMG_GENERATION);
+        }
+
+        // 分镜图片生成初始化状态，且有图片已完成
+        if (WorkflowStatusEnum.STORYBOARD_IMG_GEN_INIT.equals(workflowStatusEnum)) {
+            return hasAnyCompletedTasks(runningTask, AlgoTaskTypeEnum.STORYBOARD_IMG_GENERATION);
         }
 
         return false;
@@ -104,9 +111,9 @@ public class WorkflowPageConvertHelper {
             return !hasAnyCompletedTasks(runningTask, AlgoTaskTypeEnum.STORYBOARD_VIDEO_GENERATION);
         }
 
-        // 分镜图片生成初始化状态，且有图片已完成
-        if (WorkflowStatusEnum.STORYBOARD_IMG_GEN_INIT.equals(workflowStatusEnum)) {
-            return hasAnyCompletedTasks(runningTask, AlgoTaskTypeEnum.STORYBOARD_IMG_GENERATION);
+        // 分镜视频生成初始化状态，且有视频已完成
+        if (WorkflowStatusEnum.STORYBOARD_VIDEO_GEN_INIT.equals(workflowStatusEnum)) {
+            return hasAnyCompletedTasks(runningTask, AlgoTaskTypeEnum.STORYBOARD_VIDEO_GENERATION);
         }
 
         return false;
@@ -126,11 +133,6 @@ public class WorkflowPageConvertHelper {
         // 完整视频生成初始化状态
         if (WorkflowStatusEnum.FULL_VIDEO_GEN_INIT.equals(workflowStatusEnum)) {
             return true;
-        }
-
-        // 分镜视频生成初始化状态，且有视频已完成
-        if (WorkflowStatusEnum.STORYBOARD_VIDEO_GEN_INIT.equals(workflowStatusEnum)) {
-            return hasAnyCompletedTasks(runningTask, AlgoTaskTypeEnum.STORYBOARD_VIDEO_GENERATION);
         }
 
         return false;
