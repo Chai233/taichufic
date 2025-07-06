@@ -61,4 +61,25 @@ public class FicWorkflowTaskRepository {
         task.setStatus(status.getCode());
         ficWorkflowTaskMapper.updateByPrimaryKeySelective(task);
     }
+
+    /**
+     * 查找所有运行中的工作流任务
+     * @return 运行中的工作流任务列表
+     */
+    public List<FicWorkflowTaskBO> findRunningTasks() {
+        FicWorkflowTaskExample example = new FicWorkflowTaskExample();
+        example.createCriteria().andStatusEqualTo(TaskStatusEnum.RUNNING.getCode());
+        List<FicWorkflowTask> taskDOs = ficWorkflowTaskMapper.selectByExample(example);
+        return taskDOs.stream().map(FicWorkflowTaskConvertor::toDomain).collect(Collectors.toList());
+    }
+
+    /**
+     * 查找所有工作流任务
+     * @return 所有工作流任务列表
+     */
+    public List<FicWorkflowTaskBO> findAllTasks() {
+        FicWorkflowTaskExample example = new FicWorkflowTaskExample();
+        List<FicWorkflowTask> taskDOs = ficWorkflowTaskMapper.selectByExample(example);
+        return taskDOs.stream().map(FicWorkflowTaskConvertor::toDomain).collect(Collectors.toList());
+    }
 }

@@ -47,22 +47,22 @@ public class ScriptTaskExecutor extends AbstractTaskExecutor {
     }
 
     @Override
-    protected WorkflowStatusEnum getInitWorkflowStatus() {
+    public WorkflowStatusEnum getInitWorkflowStatus() {
         return WorkflowStatusEnum.SCRIPT_GEN_INIT;
     }
 
     @Override
-    protected WorkflowStatusEnum getDoneWorkflowStatus() {
+    public WorkflowStatusEnum getDoneWorkflowStatus() {
         return WorkflowStatusEnum.SCRIPT_GEN_DONE;
     }
 
     @Override
-    protected WorkflowStatusEnum getRollbackWorkflowStatus() {
+    public WorkflowStatusEnum getRollbackWorkflowStatus() {
         return WorkflowStatusEnum.UPLOAD_FILE_DONE;
     }
 
     @Override
-    protected TaskTypeEnum getWorkflowTaskType() {
+    public TaskTypeEnum getWorkflowTaskType() {
         return TaskTypeEnum.SCRIPT_AND_ROLE_GENERATION;
     }
 

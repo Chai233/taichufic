@@ -44,22 +44,22 @@ public class SingleStoryboardVideoTaskExecutor extends AbstractTaskExecutor {
     }
 
     @Override
-    protected WorkflowStatusEnum getInitWorkflowStatus() {
+    public WorkflowStatusEnum getInitWorkflowStatus() {
         return WorkflowStatusEnum.STORYBOARD_VIDEO_GEN_DONE;
     }
 
     @Override
-    protected WorkflowStatusEnum getDoneWorkflowStatus() {
+    public WorkflowStatusEnum getDoneWorkflowStatus() {
         return WorkflowStatusEnum.STORYBOARD_VIDEO_GEN_DONE;
     }
 
     @Override
-    protected WorkflowStatusEnum getRollbackWorkflowStatus() {
+    public WorkflowStatusEnum getRollbackWorkflowStatus() {
         return WorkflowStatusEnum.STORYBOARD_VIDEO_GEN_DONE;
     }
 
     @Override
-    protected TaskTypeEnum getWorkflowTaskType() {
+    public TaskTypeEnum getWorkflowTaskType() {
         return TaskTypeEnum.USER_RETRY_SINGLE_STORYBOARD_VIDEO_GENERATION;
     }
 

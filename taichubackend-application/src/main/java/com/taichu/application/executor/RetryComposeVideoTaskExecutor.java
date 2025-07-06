@@ -27,17 +27,17 @@ public class RetryComposeVideoTaskExecutor extends ComposeVideoTaskExecutor {
     }
 
     @Override
-    protected WorkflowStatusEnum getInitWorkflowStatus() {
+    public WorkflowStatusEnum getInitWorkflowStatus() {
         return WorkflowStatusEnum.FULL_VIDEO_GEN_DONE;
     }
 
     @Override
-    protected WorkflowStatusEnum getRollbackWorkflowStatus() {
+    public WorkflowStatusEnum getRollbackWorkflowStatus() {
         return WorkflowStatusEnum.FULL_VIDEO_GEN_DONE;
     }
 
     @Override
-    protected TaskTypeEnum getWorkflowTaskType() {
+    public TaskTypeEnum getWorkflowTaskType() {
         return TaskTypeEnum.USER_RETRY_FULL_VIDEO_GENERATION;
     }
 

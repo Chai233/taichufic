@@ -102,4 +102,33 @@ public class FicAlgoTaskRepository {
             taskMapper.insert(ficAlgoTask);
         }
     }
+
+    /**
+     * 查找所有运行中的算法任务
+     * @return 运行中的算法任务列表
+     */
+    public List<FicAlgoTaskBO> findRunningTasks() {
+        FicAlgoTaskExample example = new FicAlgoTaskExample();
+        example.createCriteria().andStatusEqualTo(TaskStatusEnum.RUNNING.getCode());
+        List<FicAlgoTask> taskDOs = taskMapper.selectByExample(example);
+        if (CollectionUtils.isEmpty(taskDOs)) {
+            log.info("findRunningTasks - 未找到运行中的算法任务");
+            return Collections.emptyList();
+        }
+        return taskDOs.stream().map(FicAlgoTaskConvertor::toDomain).collect(Collectors.toList());
+    }
+
+    /**
+     * 查找所有算法任务
+     * @return 所有算法任务列表
+     */
+    public List<FicAlgoTaskBO> findAllTasks() {
+        FicAlgoTaskExample example = new FicAlgoTaskExample();
+        List<FicAlgoTask> taskDOs = taskMapper.selectByExample(example);
+        if (CollectionUtils.isEmpty(taskDOs)) {
+            log.info("findAllTasks - 未找到算法任务");
+            return Collections.emptyList();
+        }
+        return taskDOs.stream().map(FicAlgoTaskConvertor::toDomain).collect(Collectors.toList());
+    }
 }

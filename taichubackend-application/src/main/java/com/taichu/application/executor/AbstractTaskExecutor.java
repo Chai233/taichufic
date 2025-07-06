@@ -14,7 +14,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.Callable;
 
-public abstract class AbstractTaskExecutor {
+public abstract class AbstractTaskExecutor implements TaskExecutor {
     protected final FicWorkflowRepository workflowRepository;
     protected final FicWorkflowTaskRepository ficWorkflowTaskRepository;
 
@@ -97,13 +97,13 @@ public abstract class AbstractTaskExecutor {
 
     protected abstract void doStartBackgroundProcessing(FicWorkflowTaskBO task) throws Exception;
 
-    protected abstract WorkflowStatusEnum getInitWorkflowStatus();
+    public abstract WorkflowStatusEnum getInitWorkflowStatus();
 
-    protected abstract WorkflowStatusEnum getDoneWorkflowStatus();
+    public abstract WorkflowStatusEnum getDoneWorkflowStatus();
 
-    protected abstract WorkflowStatusEnum getRollbackWorkflowStatus();
+    public abstract WorkflowStatusEnum getRollbackWorkflowStatus();
 
-    protected abstract TaskTypeEnum getWorkflowTaskType();
+    public abstract TaskTypeEnum getWorkflowTaskType();
 
     protected abstract Map<String, String> constructTaskParams(Long workflowId, Object request);
 }

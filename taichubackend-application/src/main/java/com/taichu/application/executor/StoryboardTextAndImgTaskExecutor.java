@@ -56,22 +56,22 @@ public class StoryboardTextAndImgTaskExecutor extends AbstractTaskExecutor {
     }
 
     @Override
-    protected WorkflowStatusEnum getInitWorkflowStatus() {
+    public WorkflowStatusEnum getInitWorkflowStatus() {
         return WorkflowStatusEnum.STORYBOARD_IMG_GEN_INIT;
     }
 
     @Override
-    protected WorkflowStatusEnum getDoneWorkflowStatus() {
+    public WorkflowStatusEnum getDoneWorkflowStatus() {
         return WorkflowStatusEnum.STORYBOARD_IMG_GEN_DONE;
     }
 
     @Override
-    protected WorkflowStatusEnum getRollbackWorkflowStatus() {
+    public WorkflowStatusEnum getRollbackWorkflowStatus() {
         return WorkflowStatusEnum.SCRIPT_GEN_DONE;
     }
 
     @Override
-    protected TaskTypeEnum getWorkflowTaskType() {
+    public TaskTypeEnum getWorkflowTaskType() {
         return TaskTypeEnum.STORYBOARD_TEXT_AND_IMG_GENERATION;
     }
 

@@ -35,22 +35,22 @@ public class ComposeVideoTaskExecutor extends AbstractTaskExecutor {
     }
 
     @Override
-    protected WorkflowStatusEnum getInitWorkflowStatus() {
+    public WorkflowStatusEnum getInitWorkflowStatus() {
         return WorkflowStatusEnum.FULL_VIDEO_GEN_INIT;
     }
 
     @Override
-    protected WorkflowStatusEnum getDoneWorkflowStatus() {
+    public WorkflowStatusEnum getDoneWorkflowStatus() {
         return WorkflowStatusEnum.FULL_VIDEO_GEN_DONE;
     }
 
     @Override
-    protected WorkflowStatusEnum getRollbackWorkflowStatus() {
+    public WorkflowStatusEnum getRollbackWorkflowStatus() {
         return WorkflowStatusEnum.STORYBOARD_IMG_GEN_DONE;
     }
 
     @Override
-    protected TaskTypeEnum getWorkflowTaskType() {
+    public TaskTypeEnum getWorkflowTaskType() {
         return TaskTypeEnum.FULL_VIDEO_GENERATION;
     }
 
