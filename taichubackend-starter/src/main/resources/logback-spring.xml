@@ -26,6 +26,21 @@
         </encoder>
     </appender>
 
+    <!-- 数据库日志输出 -->
+    <appender name="SQL_FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <file>${LOG_PATH}/sql.log</file>
+        <rollingPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy">
+            <fileNamePattern>${LOG_PATH}/sql.%d{yyyy-MM-dd}.%i.log</fileNamePattern>
+            <maxFileSize>100MB</maxFileSize>
+            <maxHistory>30</maxHistory>
+            <totalSizeCap>3GB</totalSizeCap>
+        </rollingPolicy>
+        <encoder>
+            <pattern>${LOG_PATTERN}</pattern>
+            <charset>UTF-8</charset>
+        </encoder>
+    </appender>
+
     <!-- 入口日志输出 -->
     <appender name="ENTRANCE_FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
         <file>${LOG_PATH}/entrance.log</file>
@@ -59,9 +74,20 @@
         </filter>
     </appender>
 
-    <!-- MyBatis SQL日志 -->
-    <logger name="org.mybatis" level="DEBUG"/>
-    <logger name="java.sql" level="DEBUG"/>
+    <!-- MyBatis SQL日志 - 单独输出到sql.log -->
+    <logger name="org.mybatis" level="INFO" additivity="false">
+        <appender-ref ref="SQL_FILE"/>
+    </logger>
+    
+    <!-- Java SQL日志 - 单独输出到sql.log -->
+    <logger name="java.sql" level="INFO" additivity="false">
+        <appender-ref ref="SQL_FILE"/>
+    </logger>
+    
+    <!-- MyBatis Mapper日志 - 单独输出到sql.log -->
+    <logger name="com.taichu.infra.persistance.mapper" level="INFO" additivity="false">
+        <appender-ref ref="SQL_FILE"/>
+    </logger>
 
     <!-- 应用日志 -->
     <logger name="com.taichu" level="DEBUG"/>
