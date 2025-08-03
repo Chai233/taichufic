@@ -46,7 +46,7 @@ public class ComposeVideoTaskExecutor extends AbstractTaskExecutor {
 
     @Override
     public WorkflowStatusEnum getRollbackWorkflowStatus() {
-        return WorkflowStatusEnum.STORYBOARD_IMG_GEN_DONE;
+        return WorkflowStatusEnum.STORYBOARD_VIDEO_GEN_DONE;
     }
 
     @Override
