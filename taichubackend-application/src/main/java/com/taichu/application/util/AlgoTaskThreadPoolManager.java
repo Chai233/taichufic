@@ -8,8 +8,8 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 @Slf4j
 public class AlgoTaskThreadPoolManager {
-    private static final int MAXIMUM_POOL_SIZE = 2;
-    private static final int CORE_POOL_SIZE = 2;
+    private static final int MAXIMUM_POOL_SIZE = 1;
+    private static final int CORE_POOL_SIZE = 1;
     private static volatile AlgoTaskThreadPoolManager INSTANCE;
     private static volatile ExecutorService executorService;
 
