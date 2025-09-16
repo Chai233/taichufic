@@ -76,7 +76,7 @@ public class ComposeVideoAppService {
     public SingleResponse<Long> submitReComposeVideoTask(ComposeVideoRequest request, Long userId) {
         // 1. 校验工作流状态
         SingleResponse<?> validateResponse = workflowValidationHelper.validateWorkflow(
-                request.getWorkflowId(), userId, WorkflowStatusEnum.STORYBOARD_VIDEO_GEN_DONE);
+                request.getWorkflowId(), userId, WorkflowStatusEnum.FULL_VIDEO_GEN_DONE);
         if (!validateResponse.isSuccess()) {
             return SingleResponse.buildFailure(validateResponse.getErrCode(), validateResponse.getErrMessage());
         }
