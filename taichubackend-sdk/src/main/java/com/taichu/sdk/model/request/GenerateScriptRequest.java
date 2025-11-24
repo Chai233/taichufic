@@ -17,6 +17,7 @@ public class GenerateScriptRequest {
     private String userPrompt;
     /**
      * 标签：赛博朋克/外星文明
+     * 默认赛博朋克
      */
-    private String tag;
+    private String tag = "赛博朋克";
 }
