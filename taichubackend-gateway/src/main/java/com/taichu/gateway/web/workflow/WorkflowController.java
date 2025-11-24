@@ -52,6 +52,13 @@ public class WorkflowController {
     @ControllerExceptionHandle(biz = "ROLL_BACK_TO_TARGET_STATUS")
     public SingleResponse<Void> rollbackWorkflow(@RequestBody WorkflowRollBackRequest request) throws Exception {
         Long userId = AuthUtil.getCurrentUserId();
+
+        // 直接关闭当前workflow
+        if ("INIT_WAIT_FOR_FILE".equals(request.getTargetStatus())) {
+            Long workflowId = request.getWorkflowId();
+            return workflowAppService.closeWorkflow(workflowId, userId);
+        }
+
         return workflowRollbackAppService.rollbackWorkflow(userId,
                 request.getWorkflowId(),
                 WorkflowRollbackTargetEnum.findByValue(request.getTargetStatus()));
