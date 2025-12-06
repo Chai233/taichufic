@@ -84,8 +84,8 @@ public class AlgoTaskInnerServiceV2 implements InitializingBean {
                     // 验证上下文
                     processor.validateContext(context);
                     
-                    // 提交任务到线程池
-                    Future<TaskResult> future = AlgoTaskThreadPoolManager.getInstance().submit(() -> {
+                    // 提交任务到线程池（根据任务类型选择对应的线程池）
+                    Future<TaskResult> future = AlgoTaskThreadPoolManager.getInstance().submit(algoTaskType, () -> {
                         try {
                             boolean success = processSingleTaskWithRetry(processor, context, workflowTaskId);
                             return new TaskResult(context, success, null);
