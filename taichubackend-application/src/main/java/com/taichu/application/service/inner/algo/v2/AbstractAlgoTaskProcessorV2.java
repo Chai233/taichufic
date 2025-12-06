@@ -21,7 +21,7 @@ import java.util.function.Supplier;
  */
 public abstract class AbstractAlgoTaskProcessorV2 implements AlgoTaskProcessorV2 {
     
-    private static final int MAX_RETRY = 3;
+    private static final int MAX_RETRY = 2;
     private static final int WAIT_INTERVAL = 5000;
 
     protected final FicWorkflowTaskRepository ficWorkflowTaskRepository;
