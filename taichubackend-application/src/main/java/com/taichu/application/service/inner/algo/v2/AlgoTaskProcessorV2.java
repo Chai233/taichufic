@@ -40,4 +40,21 @@ public interface AlgoTaskProcessorV2 {
     default void validateContext(AlgoTaskContext context) {
         // 默认实现为空，子类可以重写
     }
+    
+    // 是否允许部分成功（只有分镜图生成、分镜视频生成、视频合成这3种任务允许部分失败）
+    default boolean isAllowPartialSuccess() {
+        return false;
+    }
+    
+    // 是否过滤失败任务
+    default boolean isFilterFailedTasks() {
+        return false;
+    }
+    
+    // 处理部分成功的逻辑（带失败任务列表）
+    default void handlePartialSuccessLogic(FicWorkflowTaskBO workflowTask, List<AlgoTaskContext> contexts, 
+                                          List<AlgoTaskContext> failedContexts, List<AlgoTaskContext> completedContexts,
+                                          List<Long> failedTaskIds, List<Long> successTaskIds) {
+        // 默认实现为空，子类可以重写
+    }
 } 

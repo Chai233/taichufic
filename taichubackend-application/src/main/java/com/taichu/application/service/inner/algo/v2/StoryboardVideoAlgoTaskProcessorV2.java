@@ -68,8 +68,37 @@ public class StoryboardVideoAlgoTaskProcessorV2 extends AbstractAlgoTaskProcesso
             return List.of();
         }
         
+        // 如果开启过滤失败任务开关，检查分镜图片是否存在
+        List<FicStoryboardBO> filteredStoryboards = ficStoryboardBOList;
+        if (isFilterFailedTasks()) {
+            // 查询所有分镜图片资源
+            List<FicResourceBO> storyboardImgResources = ficResourceRepository.findValidByWorkflowIdAndResourceType(
+                workflowId, ResourceTypeEnum.STORYBOARD_IMG);
+            Set<Long> storyboardIdsWithImg = storyboardImgResources.stream()
+                .map(FicResourceBO::getRelevanceId)
+                .collect(Collectors.toSet());
+            
+            // 过滤掉没有分镜图片的分镜
+            List<FicStoryboardBO> originalList = new ArrayList<>(ficStoryboardBOList);
+            filteredStoryboards = ficStoryboardBOList.stream()
+                .filter(storyboard -> {
+                    boolean hasImg = storyboardIdsWithImg.contains(storyboard.getId());
+                    if (!hasImg) {
+                        log.warn("[StoryboardVideoAlgoTaskProcessorV2.createTaskContextList] 过滤掉没有分镜图片的分镜, " +
+                            "storyboardId: {}, workflowId: {}", storyboard.getId(), workflowId);
+                    }
+                    return hasImg;
+                })
+                .collect(Collectors.toList());
+            
+            if (filteredStoryboards.size() < originalList.size()) {
+                log.warn("[StoryboardVideoAlgoTaskProcessorV2.createTaskContextList] 过滤后分镜数量: {}/{}, workflowId: {}", 
+                    filteredStoryboards.size(), originalList.size(), workflowId);
+            }
+        }
+        
         List<AlgoTaskContext> contexts = new ArrayList<>();
-        for (FicStoryboardBO ficStoryboardBO : ficStoryboardBOList) {
+        for (FicStoryboardBO ficStoryboardBO : filteredStoryboards) {
             StoryboardVideoTaskContext context = buildStoryboardVideoTaskContext(workflowTask, ficStoryboardBO, ficRoleBOList);
             contexts.add(context);
         }

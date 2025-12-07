@@ -29,6 +29,7 @@ import org.springframework.core.io.Resource;
 import org.springframework.stereotype.Component;
 
 import java.io.InputStream;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -130,12 +131,15 @@ public class StoryboardImgAppService {
             return SingleResponse.of(storyboardTaskStatusDTO);
         }
 
-        // 处理完成状态
+        // 处理完成状态（包括部分成功的情况）
         if (TaskStatusEnum.COMPLETED.getCode().equals(ficWorkflowTaskBO.getStatus())) {
             List<Long> completedStoryboardIdList = getCompletedStoryboardIds(ficAlgoTaskBOList);
             storyboardTaskStatusDTO.setStatus(TaskStatusEnum.COMPLETED.name());
             storyboardTaskStatusDTO.setCompleteCnt(completedStoryboardIdList.size());
-            storyboardTaskStatusDTO.setTotalCnt(completedStoryboardIdList.size());
+            // 获取分镜总数（用于显示部分成功的情况）
+            List<FicStoryboardBO> allStoryboards = ficStoryboardRepository.findValidByWorkflowId(ficWorkflowTaskBO.getWorkflowId());
+            int totalCount = allStoryboards != null ? allStoryboards.size() : completedStoryboardIdList.size();
+            storyboardTaskStatusDTO.setTotalCnt(totalCount);
             storyboardTaskStatusDTO.setCompletedStoryboardIds(completedStoryboardIdList);
             return SingleResponse.of(storyboardTaskStatusDTO);
         }
@@ -156,12 +160,19 @@ public class StoryboardImgAppService {
 
     /**
      * 获取已完成的分镜ID列表
+     * 容错处理：即使部分任务失败，也能正确返回已完成的分镜列表
      */
     private List<Long> getCompletedStoryboardIds(List<FicAlgoTaskBO> ficAlgoTaskBOList) {
+        if (ficAlgoTaskBOList == null || ficAlgoTaskBOList.isEmpty()) {
+            return new ArrayList<>();
+        }
         return StreamUtil.toStream(ficAlgoTaskBOList)
-                .filter(t -> AlgoTaskTypeEnum.STORYBOARD_IMG_GENERATION.name().equals(t.getTaskType())
-                        && TaskStatusEnum.COMPLETED.getCode().equals(t.getStatus()))
+                .filter(t -> t != null 
+                        && AlgoTaskTypeEnum.STORYBOARD_IMG_GENERATION.name().equals(t.getTaskType())
+                        && TaskStatusEnum.COMPLETED.getCode().equals(t.getStatus())
+                        && t.getRelevantId() != null)
                 .map(FicAlgoTaskBO::getRelevantId)
+                .distinct()
                 .collect(Collectors.toList());
     }
 
@@ -185,19 +196,21 @@ public class StoryboardImgAppService {
 
     /**
      * 设置文本和图片生成任务的运行状态
+     * 容错处理：即使部分任务失败，也能正确统计已完成数量
      */
     private void setRunningStatusForTextAndImg(StoryboardWorkflowTaskStatusDTO storyboardTaskStatusDTO, List<FicAlgoTaskBO> ficAlgoTaskBOList, Long workflowId) {
         // 获取分镜总数
         List<FicStoryboardBO> allStoryboards = ficStoryboardRepository.findValidByWorkflowId(workflowId);
-        int totalStoryboardCount = allStoryboards.size();
+        int totalStoryboardCount = allStoryboards != null ? allStoryboards.size() : 0;
 
-        // 获取已完成的分镜任务
+        // 获取已完成的分镜任务（容错处理：过滤null值和无效数据）
         List<FicAlgoTaskBO> imgGenerationTasks = StreamUtil.toStream(ficAlgoTaskBOList)
-                .filter(t -> AlgoTaskTypeEnum.STORYBOARD_IMG_GENERATION.name().equals(t.getTaskType()))
+                .filter(t -> t != null && AlgoTaskTypeEnum.STORYBOARD_IMG_GENERATION.name().equals(t.getTaskType()))
                 .collect(Collectors.toList());
         List<Long> completedStoryboardIdList = StreamUtil.toStream(imgGenerationTasks)
-                .filter(t -> TaskStatusEnum.COMPLETED.getCode().equals(t.getStatus()))
+                .filter(t -> TaskStatusEnum.COMPLETED.getCode().equals(t.getStatus()) && t.getRelevantId() != null)
                 .map(FicAlgoTaskBO::getRelevantId)
+                .distinct()
                 .collect(Collectors.toList());
 
         storyboardTaskStatusDTO.setCompleteCnt(completedStoryboardIdList.size());
@@ -269,11 +282,12 @@ public class StoryboardImgAppService {
         // 2. 获取所有分镜对应的资源信息
         List<FicResourceBO> ficResourceBOList = ficResourceRepository.findValidByWorkflowIdAndResourceType(workflowId, ResourceTypeEnum.STORYBOARD_IMG);
 
-        // 3. 组装返回数据
+        // 3. 组装返回数据（容错处理：只返回有资源的分镜，即使部分分镜失败也不会崩溃）
         List<StoryboardImgListItemDTO> storyboardImgList = StreamUtil.toStream(ficStoryboardBOList)
+                .filter(ficStoryboardBO -> ficStoryboardBO != null && ficStoryboardBO.getId() != null)
                 .map(ficStoryboardBO -> {
                     FicResourceBO ficResourceBO = StreamUtil.toStream(ficResourceBOList)
-                            .filter(t -> ficStoryboardBO.getId().equals(t.getRelevanceId()))
+                            .filter(t -> t != null && ficStoryboardBO.getId().equals(t.getRelevanceId()))
                             .findFirst()
                             .orElse(null);
                     return convertToDTO(ficStoryboardBO, ficResourceBO);

@@ -130,9 +130,39 @@ public class AlgoTaskInnerServiceV2 implements InitializingBean {
                 log.info("[AlgoTaskInnerServiceV2.runAlgoTask] 所有任务完成，执行成功后置处理");
                 processor.postProcessAllComplete(workflowTask, taskContexts);
             } else {
-                log.error("[AlgoTaskInnerServiceV2.runAlgoTask] 存在失败任务，执行失败后置处理");
-                processor.postProcessAnyFailed(workflowTask, taskContexts);
-                throw new RuntimeException("部分算法任务失败");
+                // 检查是否允许部分成功
+                if (processor.isAllowPartialSuccess()) {
+                    // 新逻辑：判断是否全部失败
+                    if (completedContexts.isEmpty()) {
+                        // 全部失败，标记为失败
+                        log.error("[AlgoTaskInnerServiceV2.runAlgoTask] 所有任务都失败，执行失败后置处理");
+                        processor.postProcessAnyFailed(workflowTask, taskContexts);
+                        throw new RuntimeException("所有算法任务失败");
+                    } else {
+                        // 部分成功，标记为成功并记录PARTIAL_SUCCESS信息
+                        log.warn("[AlgoTaskInnerServiceV2.runAlgoTask] 部分任务成功，成功: {}, 失败: {}", 
+                            completedContexts.size(), failedContexts.size());
+                        
+                        // 查询失败任务的ID列表
+                        List<FicAlgoTaskBO> allAlgoTasks = ficAlgoTaskRepository.findByWorkflowTaskId(workflowTaskId);
+                        List<Long> failedTaskIds = new ArrayList<>();
+                        List<Long> successTaskIds = new ArrayList<>();
+                        for (FicAlgoTaskBO algoTask : allAlgoTasks) {
+                            if (TaskStatusEnum.FAILED.getCode().equals(algoTask.getStatus())) {
+                                failedTaskIds.add(algoTask.getId());
+                            } else if (TaskStatusEnum.COMPLETED.getCode().equals(algoTask.getStatus())) {
+                                successTaskIds.add(algoTask.getId());
+                            }
+                        }
+                        
+                        processor.handlePartialSuccessLogic(workflowTask, taskContexts, failedContexts, completedContexts, failedTaskIds, successTaskIds);
+                    }
+                } else {
+                    // 旧逻辑：任意失败即整体失败
+                    log.error("[AlgoTaskInnerServiceV2.runAlgoTask] 存在失败任务，执行失败后置处理");
+                    processor.postProcessAnyFailed(workflowTask, taskContexts);
+                    throw new RuntimeException("部分算法任务失败");
+                }
             }
             
         } catch (Exception e) {

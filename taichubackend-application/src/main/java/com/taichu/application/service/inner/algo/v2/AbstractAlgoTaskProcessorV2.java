@@ -3,6 +3,7 @@ package com.taichu.application.service.inner.algo.v2;
 import com.taichu.application.service.inner.algo.v2.context.AlgoTaskContext;
 import com.taichu.domain.algo.gateway.AlgoGateway;
 import com.taichu.domain.algo.model.AlgoResponse;
+import com.taichu.domain.enums.AlgoTaskTypeEnum;
 import com.taichu.domain.enums.TaskStatusEnum;
 import com.taichu.domain.model.AlgoTaskStatus;
 import com.taichu.domain.model.FicAlgoTaskBO;
@@ -23,6 +24,15 @@ public abstract class AbstractAlgoTaskProcessorV2 implements AlgoTaskProcessorV2
     
     private static final int MAX_RETRY = 2;
     private static final int WAIT_INTERVAL = 5000;
+    
+    /**
+     * 是否允许部分成功并过滤失败任务（新逻辑）
+     * true: 允许部分成功，只有全部失败才算任务失败；同时过滤失败的任务（如分镜视频生成时过滤没有分镜图片的分镜）
+     * false: 任意失败即整体失败（旧逻辑）
+     * 
+     * 注意：只有分镜图生成、分镜视频生成、视频合成这3种算法任务允许部分失败
+     */
+    private static final boolean ALLOW_PARTIAL_SUCCESS_AND_FILTER_FAILED_TASKS = true;
 
     protected final FicWorkflowTaskRepository ficWorkflowTaskRepository;
     protected final FicWorkflowRepository ficWorkflowRepository;
@@ -202,6 +212,30 @@ public abstract class AbstractAlgoTaskProcessorV2 implements AlgoTaskProcessorV2
         return AbstractAlgoTaskProcessorV2.WAIT_INTERVAL;
     }
 
+    /**
+     * 是否允许部分成功（需要同时满足：开关开启 且 任务类型在允许列表中）
+     */
+    @Override
+    public boolean isAllowPartialSuccess() {
+        if (!AbstractAlgoTaskProcessorV2.ALLOW_PARTIAL_SUCCESS_AND_FILTER_FAILED_TASKS) {
+            return false;
+        }
+        // 通过getAlgoTaskType()获取当前处理器的任务类型
+        AlgoTaskTypeEnum algoTaskType = getAlgoTaskType();
+        // 只有分镜图生成、分镜视频生成、视频合成这3种算法任务允许部分失败
+        return algoTaskType == AlgoTaskTypeEnum.STORYBOARD_IMG_GENERATION
+                || algoTaskType == AlgoTaskTypeEnum.STORYBOARD_VIDEO_GENERATION
+                || algoTaskType == AlgoTaskTypeEnum.FULL_VIDEO_GENERATION;
+    }
+
+    /**
+     * 是否过滤失败任务（需要同时满足：开关开启 且 任务类型在允许列表中）
+     */
+    @Override
+    public boolean isFilterFailedTasks() {
+        return isAllowPartialSuccess();
+    }
+
     @Override
     public TaskStatusEnum checkSingleTaskStatus(FicAlgoTaskBO algoTask) {
         AlgoTaskStatus taskStatus = getAlgoGateway().checkTaskStatus(Objects.toString(algoTask.getAlgoTaskId()));
@@ -221,11 +255,52 @@ public abstract class AbstractAlgoTaskProcessorV2 implements AlgoTaskProcessorV2
 
     @Override
     public void postProcessAnyFailed(FicWorkflowTaskBO workflowTask, List<AlgoTaskContext> contexts) {
-        // 如果有任何任务失败，将工作流任务标记为失败
+        // 旧逻辑：任意失败即整体失败（当开关关闭时走这里）
         workflowTask.setStatus(TaskStatusEnum.FAILED.getCode());
         ficWorkflowTaskRepository.updateTaskStatus(workflowTask.getId(), TaskStatusEnum.FAILED);
-        getLogger().error("Algorithm task failed for workflow: " + workflowTask.getWorkflowId());
+        getLogger().error("Algorithm task failed for workflow: {}", workflowTask.getWorkflowId());
     }
+
+    @Override
+    public void handlePartialSuccessLogic(FicWorkflowTaskBO workflowTask, List<AlgoTaskContext> contexts, 
+                                        List<AlgoTaskContext> failedContexts, List<AlgoTaskContext> completedContexts,
+                                        List<Long> failedTaskIds, List<Long> successTaskIds) {
+        // 部分成功：标记为成功，并在扩展字段中记录PARTIAL_SUCCESS信息
+        workflowTask.setStatus(TaskStatusEnum.COMPLETED.getCode());
+        ficWorkflowTaskRepository.updateTaskStatus(workflowTask.getId(), TaskStatusEnum.COMPLETED);
+        
+        // 在params中记录PARTIAL_SUCCESS信息
+        java.util.Map<String, String> params = workflowTask.getParams();
+        if (params == null) {
+            params = new java.util.HashMap<>();
+        }
+        
+        // 构建JSON格式的扩展信息
+        try {
+            com.fasterxml.jackson.databind.ObjectMapper objectMapper = new com.fasterxml.jackson.databind.ObjectMapper();
+            com.fasterxml.jackson.databind.node.ObjectNode extInfo = objectMapper.createObjectNode();
+            extInfo.put("PARTIAL_SUCCESS", "true");
+            extInfo.put("failedTaskCount", failedTaskIds.size());
+            extInfo.put("successTaskCount", successTaskIds.size());
+            extInfo.set("failedTaskIds", objectMapper.valueToTree(failedTaskIds));
+            extInfo.set("successTaskIds", objectMapper.valueToTree(successTaskIds));
+            
+            params.put("PARTIAL_SUCCESS_INFO", objectMapper.writeValueAsString(extInfo));
+            workflowTask.setParams(params);
+            
+            // 保存更新后的params到数据库
+            ficWorkflowTaskRepository.updateParams(workflowTask.getId(), params);
+        } catch (Exception e) {
+            getLogger().error("Failed to serialize PARTIAL_SUCCESS info, workflowId: {}", workflowTask.getWorkflowId(), e);
+        }
+
+        // 记录详细日志
+        getLogger().warn("[AbstractAlgoTaskProcessorV2.handlePartialSuccessLogic] 部分任务成功完成, workflowId: {}, " +
+            "总任务数: {}, 成功: {}, 失败: {}, 失败任务ID: {}, 成功任务ID: {}", 
+            workflowTask.getWorkflowId(), contexts.size(), completedContexts.size(), failedContexts.size(),
+            failedTaskIds, successTaskIds);
+    }
+
 
     @Override
     public void singleTaskFailedPostProcess(FicAlgoTaskBO algoTask, AlgoTaskContext context, Exception e) {

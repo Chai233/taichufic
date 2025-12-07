@@ -63,6 +63,20 @@ public class FicWorkflowTaskRepository {
     }
 
     /**
+     * 更新工作流任务的参数
+     * @param id 任务ID
+     * @param params 参数Map
+     */
+    public void updateParams(Long id, java.util.Map<String, String> params) {
+        FicWorkflowTask task = new FicWorkflowTask();
+        task.setId(id);
+        // 将Map转换为JSON字符串
+        String paramsJson = FicWorkflowTaskConvertor.mapToJson(params);
+        task.setParams(paramsJson);
+        ficWorkflowTaskMapper.updateByPrimaryKeySelective(task);
+    }
+
+    /**
      * 查找所有运行中的工作流任务
      * @return 运行中的工作流任务列表
      */

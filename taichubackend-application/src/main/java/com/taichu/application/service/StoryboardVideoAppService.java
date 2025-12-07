@@ -107,27 +107,37 @@ public class StoryboardVideoAppService {
             taskStatusDTO.setStatus(TaskStatusEnum.FAILED.name());
             return SingleResponse.of(taskStatusDTO);
         } else if (TaskStatusEnum.COMPLETED.getCode().equals(ficWorkflowTaskBO.getStatus())) {
+            // 处理完成状态（包括部分成功的情况）
+            // 容错处理：过滤null值和无效数据，确保即使部分任务失败也能正确统计
             List<Long> completedVideoIdList = StreamUtil.toStream(ficAlgoTaskBOList)
-                    .filter(t -> TaskStatusEnum.COMPLETED.getCode().equals(t.getStatus()))
+                    .filter(t -> t != null 
+                            && TaskStatusEnum.COMPLETED.getCode().equals(t.getStatus())
+                            && t.getRelevantId() != null)
                     .map(FicAlgoTaskBO::getRelevantId)
+                    .distinct()
                     .collect(Collectors.toList());
 
             taskStatusDTO.setTaskId(taskId);
             taskStatusDTO.setStatus(TaskStatusEnum.COMPLETED.name());
             taskStatusDTO.setCompleteCnt(completedVideoIdList.size());
             taskStatusDTO.setCompletedStoryboardIds(completedVideoIdList);
-            taskStatusDTO.setTotalCnt(allStoryboards.size());
+            taskStatusDTO.setTotalCnt(allStoryboards != null ? allStoryboards.size() : completedVideoIdList.size());
         } else {
+            // 处理运行中状态
+            // 容错处理：过滤null值和无效数据
             List<Long> completedVideoIdList = StreamUtil.toStream(ficAlgoTaskBOList)
-                    .filter(t -> TaskStatusEnum.COMPLETED.getCode().equals(t.getStatus()))
+                    .filter(t -> t != null 
+                            && TaskStatusEnum.COMPLETED.getCode().equals(t.getStatus())
+                            && t.getRelevantId() != null)
                     .map(FicAlgoTaskBO::getRelevantId)
+                    .distinct()
                     .collect(Collectors.toList());
 
             taskStatusDTO.setTaskId(taskId);
             taskStatusDTO.setStatus(TaskStatusEnum.RUNNING.name());
             taskStatusDTO.setCompleteCnt(completedVideoIdList.size());
             taskStatusDTO.setCompletedStoryboardIds(completedVideoIdList);
-            taskStatusDTO.setTotalCnt(allStoryboards.size());
+            taskStatusDTO.setTotalCnt(allStoryboards != null ? allStoryboards.size() : 0);
         }
 
         return SingleResponse.of(taskStatusDTO);
@@ -204,8 +214,9 @@ public class StoryboardVideoAppService {
         Map<Long, FicResourceBO> imgResourceMap = StreamUtil.toStream(imgResourceList)
                 .collect(Collectors.toMap(FicResourceBO::getRelevanceId, resource -> resource));
 
-        // 5. 为每个分镜构建视频信息DTO
+        // 5. 为每个分镜构建视频信息DTO（容错处理：只返回有视频资源的分镜，即使部分分镜失败也不会崩溃）
         List<VideoListItemDTO> videoList = StreamUtil.toStream(ficStoryboardBOList)
+                .filter(ficStoryboardBO -> ficStoryboardBO != null && ficStoryboardBO.getId() != null)
                 .map(ficStoryboardBO -> {
                     FicResourceBO videoResourceBO = videoResourceMap.get(ficStoryboardBO.getId());
                     FicResourceBO imgResourceBO = imgResourceMap.get(ficStoryboardBO.getId());

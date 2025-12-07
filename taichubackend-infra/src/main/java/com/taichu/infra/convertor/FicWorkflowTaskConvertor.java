@@ -39,7 +39,7 @@ public class FicWorkflowTaskConvertor {
         return bo;
     }
 
-    private static String mapToJson(Map<String, String> params) {
+    public static String mapToJson(Map<String, String> params) {
         if (params == null) {
             return "{}";
         }

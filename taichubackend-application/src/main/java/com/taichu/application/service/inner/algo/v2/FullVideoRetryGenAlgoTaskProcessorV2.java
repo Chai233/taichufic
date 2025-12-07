@@ -16,9 +16,7 @@ import org.slf4j.Logger;
 import org.springframework.stereotype.Component;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Component
@@ -85,7 +83,41 @@ public class FullVideoRetryGenAlgoTaskProcessorV2 extends AbstractAlgoTaskProces
     public AlgoTaskBOV2 generateAlgoTask(AlgoTaskContext context) {
         FullVideoTaskContext fullVideoContext = (FullVideoTaskContext) context;
         
-        List<String> storyboardIds = StreamUtil.toStream(fullVideoContext.getStoryboards())
+        List<FicStoryboardBO> storyboards = fullVideoContext.getStoryboards();
+        
+        // 如果开启过滤失败任务开关，只使用已生成完成的分镜视频
+        if (isFilterFailedTasks()) {
+            // 查询所有分镜视频资源
+            List<FicResourceBO> storyboardVideoResources = ficResourceRepository.findValidByWorkflowIdAndResourceType(
+                fullVideoContext.getWorkflowId(), ResourceTypeEnum.STORYBOARD_VIDEO);
+            Set<Long> storyboardIdsWithVideo = storyboardVideoResources.stream()
+                .map(FicResourceBO::getRelevanceId)
+                .collect(Collectors.toSet());
+            
+            // 过滤掉没有分镜视频的分镜
+            List<FicStoryboardBO> originalList = new ArrayList<>(storyboards);
+            storyboards = storyboards.stream()
+                .filter(storyboard -> {
+                    boolean hasVideo = storyboardIdsWithVideo.contains(storyboard.getId());
+                    if (!hasVideo) {
+                        log.warn("[FullVideoRetryGenAlgoTaskProcessorV2.generateAlgoTask] 过滤掉没有分镜视频的分镜, " +
+                            "storyboardId: {}, workflowId: {}", storyboard.getId(), fullVideoContext.getWorkflowId());
+                    }
+                    return hasVideo;
+                })
+                .collect(Collectors.toList());
+            
+            if (storyboards.size() < originalList.size()) {
+                log.warn("[FullVideoRetryGenAlgoTaskProcessorV2.generateAlgoTask] 过滤后分镜数量: {}/{}, workflowId: {}", 
+                    storyboards.size(), originalList.size(), fullVideoContext.getWorkflowId());
+            }
+            
+            if (storyboards.isEmpty()) {
+                throw new RuntimeException("没有可用的分镜视频，无法生成完整视频, workflowId: " + fullVideoContext.getWorkflowId());
+            }
+        }
+        
+        List<String> storyboardIds = StreamUtil.toStream(storyboards)
                 .filter(Objects::nonNull)
                 .map(FicStoryboardBO::getId)
                 .map(Object::toString)
