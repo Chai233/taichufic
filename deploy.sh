@@ -54,9 +54,9 @@ else
     
     # 检查VPN连接状态
     echo "检查VPN连接状态..."
-    echo "正在ping目标IP: 192.168.100.106"
+    echo "正在ping目标IP: u525613-8008-53ab06e3.westc.seetacloud.com"
     
-    if ping -c 3 192.168.100.106 >/dev/null 2>&1; then
+    if ping -c 3 u525613-8008-53ab06e3.westc.seetacloud.com >/dev/null 2>&1; then
         echo "✓ VPN连接正常，目标IP可达"
     else
         echo "✗ VPN连接失败，目标IP不可达"

@@ -42,7 +42,8 @@ file:
 algo:
   small-scale-test: true
   service:
-    base-url: http://192.168.100.106:7861
+    base-url: https://u525613-8008-53ab06e3.westc.seetacloud.com:8443
+#    base-url-old: http://192.168.100.106:7861
     mock: false
 
 # 阿里云 OSS 配置
